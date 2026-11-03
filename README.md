@@ -1047,6 +1047,14 @@ Exit codes from `verify` and `get`:
 and `export` exit 0 on success and 1 on error. Usage errors exit 1, never 2, so a
 typo cannot read as "flagged".
 
+On an interactive terminal, `orinyx -h` opens with an ORINYX banner on stdout, and plain
+`orinyx` prints the banner and the help and still exits 1. Off a terminal (a pipe, a file, a
+subprocess) the output is unchanged, and the banner never appears in a subcommand's output or
+help, in `--json` output or from the MCP server. To turn it off on a terminal, set
+`ORINYX_NO_BANNER` to any non-empty value (a non-empty `CI` does the same) or pass
+`--no-banner` before the command, as in `orinyx --no-banner -h`; `-h` does not list it. With
+`NO_COLOR` set, the banner is printed in one colour.
+
 A GitHub Actions step that fails the job on a flag (full recipe in
 [docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#ci-recipe)):
 
