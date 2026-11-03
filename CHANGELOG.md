@@ -3,7 +3,7 @@
 All notable changes to this project are recorded here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.1.2] - 2026-11-03
 
 ### Changed
 
@@ -78,5 +78,6 @@ drug, and combination products. Most show up as a NOT VERIFIED row, a refused or
 total that was not checked, so a missing flag is never evidence that an order is safe. See
 [Known limits](docs/RELEASE_NOTES_2026-11-02.md#known-limits).
 
-[Unreleased]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/main...HEAD
+[Unreleased]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.1...v0.1.2
 [0.1.1]: docs/RELEASE_NOTES_2026-11-02.md

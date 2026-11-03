@@ -4,4 +4,4 @@ A CLIENT of the Orinyx verification API. Nothing here decides a verdict: every t
 an ordinary REST request carrying the caller's own credential, and the engine's rules,
 citations, scopes, tenancy, rate limits and audit record apply unchanged."""
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
