@@ -1,0 +1,4 @@
+{"turn": 1, "orders": ["warfarin 5 mg by mouth daily", "lisinopril 10 mg by mouth daily"]}
+{"turn": 2, "orders": ["citalopram 80 mg by mouth daily"]}
+{"turn": 3, "orders": "metformin 500 mg by mouth twice daily\naspirin 81 mg by mouth daily"}
+{"turn": 4, "note": "the agent wrote no orders on this turn"}

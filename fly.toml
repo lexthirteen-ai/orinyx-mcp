@@ -1,0 +1,40 @@
+# Fly.io: the Orinyx MCP service, its own app. No database, no release command, no secret
+# except ORINYX_HOP_SECRET (`fly secrets set`), which the API must share.
+#
+# It reaches the API over Fly's private network (`<app>.internal`, encrypted, never the
+# public internet); ORINYX_ISSUER_URL is the API's PUBLIC origin, which agents are sent to
+# for sign-in.
+app = "orinyx-mcp"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8000"
+  MCP_PUBLIC_URL = "https://orinyx-mcp.fly.dev"
+  ORINYX_API_URL = "http://orinyx-api.internal:8000"
+  ORINYX_API_ALLOW_HTTP = "true"
+  ORINYX_ISSUER_URL = "https://orinyx-api.fly.dev"
+  # Exactly one proxy (Fly's edge) sits in front of the Machine; it names the caller in
+  # Fly-Client-IP (the rightmost X-Forwarded-For entry is the proxy itself).
+  TRUST_PROXY_FORWARDED_FOR = "true"
+  TRUSTED_CLIENT_IP_HEADER = "fly-client-ip"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "15s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

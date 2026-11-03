@@ -1,0 +1,200 @@
+{
+ "_note": "What the orinyx CLI printed at commit 7fa8f7e, before value-free usage errors landed: one entry per case in tests/test_cli_output_unchanged.py, captured with that file's capture() on Python 3.14 and 3.12 (identical bytes). Synthetic data only; <work> is the case's temporary directory. Regenerate only for a deliberate, owner-approved output change.",
+ "cases": {
+  "--file followed by a flag": {
+   "err": "usage: orinyx verify [-h] --file FILE [--tool TOOL]\n                     [--tool-version TOOL_VERSION] [--check-interactions]\n                     [--json]\norinyx verify: error: argument --file: expected one argument\n",
+   "exit": 1,
+   "out": ""
+  },
+  "--file without its value": {
+   "err": "usage: orinyx verify [-h] --file FILE [--tool TOOL]\n                     [--tool-version TOOL_VERSION] [--check-interactions]\n                     [--json]\norinyx verify: error: argument --file: expected one argument\n",
+   "exit": 1,
+   "out": ""
+  },
+  "--help": {
+   "err": "",
+   "exit": 0,
+   "out": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {verify,get,accuracy,export,observe}\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
+  },
+  "-h": {
+   "err": "",
+   "exit": 0,
+   "out": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {verify,get,accuracy,export,observe}\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
+  },
+  "-h glued to a value": {
+   "err": "",
+   "exit": 0,
+   "out": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {verify,get,accuracy,export,observe}\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
+  },
+  "a missing --file": {
+   "err": "orinyx: [Errno 2] No such file or directory: '<work>/missing.json'\n",
+   "exit": 1,
+   "out": ""
+  },
+  "a run id that is not a UUID": {
+   "err": "orinyx: run_id must be a UUID\n",
+   "exit": 1,
+   "out": ""
+  },
+  "accuracy": {
+   "err": "",
+   "exit": 0,
+   "out": "ACCURACY (physician review)\n  False-flag rate 0.0% (0 of 1 flags; 0 of 1 carry a physician override, the rest stand)\n  Severity corrections 1 / Other overrides 0\n  Catch rate not estimated (miss review incomplete)\n"
+  },
+  "accuracy --help": {
+   "err": "",
+   "exit": 0,
+   "out": "usage: orinyx accuracy [-h] [--json] run_id\n\npositional arguments:\n  run_id\n\noptions:\n  -h, --help  show this help message and exit\n  --json\n"
+  },
+  "accuracy --json": {
+   "err": "",
+   "exit": 0,
+   "out": "{\n  \"reviewed\": true,\n  \"totalFlags\": 1,\n  \"unflaggedTotal\": 2,\n  \"accuracy\": {\n    \"falseFlags\": 0,\n    \"falseFlagRate\": 0.0,\n    \"severityCorrections\": 1,\n    \"other\": 0,\n    \"catchRate\": null,\n    \"catchRateUnavailable\": \"miss review incomplete\"\n  },\n  \"runId\": \"0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55\"\n}\n"
+  },
+  "an ambiguous option without a value": {
+   "err": "usage: orinyx verify [-h] --file FILE [--tool TOOL]\n                     [--tool-version TOOL_VERSION] [--check-interactions]\n                     [--json]\norinyx verify: error: ambiguous option: --to could match --tool, --tool-version\n",
+   "exit": 1,
+   "out": ""
+  },
+  "an unknown short option": {
+   "err": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: -x\n",
+   "exit": 1,
+   "out": ""
+  },
+  "export --help": {
+   "err": "",
+   "exit": 0,
+   "out": "usage: orinyx export [-h] [--format {csv,pdf,report}] --out OUT run_id\n\npositional arguments:\n  run_id\n\noptions:\n  -h, --help            show this help message and exit\n  --format {csv,pdf,report}\n  --out OUT\n"
+  },
+  "export csv": {
+   "err": "",
+   "exit": 0,
+   "out": "wrote <work>/out.file (text/csv, 48 bytes)\n"
+  },
+  "export pdf": {
+   "err": "",
+   "exit": 0,
+   "out": "wrote <work>/out.file (application/pdf, 19 bytes)\n"
+  },
+  "export report": {
+   "err": "",
+   "exit": 0,
+   "out": "wrote <work>/out.file (application/pdf, 19 bytes)\n"
+  },
+  "export without --out": {
+   "err": "usage: orinyx export [-h] [--format {csv,pdf,report}] --out OUT run_id\norinyx export: error: the following arguments are required: --out\n",
+   "exit": 1,
+   "out": ""
+  },
+  "get": {
+   "err": "",
+   "exit": 2,
+   "out": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.4.2, 2026-10-04T23:10:00+00:00)\nChecked 3 claims: 1 flagged, 1 supported, 1 abstained.\n\nFLAGS (1)\n1. [MODERATE] warfarin 20 mg daily (dose)\n   Why: Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\n   Severity: Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n   Citation: openFDA, Dosage and Administration (§2) - id abc-123 - Coumadin prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\n\nSUPPORTED (1) - consistent with the cited label text; not a judgment that the order suits a patient:\n1. warfarin 5 mg daily (dose)\n   Citation: INCOMPLETE - do not rely on this verdict\n\nABSTAINED (1) - NOT VERIFIED; Orinyx could not check these, which does not mean they are correct:\n1. warfarin for migraine (indication)\n   Why not: The label does not address this indication.\n\nACCURACY (physician review)\n  False-flag rate 0.0% (0 of 1 flags; 0 of 1 carry a physician override, the rest stand)\n  Severity corrections 1 / Other overrides 0\n  Catch rate not estimated (miss review incomplete)\n\nOrinyx flags; the clinician decides.\n"
+  },
+  "get --help": {
+   "err": "",
+   "exit": 0,
+   "out": "usage: orinyx get [-h] [--json] run_id\n\npositional arguments:\n  run_id\n\noptions:\n  -h, --help  show this help message and exit\n  --json\n"
+  },
+  "get --json": {
+   "err": "",
+   "exit": 2,
+   "out": "{\n  \"runId\": \"0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55\",\n  \"toolName\": \"acme-scribe\",\n  \"toolVersion\": \"1.4.2\",\n  \"createdAt\": \"2026-10-04T23:10:00+00:00\",\n  \"aggregate\": {\n    \"total\": 3,\n    \"supported\": 1,\n    \"contradicted\": 1,\n    \"abstain\": 1\n  },\n  \"verdicts\": [\n    {\n      \"verdictId\": 11,\n      \"rawText\": \"warfarin 20 mg daily\",\n      \"drug\": \"warfarin\",\n      \"claimType\": \"dose_range\",\n      \"verdict\": \"contradicted\",\n      \"severity\": \"moderate\",\n      \"explanation\": \"Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\",\n      \"severityReason\": \"Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\",\n      \"citation\": {\n        \"source\": \"openFDA\",\n        \"section\": \"Dosage and Administration (\\u00a72)\",\n        \"sourceId\": \"abc-123\",\n        \"citation\": \"Coumadin prescribing information\",\n        \"url\": \"https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\"\n      }\n    },\n    {\n      \"verdictId\": 12,\n      \"rawText\": \"warfarin 5 mg daily\",\n      \"drug\": \"warfarin\",\n      \"claimType\": \"dose_range\",\n      \"verdict\": \"supported\",\n      \"severity\": \"none\",\n      \"explanation\": \"Within the labelled range.\",\n      \"severityReason\": null,\n      \"citation\": {\n        \"source\": \"openFDA\",\n        \"section\": \"\\u00a72\",\n        \"citation\": \"x\",\n        \"url\": \"u\"\n      }\n    },\n    {\n      \"verdictId\": 13,\n      \"rawText\": \"warfarin for migraine\",\n      \"drug\": \"warfarin\",\n      \"claimType\": \"indication\",\n      \"verdict\": \"abstain\",\n      \"severity\": \"none\",\n      \"explanation\": \"The label does not address this indication.\",\n      \"severityReason\": null,\n      \"citation\": null\n    }\n  ]\n}\n"
+  },
+  "get a run that is not verified": {
+   "err": "",
+   "exit": 3,
+   "out": "Orinyx verification - run 5b0c2d4e (acme-scribe 1.4.2, 2026-10-04T23:10:00+00:00)\nChecked 1 claims: 0 flagged, 0 supported, 1 abstained.\n\nFLAGS (0) - NOT VERIFIED: Orinyx could not check every claim in this run, so this is not a safety clearance.\n\nSUPPORTED (0)\n\nABSTAINED (1) - NOT VERIFIED; Orinyx could not check these, which does not mean they are correct:\n1. warfarin for migraine (indication)\n   Why not: The label does not address this indication.\n\nACCURACY (physician review)\n  False-flag rate 0.0% (0 of 1 flags; 0 of 1 carry a physician override, the rest stand)\n  Severity corrections 1 / Other overrides 0\n  Catch rate not estimated (miss review incomplete)\n\nOrinyx flags; the clinician decides.\n"
+  },
+  "get without a run id": {
+   "err": "usage: orinyx get [-h] [--json] run_id\norinyx get: error: the following arguments are required: run_id\n",
+   "exit": 1,
+   "out": ""
+  },
+  "no command": {
+   "err": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\norinyx: error: the following arguments are required: command\n",
+   "exit": 1,
+   "out": ""
+  },
+  "no environment": {
+   "err": "Set ORINYX_API_URL and ORINYX_API_KEY in the environment.\n",
+   "exit": 1,
+   "out": ""
+  },
+  "no key": {
+   "err": "Set ORINYX_API_URL and ORINYX_API_KEY in the environment.\n",
+   "exit": 1,
+   "out": ""
+  },
+  "observe --help": {
+   "err": "",
+   "exit": 0,
+   "out": "usage: orinyx observe [-h] [--field FIELD] [--tool TOOL]\n                      [--tool-version TOOL_VERSION] [--check-interactions]\n                      [--json]\n                      paths [paths ...]\n\nRead an agent's saved output and verify every order in it, one run per record.\n.txt: the file is one record, one order per line. .jsonl / .json: each\nrecord's --field holds a list of orders or one string of them, one per line. A\ndirectory reads its .txt, .jsonl and .json files. Synthetic test data only: a\nrecord that looks like it holds a patient identifier refuses the whole run\nbefore anything is sent.\n\npositional arguments:\n  paths                 files or directories\n\noptions:\n  -h, --help            show this help message and exit\n  --field FIELD         dotted path to the orders in each JSON record\n                        (default: orders)\n  --tool TOOL           name of the AI tool whose output is being tested\n  --tool-version TOOL_VERSION\n                        its version\n  --check-interactions\n  --json                print the runs as JSON\n"
+  },
+  "observe a .jsonl with a skipped record": {
+   "err": "",
+   "exit": 2,
+   "out": "two.jsonl#0  run 0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55  3 claims: 1 flagged, 1 supported, 1 abstained\nObserved 1 record, 3 claims: 1 flagged, 1 supported, 1 abstained. Read one in full: orinyx get <run id>\nSkipped 1 record without 'orders': two.jsonl#1\n"
+  },
+  "observe a bad JSON line": {
+   "err": "orinyx: bad.jsonl#0: not JSON (Expecting property name enclosed in double quotes)\n",
+   "exit": 1,
+   "out": ""
+  },
+  "observe a clean .txt": {
+   "err": "",
+   "exit": 0,
+   "out": "one.txt#0  run 0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55  1 claims: 0 flagged, 1 supported, 0 abstained\nObserved 1 record, 1 claims: 0 flagged, 1 supported, 0 abstained. Read one in full: orinyx get <run id>\n"
+  },
+  "observe a directory --json": {
+   "err": "",
+   "exit": 2,
+   "out": "{\n  \"runs\": [\n    {\n      \"source\": \"one.txt#0\",\n      \"runId\": \"0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55\",\n      \"raw\": {\n        \"runId\": \"0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55\",\n        \"toolName\": \"acme-scribe\",\n        \"toolVersion\": \"1.4.2\",\n        \"createdAt\": \"2026-10-04T23:10:00+00:00\",\n        \"aggregate\": {\n          \"total\": 1,\n          \"supported\": 1,\n          \"contradicted\": 0,\n          \"abstain\": 0\n        },\n        \"verdicts\": [\n          {\n            \"verdictId\": 12,\n            \"rawText\": \"warfarin 5 mg daily\",\n            \"drug\": \"warfarin\",\n            \"claimType\": \"dose_range\",\n            \"verdict\": \"supported\",\n            \"severity\": \"none\",\n            \"explanation\": \"Within the labelled range.\",\n            \"severityReason\": null,\n            \"citation\": {\n              \"source\": \"openFDA\",\n              \"section\": \"\\u00a72\",\n              \"citation\": \"x\",\n              \"url\": \"u\"\n            }\n          }\n        ]\n      }\n    },\n    {\n      \"source\": \"two.jsonl#0\",\n      \"runId\": \"0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55\",\n      \"raw\": {\n        \"runId\": \"0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55\",\n        \"toolName\": \"acme-scribe\",\n        \"toolVersion\": \"1.4.2\",\n        \"createdAt\": \"2026-10-04T23:10:00+00:00\",\n        \"aggregate\": {\n          \"total\": 3,\n          \"supported\": 1,\n          \"contradicted\": 1,\n          \"abstain\": 1\n        },\n        \"verdicts\": [\n          {\n            \"verdictId\": 11,\n            \"rawText\": \"warfarin 20 mg daily\",\n            \"drug\": \"warfarin\",\n            \"claimType\": \"dose_range\",\n            \"verdict\": \"contradicted\",\n            \"severity\": \"moderate\",\n            \"explanation\": \"Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\",\n            \"severityReason\": \"Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\",\n            \"citation\": {\n              \"source\": \"openFDA\",\n              \"section\": \"Dosage and Administration (\\u00a72)\",\n              \"sourceId\": \"abc-123\",\n              \"citation\": \"Coumadin prescribing information\",\n              \"url\": \"https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\"\n            }\n          },\n          {\n            \"verdictId\": 12,\n            \"rawText\": \"warfarin 5 mg daily\",\n            \"drug\": \"warfarin\",\n            \"claimType\": \"dose_range\",\n            \"verdict\": \"supported\",\n            \"severity\": \"none\",\n            \"explanation\": \"Within the labelled range.\",\n            \"severityReason\": null,\n            \"citation\": {\n              \"source\": \"openFDA\",\n              \"section\": \"\\u00a72\",\n              \"citation\": \"x\",\n              \"url\": \"u\"\n            }\n          },\n          {\n            \"verdictId\": 13,\n            \"rawText\": \"warfarin for migraine\",\n            \"drug\": \"warfarin\",\n            \"claimType\": \"indication\",\n            \"verdict\": \"abstain\",\n            \"severity\": \"none\",\n            \"explanation\": \"The label does not address this indication.\",\n            \"severityReason\": null,\n            \"citation\": null\n          }\n        ]\n      }\n    }\n  ],\n  \"skipped\": [\n    \"two.jsonl#1\"\n  ]\n}\n"
+  },
+  "observe a file of the wrong kind": {
+   "err": "orinyx: path 1: expected a .txt, .jsonl or .json file, or a directory\n",
+   "exit": 1,
+   "out": ""
+  },
+  "observe without paths": {
+   "err": "usage: orinyx observe [-h] [--field FIELD] [--tool TOOL]\n                      [--tool-version TOOL_VERSION] [--check-interactions]\n                      [--json]\n                      paths [paths ...]\norinyx observe: error: the following arguments are required: paths\n",
+   "exit": 1,
+   "out": ""
+  },
+  "one unknown option": {
+   "err": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: --bogus\n",
+   "exit": 1,
+   "out": ""
+  },
+  "two unknown options": {
+   "err": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: --bogus --other\n",
+   "exit": 1,
+   "out": ""
+  },
+  "verify": {
+   "err": "",
+   "exit": 2,
+   "out": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.4.2, 2026-10-04T23:10:00+00:00)\nChecked 3 claims: 1 flagged, 1 supported, 1 abstained.\n\nFLAGS (1)\n1. [MODERATE] warfarin 20 mg daily (dose)\n   Why: Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\n   Severity: Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n   Citation: openFDA, Dosage and Administration (§2) - id abc-123 - Coumadin prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\n\nSUPPORTED (1) - consistent with the cited label text; not a judgment that the order suits a patient:\n1. warfarin 5 mg daily (dose)\n   Citation: INCOMPLETE - do not rely on this verdict\n\nABSTAINED (1) - NOT VERIFIED; Orinyx could not check these, which does not mean they are correct:\n1. warfarin for migraine (indication)\n   Why not: The label does not address this indication.\n\nOrinyx flags; the clinician decides.\n"
+  },
+  "verify --help": {
+   "err": "",
+   "exit": 0,
+   "out": "usage: orinyx verify [-h] --file FILE [--tool TOOL]\n                     [--tool-version TOOL_VERSION] [--check-interactions]\n                     [--json]\n\noptions:\n  -h, --help            show this help message and exit\n  --file FILE           JSON: a list of claims, or a full request body with an\n                        'assertions' list\n  --tool TOOL           name of the AI tool whose output is being tested\n  --tool-version TOOL_VERSION\n                        its version\n  --check-interactions\n  --json                print the API JSON instead of text\n"
+  },
+  "verify --json": {
+   "err": "",
+   "exit": 2,
+   "out": "{\n  \"runId\": \"0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55\",\n  \"toolName\": \"acme-scribe\",\n  \"toolVersion\": \"1.4.2\",\n  \"createdAt\": \"2026-10-04T23:10:00+00:00\",\n  \"aggregate\": {\n    \"total\": 3,\n    \"supported\": 1,\n    \"contradicted\": 1,\n    \"abstain\": 1\n  },\n  \"verdicts\": [\n    {\n      \"verdictId\": 11,\n      \"rawText\": \"warfarin 20 mg daily\",\n      \"drug\": \"warfarin\",\n      \"claimType\": \"dose_range\",\n      \"verdict\": \"contradicted\",\n      \"severity\": \"moderate\",\n      \"explanation\": \"Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\",\n      \"severityReason\": \"Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\",\n      \"citation\": {\n        \"source\": \"openFDA\",\n        \"section\": \"Dosage and Administration (\\u00a72)\",\n        \"sourceId\": \"abc-123\",\n        \"citation\": \"Coumadin prescribing information\",\n        \"url\": \"https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\"\n      }\n    },\n    {\n      \"verdictId\": 12,\n      \"rawText\": \"warfarin 5 mg daily\",\n      \"drug\": \"warfarin\",\n      \"claimType\": \"dose_range\",\n      \"verdict\": \"supported\",\n      \"severity\": \"none\",\n      \"explanation\": \"Within the labelled range.\",\n      \"severityReason\": null,\n      \"citation\": {\n        \"source\": \"openFDA\",\n        \"section\": \"\\u00a72\",\n        \"citation\": \"x\",\n        \"url\": \"u\"\n      }\n    },\n    {\n      \"verdictId\": 13,\n      \"rawText\": \"warfarin for migraine\",\n      \"drug\": \"warfarin\",\n      \"claimType\": \"indication\",\n      \"verdict\": \"abstain\",\n      \"severity\": \"none\",\n      \"explanation\": \"The label does not address this indication.\",\n      \"severityReason\": null,\n      \"citation\": null\n    }\n  ]\n}\n"
+  },
+  "verify --tool --tool-version --check-interactions": {
+   "err": "",
+   "exit": 2,
+   "out": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.4.2, 2026-10-04T23:10:00+00:00)\nChecked 3 claims: 1 flagged, 1 supported, 1 abstained.\n\nFLAGS (1)\n1. [MODERATE] warfarin 20 mg daily (dose)\n   Why: Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\n   Severity: Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n   Citation: openFDA, Dosage and Administration (§2) - id abc-123 - Coumadin prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\n\nSUPPORTED (1) - consistent with the cited label text; not a judgment that the order suits a patient:\n1. warfarin 5 mg daily (dose)\n   Citation: INCOMPLETE - do not rely on this verdict\n\nABSTAINED (1) - NOT VERIFIED; Orinyx could not check these, which does not mean they are correct:\n1. warfarin for migraine (indication)\n   Why not: The label does not address this indication.\n\nOrinyx flags; the clinician decides.\n"
+  },
+  "verify without --file": {
+   "err": "usage: orinyx verify [-h] --file FILE [--tool TOOL]\n                     [--tool-version TOOL_VERSION] [--check-interactions]\n                     [--json]\norinyx verify: error: the following arguments are required: --file\n",
+   "exit": 1,
+   "out": ""
+  }
+ }
+}

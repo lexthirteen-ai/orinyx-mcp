@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-labelledby="orinyx-title">
+  <title id="orinyx-title">Orinyx</title>
+  <defs>
+    <linearGradient id="orinyx-ignite" gradientUnits="userSpaceOnUse" x1="150" y1="150" x2="874" y2="874">
+      <stop offset="0" stop-color="#D4621A"/>
+      <stop offset="1" stop-color="#E8A020"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#orinyx-ignite)" stroke-width="74" stroke-linecap="round">
+    <line x1="512" y1="512" x2="383" y2="383"/>
+    <line x1="512" y1="512" x2="641" y2="383"/>
+    <line x1="512" y1="512" x2="383" y2="641"/>
+    <line x1="512" y1="512" x2="641" y2="641"/>
+  </g>
+  <g fill="url(#orinyx-ignite)" stroke="url(#orinyx-ignite)" stroke-width="64" stroke-linejoin="round">
+    <polygon points="512,130 540,512 512,894 484,512"/>
+    <polygon points="130,512 512,484 894,512 512,540"/>
+  </g>
+  <circle cx="512" cy="512" r="66" fill="#4FC3E8"/>
+</svg>

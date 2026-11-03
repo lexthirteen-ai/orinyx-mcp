@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "orinyx-mcp"
+dynamic = ["version"]
+description = "Orinyx MCP server, command-line tool and REST client: a client of the Orinyx medication-claim verification API."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=2.3",
+    "httpx>=0.27",
+    # The MCP SDK's client transport takes an httpx2 client (orinyx_mcp/gateway.py).
+    "httpx2>=2.13",
+    "pydantic>=2.11",
+    "starlette>=0.40",
+    "uvicorn>=0.29",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+# `orinyx verify --file claims.json`: the CLI wrapper for frameworks that do not speak MCP.
+orinyx = "orinyx_mcp.cli:main"
+# The network server (Streamable HTTP at /mcp), configured from the environment.
+orinyx-mcp = "orinyx_mcp.http:serve"
+
+[tool.hatch.version]
+path = "orinyx_mcp/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["orinyx_mcp"]
+# The connector icon (package data, read by orinyx_mcp/server.py). Hatchling already ships
+# every file under a listed package; `artifacts` keeps the icon in even if an ignore rule
+# ever matched it.
+artifacts = ["orinyx_mcp/assets/*.svg", "orinyx_mcp/assets/*.png"]
+
+[tool.ruff]
+line-length = 100
+src = ["orinyx_mcp", "tests", "evals"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
