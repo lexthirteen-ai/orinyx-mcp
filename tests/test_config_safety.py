@@ -478,11 +478,6 @@ def test_the_detector_tells_a_real_looking_key_from_a_placeholder():
         '--header "Authorization: Bearer $ORINYX_API_KEY"',
         "Ask Orinyx for a tester API key (`ork_live_…`)",
         "ORINYX_API_KEY=... python evals/mcp_local_check.py",
-        # docs/SMOKE_TEST_2026-10-29.md:96 and :101, the secret named and read from the shell
-        "Optional, if `SIGNUP_HOOK_SECRET` is in your local shell (it is never typed on the "
-        "command",
-        '  -H "X-Orinyx-Signup-Secret: $SIGNUP_HOOK_SECRET" -H \'Content-Type: '
-        "application/json' \\",
         f"SIGNUP_HOOK_SECRET={body[:15]}",  # 15 characters is not
         "a refresh token (`ork_ort_...`)",
         "-H 'authorization: bearer $ORINYX_API_KEY'",

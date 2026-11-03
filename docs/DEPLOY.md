@@ -7,10 +7,10 @@ Two apps, one database that only the API holds:
 | `orinyx-api` | orinyx-engine (private) | the API, the rules, Postgres, the OAuth authorization server |
 | `orinyx-mcp` | this one | the MCP endpoint at `https://orinyx-mcp.fly.dev/mcp`; no database, no key |
 
-The MCP app reaches the API over Fly's private network (`http://orinyx-api.internal:8000`,
+The MCP app reaches the API over Fly's private network (`<the API's private address>`,
 encrypted by the platform, never the public internet), which is why `fly.toml` sets
 `ORINYX_API_ALLOW_HTTP=true`. Agents are sent to the API's public origin for sign-in
-(`ORINYX_ISSUER_URL`). The API must list this endpoint in its `OAUTH_RESOURCE_URLS`.
+(`ORINYX_ISSUER_URL`). The API must list this endpoint as an allowed resource.
 
 ```bash
 fly apps create orinyx-mcp                      # once; the name is global on Fly

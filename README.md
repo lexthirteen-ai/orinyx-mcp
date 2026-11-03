@@ -2,7 +2,7 @@
   <img src="orinyx_mcp/assets/orinyx-star-96.png" alt="Orinyx star logo" width="96" height="96">
 </p>
 
-# Orinyx MCP Server
+<h1 align="center">Orinyx MCP Server</h1>
 
 Test your healthcare AI agent against cited FDA labels and coded answer keys. Deterministic:
 no LLM in the verdict.
@@ -915,6 +915,16 @@ Contributions are welcome. Setup, the rules a change must keep and how licensing
 ## Security
 
 Report a vulnerability privately, never in a public issue: see [SECURITY.md](SECURITY.md).
+
+## Acknowledgements
+
+The Orinyx API is built with open-source models from [OpenMed](https://huggingface.co/OpenMed),
+published on Hugging Face under the Apache-2.0 license. They read clinical text and screen it
+for identifiers. They only propose; cited rules decide every verdict. See the
+[OpenMed NER paper](https://arxiv.org/abs/2508.01630).
+
+This product uses a model fine-tuned on the Nemotron-PII dataset by NVIDIA Corporation,
+licensed under CC BY 4.0 (https://huggingface.co/datasets/nvidia/Nemotron-PII).
 
 ## License
 

@@ -15,11 +15,10 @@ All notable changes to this project are recorded here. The format is based on
 - `verify_medications`'s description asks for one patient's medications per call, and says
   that when the call states one route for a drug, that route is carried onto the drug's
   frequency claims that state none. Nothing is carried for a drug whose claims state two
-  routes or one Orinyx cannot read, or whose drug name names a different route (engine commit
-  `a69be4e`). The tool name and input schema are unchanged.
-- The IV acetaminophen known limit traces to engine commit `a69be4e`: oral-label frequency is
-  fixed on the orders path and on `verify_medications` structured runs; not CDS Hooks,
-  telehealth or transcript extraction; IVP is not read as a route. Its disclosed limits are
+  routes or one Orinyx cannot read, or whose drug name names a different route. The tool name
+  and input schema are unchanged.
+- The IV acetaminophen known limit: oral-label frequency is fixed on the orders path and on
+  `verify_medications` structured runs; IVP is not read as a route. Its disclosed limits are
   listed with it. See
   [Known limits](docs/RELEASE_NOTES_2026-11-02.md#known-limits).
 - The release notes are dated with the publication date (`docs/RELEASE_NOTES_2026-11-02.md`)

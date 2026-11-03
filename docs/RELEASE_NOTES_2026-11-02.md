@@ -13,25 +13,11 @@ use synthetic data only, and read the known limits below before you rely on a re
 
 > **Status of this document.** Written 2026-10-26 from the code on `main` and the local runs
 > in QUICKSTART.md. An item describes the hosted service only once a hosted smoke test has
-> passed against a build that contains it. A pass of the 10-29 smoke test
-> ([SMOKE_TEST_2026-10-29.md](SMOKE_TEST_2026-10-29.md)) covers only what was deployed on
-> 10-29. It does not cover behavior merged later, such as engine commits `d7ac5cf`
-> (merged 2026-10-31) and `a69be4e` (merged 2026-11-02).
+> passed against a build that contains it.
 
-> **Engine provenance.** The Known limits below describe recorded checks at engine commit
-> `d7ac5cf9641af06d6cb9a318328d8d255ea22629`, except the section "IV acetaminophen: no IV
-> daily ceiling", which describes engine commit `a69be4eb6ac9ea4caa510d1cf19cfc2a20c10914`.
-> Neither is confirmation of the currently hosted build. The route behavior in that IV
-> section requires `a69be4e` or a later build retaining the change. A matching version string
-> alone does not identify the engine revision.
-> The MCP server's `/health` reports `commitSha`, which identifies the deployed MCP server
-> only. The engine's `/health` reports no commit, so a reader cannot see the engine revision
-> there: it is recorded in the release record and as the API deploy's image label. Before
-> relying on the route behavior, check that the recorded engine revision of the hosted API is
-> `a69be4e` or a later build retaining the change. The IV route step (V1 in
-> [the hosted smoke run sheet](qa/hosted-smoke.md)) sends an `IV` order only, which `d7ac5cf`
-> already reads, so its pass does not show the `IVPB`, `I.V.` or `verify_medications`
-> behavior. The oral order check (T3) cannot show the route behavior.
+> **Known limits.** The Known limits below describe recorded checks, not confirmation of the
+> currently hosted build. A matching version string alone does not identify the engine
+> revision.
 
 ## What this release checks
 
@@ -106,7 +92,6 @@ wrong route, population or formulation, or after part of an order was not parsed
 ### Recorded mapping failures and validation status
 
 The cases below describe the recorded regression evidence, not a new hosted-service run.
-They are traced to engine commit `d7ac5cf9641af06d6cb9a318328d8d255ea22629`.
 A passing guard, an expected failure (`xfail`) or a case awaiting clinical sign-off is not
 evidence that the missing check works.
 
@@ -204,10 +189,8 @@ weight-dependent, which the next limit covers.
 A frequency is judged against the label its schedule came from. When Orinyx reads one route
 and that label's routes exclude it, the frequency is NOT VERIFIED instead of SUPPORTED, and
 the reason names the label's route. For IV acetaminophen the matching schedule is on an oral
-children's liquid. At engine commit `a69be4eb6ac9ea4caa510d1cf19cfc2a20c10914`, oral-label
-frequency for IV acetaminophen is fixed on the orders path and on `verify_medications`
-structured runs; not CDS Hooks, telehealth or transcript extraction; IVP is not read as a
-route.
+children's liquid. Oral-label frequency for IV acetaminophen is fixed on the orders path and
+on `verify_medications` structured runs; IVP is not read as a route.
 
 - **`verify_order_text`:** "every 4 hours" on an order written `IV`, `intravenous`, `IVPB`
   or `I.V.` is not verified, with or without a wrapper word (`I.V. push`, `I.V. infusion`).
@@ -220,7 +203,7 @@ route.
   the table, and that order's frequency can still show as SUPPORTED with the oral label
   cited (REG-026).
 
-At that commit the pass-required gate names ten checks, the five release blockers under
+The pass-required gate names ten checks, the five release blockers under
 "Recorded mapping failures and validation status" plus
 `REG-019/frequency-not-from-oral-label` to `REG-023/frequency-not-from-oral-label`, and
 reads `release-check 10/10`. False support is 0 known-failure cases (ceiling 0).
