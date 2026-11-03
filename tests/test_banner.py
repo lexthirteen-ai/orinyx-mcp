@@ -24,15 +24,18 @@ import io
 import json
 import os
 import re
+import subprocess
 import sys
+import tomllib
 from pathlib import Path
+from unittest import mock
 
 import pytest
 from orinyx_mcp import banner, cli
 
 from tests.test_cli_output_unchanged import BEFORE, ENV, _environment, _factory, _workspace, cases
 from tests.test_engine_contract import _canonical_sha256
-from tests.test_usage_errors import COLOUR_SWITCHES, PLAIN_TERMINAL, _run_module
+from tests.test_usage_errors import COLOUR_SWITCHES, PLAIN_TERMINAL, ROOT, _run_module
 
 PACKAGE = Path(cli.__file__).resolve().parent
 ASSET_FILE = PACKAGE / "assets" / "banner.json"
@@ -466,3 +469,226 @@ def test_a_broken_asset_means_no_banner_and_no_error(how, monkeypatch, tmp_path)
     assert banner.render(FakeTTY(), {}, 80) == ""
     assert run(["-h"]) == BEFORE["-h"]
     assert run([]) == {"exit": 1, "out": HELP, "err": ""}
+
+
+def _rehashed(**fields) -> dict:
+    """The asset with some fields changed and its sha256 recomputed, so it passes the check."""
+    body = {key: value for key, value in {**ASSET, **fields}.items() if key != "sha256"}
+    return {**body, "sha256": _canonical_sha256(body)}
+
+
+@pytest.mark.parametrize(
+    ("fields", "mono_breaks"),
+    [
+        ({"art": None}, True),
+        ({"width": "47"}, True),
+        ({"colors": {"base": None, "accent": 12}}, False),
+    ],
+    ids=["art not a list", "width not a number", "accent not a colour"],
+)
+def test_an_asset_that_passes_its_hash_but_cannot_be_drawn_means_no_banner(
+    fields, mono_breaks, monkeypatch
+):
+    """Any failure, not only the ones the loader raises: a self-consistent asset that cannot be
+    drawn gives "" from render, and `orinyx -h` stays the pinned help with no traceback."""
+    monkeypatch.setattr(sys, "platform", "linux")
+    broken = _rehashed(**fields)
+    monkeypatch.setattr(banner, "_read_asset", lambda: broken)
+    assert banner.render(FakeTTY(), {}, 80) == ""
+    if mono_breaks:
+        assert banner.render(FakeTTY(), {"NO_COLOR": "1"}, 80) == ""
+        assert run(["-h"]) == BEFORE["-h"]
+
+
+# --- with colour allowed ----------------------------------------------------------------------
+
+
+def test_with_colour_allowed_only_top_level_help_on_a_terminal_changes(monkeypatch, tmp_path):
+    """The replays above run with NO_COLOR=1, but a pipe from a CI job or a subprocess usually
+    has no NO_COLOR. With colour allowed, every fixture case off a terminal is still the pinned
+    output, and on a terminal (stdout and stderr both) only the four banner cases gain the
+    colour banner. PYTHON_COLORS=0 keeps argparse's own help plain."""
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setenv("TERM", "xterm-256color")
+    monkeypatch.setenv("PYTHON_COLORS", "0")
+    monkeypatch.delenv("NO_COLOR")
+    colour = banner.render(FakeTTY(), {}, 80)
+    assert _sha(colour) == ASSET["golden_sha256"]["color"]
+    wrong = []
+    for at, name in enumerate(sorted(cases(Path("unused")))):
+        for terminal in (False, True):
+            work = tmp_path / f"{at}-{terminal}"
+            work.mkdir()
+            _workspace(work)
+            argv, env = cases(work)[name]
+            out, err = (FakeTTY(), FakeTTY()) if terminal else (io.StringIO(), io.StringIO())
+            with mock.patch.dict(os.environ, {"COLUMNS": "80", "LINES": "24"}):
+                for variable in ("ORINYX_API_URL", "ORINYX_API_KEY"):
+                    os.environ.pop(variable, None)
+                os.environ.update(env)
+                with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                    try:
+                        code = cli.main(argv, client_factory=_factory)
+                    except SystemExit as exc:
+                        code = exc.code
+            got = {
+                "exit": code,
+                "out": out.getvalue().replace(str(work), "<work>"),
+                "err": err.getvalue().replace(str(work), "<work>"),
+            }
+            expected = BEFORE[name]
+            if terminal and name in TOP_HELP:
+                expected = {**expected, "out": colour + expected["out"]}
+            elif terminal and name == "no command":
+                expected = {"exit": 1, "out": colour + HELP, "err": ""}
+            if got != expected:
+                wrong.append((name, "terminal" if terminal else "pipe"))
+    assert wrong == []
+
+
+# --- the MCP servers, and the rest of the package -----------------------------------------------
+
+
+def _banner_marks(text: str) -> list[str]:
+    return [mark for mark in (ART[0], SUBTITLE.strip(), COMPACT, PLASMA) if mark in text]
+
+
+def test_the_stdio_server_on_a_terminal_writes_nothing_to_stdout(monkeypatch):
+    """stdout is the MCP protocol stream. With stdout and stderr both terminals, colour allowed
+    and no switch set (every condition under which the CLI shows its banner), the stdio server
+    writes no byte to stdout: refusing to start, as `serve`, and up to `server.run()`."""
+    pytest.importorskip("mcp")
+    from orinyx_mcp import __main__ as stdio
+    from orinyx_mcp import server
+
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setenv("TERM", "xterm-256color")
+    monkeypatch.setenv("COLUMNS", "100")
+    monkeypatch.delenv("NO_COLOR")
+    for name in list(os.environ):
+        if name.startswith(("ORINYX_", "MCP_", "DOWNSTREAM_MCP_")):
+            monkeypatch.delenv(name)
+    ran = []
+
+    class Started:
+        def run(self):
+            ran.append(True)
+
+    monkeypatch.setattr(server, "build_server", lambda *args, **kwargs: Started())
+
+    def stdio_main(argv: list[str], env: dict[str, str]) -> tuple[int, str, str]:
+        out, err = FakeTTY(), FakeTTY()
+        with mock.patch.dict(os.environ, env):
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = stdio.main(argv)
+        return code, out.getvalue(), err.getvalue()
+
+    for argv, env, code in (
+        ([], {}, 1),
+        (["serve"], {}, 1),
+        (["--no-such-word"], {}, 1),
+        ([], ENV, 0),
+    ):
+        got, out, err = stdio_main(argv, env)
+        assert (got, out) == (code, ""), (argv, got, out)
+        assert _banner_marks(err) == [], (argv, err)
+    assert ran == [True]
+
+
+def test_loading_the_rest_of_the_package_never_loads_the_banner_or_the_cli():
+    """The AST scan above cannot see a module imported by name at run time. A fresh interpreter
+    that imports every other module, then runs the stdio entry point and `serve` without a
+    configuration, has loaded neither `orinyx_mcp.banner` nor `orinyx_mcp.cli`."""
+    others = sorted(
+        path.stem for path in PACKAGE.glob("*.py") if path.stem not in {"banner", "cli"}
+    )
+    assert {"__main__", "http", "server", "tools", "arena"} <= set(others)
+    script = "\n".join(
+        [
+            "import importlib, sys",
+            f"for name in {others!r}:",
+            "    module = 'orinyx_mcp' if name == '__init__' else 'orinyx_mcp.' + name",
+            "    importlib.import_module(module)",
+            "from orinyx_mcp import __main__ as stdio",
+            "codes = (stdio.main([]), stdio.main(['serve']))",
+            "watched = ('orinyx_mcp.banner', 'orinyx_mcp.cli')",
+            "loaded = sorted(name for name in watched if name in sys.modules)",
+            "print(codes, loaded)",
+        ]
+    )
+    environment = {
+        name: value
+        for name, value in os.environ.items()
+        if not name.startswith(("ORINYX_", "DOWNSTREAM_MCP_", "MCP_", "PYTHON"))
+    }
+    done = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=ROOT,
+        env={**environment, "PYTHONPATH": str(ROOT)},
+        capture_output=True,
+        stdin=subprocess.DEVNULL,
+        timeout=120,
+        check=False,
+    )
+    assert (done.returncode, done.stdout) == (0, b"(1, 1) []\n"), done.stderr
+
+
+# --- no dependency, and the docs ----------------------------------------------------------------
+
+# C15 allows the generator's name only in banner.json, so this file spells it in parts.
+GENERATOR = "py" + "figlet"
+
+
+def test_the_banner_module_is_standard_library_only_and_holds_no_banner_data():
+    path = PACKAGE / "banner.py"
+    source = path.read_text(encoding="utf-8")
+    roots = {name.split(".")[0] for name in _imports(path)}
+    assert roots <= set(sys.stdlib_module_names), roots - set(sys.stdlib_module_names)
+    assert roots.isdisjoint({"ctypes", "colorama", GENERATOR})
+    assert re.findall(r"#[0-9A-Fa-f]{6}\b|\b\d+;\d+;\d+m", source) == []
+    for text in (*ART, SUBTITLE.strip(), COMPACT, "INDEPENDENT", "█", *SHADOW):
+        assert text not in source, text
+
+
+def test_no_new_dependency_and_the_wheel_lists_the_asset():
+    project_text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    lock = (ROOT / "requirements.lock").read_text(encoding="utf-8").lower()
+    for name in (GENERATOR, "colorama"):
+        assert name not in project_text.lower() and name not in lock, name
+    project = tomllib.loads(project_text)
+    wheel = project["tool"]["hatch"]["build"]["targets"]["wheel"]
+    assert "orinyx_mcp/assets/*.json" in wheel["artifacts"]
+    assert wheel["packages"] == ["orinyx_mcp"]
+
+
+def test_the_generator_is_named_only_in_the_asset_note_and_generator_fields():
+    word = GENERATOR.encode()
+    hits = []
+    for top, dirs, files in os.walk(ROOT):
+        dirs[:] = [
+            name
+            for name in dirs
+            if (not name.startswith(".") or name == ".github")
+            and name not in {"__pycache__", "node_modules", "dist", "build"}
+            and not name.endswith(".egg-info")
+        ]
+        for name in files:
+            path = Path(top, name)
+            if word in path.read_bytes().lower():
+                hits.append(path.relative_to(ROOT).as_posix())
+    assert hits == ["orinyx_mcp/assets/banner.json"]
+    fields = sorted(
+        key
+        for key, value in ASSET.items()
+        if GENERATOR in json.dumps(value, ensure_ascii=False).lower()
+    )
+    assert fields == ["_note", "generator"]
+
+
+def test_the_readme_documents_both_switches_in_cli_in_ci_only():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    before, _, rest = readme.partition("\n## CLI in CI\n")
+    section, _, after = rest.partition("\n## ")
+    assert section, "README has no 'CLI in CI' section"
+    assert "ORINYX_NO_BANNER" in section and "--no-banner" in section
+    assert "ORINYX_NO_BANNER" not in before + after and "--no-banner" not in before + after
