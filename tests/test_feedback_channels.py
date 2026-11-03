@@ -16,7 +16,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 NOTES = "docs/RELEASE_NOTES_2026-11-02.md"
-RELEASE_REPO = "lexthirteen-ai/orinyx-mcp-release"
+RELEASE_REPO = "lexthirteen-ai/orinyx-mcp"
 ADVISORIES_URL = f"https://github.com/{RELEASE_REPO}/security/advisories/new"
 SECURITY_PROHIBITION = (
     "Please do not open a public issue, discussion or pull request for a vulnerability."

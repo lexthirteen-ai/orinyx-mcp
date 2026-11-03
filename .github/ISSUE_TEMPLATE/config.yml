@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: "Report a security vulnerability"
-    url: "https://github.com/lexthirteen-ai/orinyx-mcp-release/security/advisories/new"
+    url: "https://github.com/lexthirteen-ai/orinyx-mcp/security/advisories/new"
     about: "Private report; never open a public issue."

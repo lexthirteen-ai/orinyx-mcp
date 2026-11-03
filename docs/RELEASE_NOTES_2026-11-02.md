@@ -17,7 +17,14 @@ use synthetic data only, and read the known limits below before you rely on a re
 
 > **Known limits.** The Known limits below describe recorded checks, not confirmation of the
 > currently hosted build. A matching version string alone does not identify the engine
-> revision.
+> revision. The hosted smoke test's IV route step sends an `IV` order only, so its pass does
+> not show the `IVPB`, `I.V.` or `verify_medications` behavior described below.
+
+> **Revised 2026-11-03.** Repository links now use `lexthirteen-ai/orinyx-mcp`. A tidy edit
+> earlier on 2026-11-03 had dropped two disclosures; both are restored here: the IV
+> acetaminophen fix does not cover CDS Hooks, telehealth or transcript extraction, and the
+> smoke test's IV step covers `IV` only. The Acknowledgements say which models the hosted
+> service does not run.
 
 ## What this release checks
 
@@ -190,7 +197,8 @@ A frequency is judged against the label its schedule came from. When Orinyx read
 and that label's routes exclude it, the frequency is NOT VERIFIED instead of SUPPORTED, and
 the reason names the label's route. For IV acetaminophen the matching schedule is on an oral
 children's liquid. Oral-label frequency for IV acetaminophen is fixed on the orders path and
-on `verify_medications` structured runs; IVP is not read as a route.
+on `verify_medications` structured runs; not CDS Hooks, telehealth or transcript extraction;
+IVP is not read as a route.
 
 - **`verify_order_text`:** "every 4 hours" on an order written `IV`, `intravenous`, `IVPB`
   or `I.V.` is not verified, with or without a wrapper word (`I.V. push`, `I.V. infusion`).
@@ -278,10 +286,10 @@ against.
 
 ## Reporting a problem
 
-Two channels, both on the public release repository `lexthirteen-ai/orinyx-mcp-release`:
+Two channels, both on the public release repository `lexthirteen-ai/orinyx-mcp`:
 
 - **A vulnerability:** GitHub private vulnerability reporting, from that repository's
-  **Security** tab (https://github.com/lexthirteen-ai/orinyx-mcp-release/security/advisories/new).
+  **Security** tab (https://github.com/lexthirteen-ai/orinyx-mcp/security/advisories/new).
   It is enabled at the repository's publication. Never open a public issue for a
   vulnerability.
 - **Anything else** (a wrong or missing flag, a refused order, an install or connection problem):

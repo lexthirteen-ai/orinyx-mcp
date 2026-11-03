@@ -134,7 +134,7 @@ read.
 The package is not on PyPI. Install it from a checkout (Python 3.11+):
 
 ```bash
-git clone https://github.com/lexthirteen-ai/orinyx-mcp-release.git && cd orinyx-mcp-release
+git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
 python -m venv .venv && . .venv/bin/activate
 pip install -e .
 ```
@@ -290,7 +290,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install orinyx-mcp (not on PyPI; from its repository)
-        run: pip install "git+https://github.com/lexthirteen-ai/orinyx-mcp-release.git@<commit>"
+        run: pip install "git+https://github.com/lexthirteen-ai/orinyx-mcp.git@<commit>"
       - name: Produce the agent's claims (your own step)
         run: python scripts/run_agent_on_fixtures.py --out out/claims.json
       - name: Check them with Orinyx

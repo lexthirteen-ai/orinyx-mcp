@@ -10,7 +10,7 @@ no LLM in the verdict.
 > **Not for clinical use. Orinyx is a testing and evaluation tool that checks medication claims against cited FDA label text. It does not give medical advice, and its results must not be used for diagnosis, treatment or prescribing decisions. A "supported" result means one claim matches the cited label text, not that an order is safe or appropriate. Submit synthetic test data only, never real patient information.**
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![CI](https://github.com/lexthirteen-ai/orinyx-mcp-release/actions/workflows/ci.yml/badge.svg)](https://github.com/lexthirteen-ai/orinyx-mcp-release/actions/workflows/ci.yml)
+[![CI](https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 
 > **Synthetic data only:** never send real patient records, names, dates or record numbers (claim
@@ -142,7 +142,7 @@ For the stdio server, the CLI or CI you need an Orinyx API URL and a key (`ork_l
 issued to you by Orinyx. The package is not published to PyPI; install it from a checkout.
 
 ```bash
-git clone https://github.com/lexthirteen-ai/orinyx-mcp-release.git && cd orinyx-mcp-release
+git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
 python -m venv .venv && . .venv/bin/activate
 pip install -e .                                   # Python 3.11+
 
@@ -918,13 +918,17 @@ Report a vulnerability privately, never in a public issue: see [SECURITY.md](SEC
 
 ## Acknowledgements
 
-The Orinyx API is built with open-source models from [OpenMed](https://huggingface.co/OpenMed),
-published on Hugging Face under the Apache-2.0 license. They read clinical text and screen it
-for identifiers. They only propose; cited rules decide every verdict. See the
-[OpenMed NER paper](https://arxiv.org/abs/2508.01630).
+The Orinyx API can optionally load open-source models from
+[OpenMed](https://huggingface.co/OpenMed), published on Hugging Face under the Apache-2.0
+license, to read clinical text and screen it for identifiers (see the
+[OpenMed NER paper](https://arxiv.org/abs/2508.01630)). These models are **not enabled on the
+hosted service**: there, orders are split and identifiers are screened by deterministic
+patterns, and no model decides a verdict. Where the models are loaded, they only propose;
+cited rules decide every verdict.
 
-This product uses a model fine-tuned on the Nemotron-PII dataset by NVIDIA Corporation,
-licensed under CC BY 4.0 (https://huggingface.co/datasets/nvidia/Nemotron-PII).
+Where the optional identifier screen is loaded, it uses a model fine-tuned on the Nemotron-PII
+dataset by NVIDIA Corporation, licensed under CC BY 4.0
+(https://huggingface.co/datasets/nvidia/Nemotron-PII).
 
 ## License
 
