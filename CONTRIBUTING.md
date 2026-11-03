@@ -8,7 +8,7 @@ keep. To report a vulnerability, follow [SECURITY.md](SECURITY.md), not a public
 Python 3.11 or later.
 
 ```bash
-git clone https://github.com/lexthirteen-ai/orinyx-mcp-release.git && cd orinyx-mcp-release
+git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
 python -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
 pytest                                   # no database, no engine: fakes stand in for the API

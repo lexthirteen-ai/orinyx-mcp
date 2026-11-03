@@ -9,9 +9,9 @@
 ## Reporting a vulnerability
 
 Report a vulnerability through GitHub private vulnerability reporting on the public release
-repository, `lexthirteen-ai/orinyx-mcp-release`: on that repository's page, open the
+repository, `lexthirteen-ai/orinyx-mcp`: on that repository's page, open the
 **Security** tab and choose **Report a vulnerability**
-(https://github.com/lexthirteen-ai/orinyx-mcp-release/security/advisories/new). The report is
+(https://github.com/lexthirteen-ai/orinyx-mcp/security/advisories/new). The report is
 visible only to you and the maintainers. Private vulnerability reporting is enabled on the
 release repository at publication. Please do not open a public issue, discussion or pull
 request for a vulnerability.
@@ -23,7 +23,7 @@ never include real patient data, credentials or keys, and replace any key with a
 ## Reporting anything else
 
 Everything that is not a vulnerability (a wrong or missing flag, a refused order, an install or
-connection problem, a confusing message) goes to **Issues** on `lexthirteen-ai/orinyx-mcp-release`
+connection problem, a confusing message) goes to **Issues** on `lexthirteen-ai/orinyx-mcp`
 using the "Report a problem" template, which asks for the version or commit, the full run id,
 what you expected and what happened, with synthetic data only.
 
