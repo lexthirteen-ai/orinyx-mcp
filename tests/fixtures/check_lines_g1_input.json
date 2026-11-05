@@ -1,0 +1,132 @@
+{
+  "_source": "The synthetic engine response that goldens G1 and G2 render, parsed by a script and not typed by hand. Test data, not a decision.",
+  "response": {
+    "runId": "5c2e7a10-8d4b-4f61-a3c9-2b7e0d9f4c18",
+    "toolName": "sample-scribe",
+    "toolVersion": "2.1",
+    "durationMs": 38,
+    "checksVersion": 1,
+    "aggregate": {
+      "total": 6,
+      "supported": 2,
+      "contradicted": 1,
+      "abstain": 2,
+      "unreadable": 1,
+      "supportedNote": "Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so."
+    },
+    "verdicts": [
+      {
+        "rawText": "wafarin 5 mg daily",
+        "claimType": "dose_range",
+        "verdict": "unreadable",
+        "unreadableFacets": [
+          {
+            "facet": "drug",
+            "reason": "'wafarin' is not a drug name Orinyx recognises (it is neither in the knowledge base nor on the RxNorm prescribable or brand name lists)"
+          }
+        ],
+        "check": "semantic_mapping",
+        "relatedChecks": []
+      },
+      {
+        "rawText": "warfarin 20 mg daily",
+        "claimType": "dose_range",
+        "verdict": "contradicted",
+        "severity": "moderate",
+        "explanation": "Dose 20 mg exceeds the explicitly stated maximum of 10 mg.",
+        "severityReason": "Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.",
+        "citation": {
+          "source": "openFDA",
+          "section": "Dosage and Administration (§2)",
+          "sourceId": "d4f1a8c2",
+          "citation": "Warfarin sodium tablets prescribing information",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d4f1a8c2"
+        },
+        "check": "medication_claims",
+        "relatedChecks": [
+          "source_evidence"
+        ]
+      },
+      {
+        "rawText": "lisinopril 10 mg once daily",
+        "claimType": "dose_range",
+        "verdict": "supported",
+        "explanation": "Within the labelled range.",
+        "citation": {
+          "source": "openFDA",
+          "section": "Dosage and Administration (§2)",
+          "sourceId": "7b3e90aa",
+          "citation": "Lisinopril tablets prescribing information",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7b3e90aa"
+        },
+        "check": "medication_claims",
+        "relatedChecks": [
+          "source_evidence"
+        ]
+      },
+      {
+        "rawText": "lisinopril for hypertension",
+        "claimType": "indication",
+        "verdict": "supported",
+        "explanation": "The label's indications include a match for 'hypertension'.",
+        "citation": {
+          "source": "openFDA",
+          "section": "Indications and Usage (§1)",
+          "sourceId": "7b3e90aa",
+          "citation": "Lisinopril tablets prescribing information",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7b3e90aa"
+        },
+        "check": "source_evidence",
+        "relatedChecks": []
+      },
+      {
+        "rawText": "lisinopril for migraine",
+        "claimType": "indication",
+        "verdict": "abstain",
+        "explanation": "The label does not address 'migraine' (possible legitimate off-label use); abstaining.",
+        "check": "source_evidence",
+        "relatedChecks": []
+      },
+      {
+        "rawText": "dapsone 100 mg daily",
+        "claimType": "dose_range",
+        "verdict": "abstain",
+        "explanation": "Drug 'dapsone' is not in the knowledge base; abstaining.",
+        "check": "semantic_mapping",
+        "relatedChecks": []
+      }
+    ],
+    "checks": [
+      {
+        "check": "medication_claims",
+        "label": "Medication Claims",
+        "status": "beta",
+        "rows": 2,
+        "supported": 1,
+        "contradicted": 1,
+        "abstain": 0,
+        "unreadable": 0
+      },
+      {
+        "check": "semantic_mapping",
+        "label": "Semantic Mapping",
+        "status": "beta",
+        "rows": 2,
+        "supported": 0,
+        "contradicted": 0,
+        "abstain": 1,
+        "unreadable": 1
+      },
+      {
+        "check": "source_evidence",
+        "label": "Source Evidence",
+        "status": "beta",
+        "rows": 2,
+        "supported": 1,
+        "contradicted": 0,
+        "abstain": 1,
+        "unreadable": 0
+      }
+    ]
+  }
+}

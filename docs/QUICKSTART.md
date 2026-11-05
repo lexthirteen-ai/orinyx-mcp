@@ -3,9 +3,10 @@
 Connect an agent to Orinyx, run a first check, add it to CI, and sit an exam. Synthetic data
 only throughout: never real patient records, names, dates or record numbers.
 
-For the hosted connector you need an Orinyx account; [First run](#first-run) starts with
-signing up. For the stdio server, the CLI or CI you need an Orinyx API URL and a key
-(`ork_live_...`) issued to you by Orinyx.
+For the hosted connector, the self-serve path, you need an Orinyx account and no key;
+[First run](#first-run) starts with signing up. Today the stdio server, the CLI and CI each
+need an Orinyx API URL and a key (`ork_live_...`) issued to you by Orinyx; a self-serve
+sign-up does not include a key.
 
 ## First run
 
@@ -131,7 +132,7 @@ read.
 
 ## Install
 
-The package is not on PyPI. Install it from a checkout (Python 3.11+):
+Install it from a checkout (Python 3.11+):
 
 ```bash
 git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
@@ -139,16 +140,30 @@ python -m venv .venv && . .venv/bin/activate
 pip install -e .
 ```
 
-This gives you `python -m orinyx_mcp` (the stdio MCP server), the `orinyx` CLI and the
-`orinyx-mcp` network server. Agent hosts launch the stdio server themselves, so point them at
-the virtualenv's interpreter by absolute path (`/absolute/path/to/orinyx-mcp/.venv/bin/python`
-below); a bare `python` may not be the one you installed into.
+This gives you `orinyx-mcp stdio` (the stdio MCP server; `python -m orinyx_mcp` starts the
+same server), the `orinyx` CLI and the `orinyx-mcp` network server (no argument).
+`orinyx-mcp --version` prints the installed version, and any other argument exits 1 with a
+usage line. Agent hosts launch the stdio server themselves, so point them at the virtualenv's
+`orinyx-mcp` by absolute path (`/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp` below); a
+bare `orinyx-mcp` may not be the one you installed into. The stdio server and the CLI need
+an `ork_live_` key issued to you by Orinyx.
 
 ## Connect your client
 
 ### Claude Code
 
-Local (stdio). Export the two variables first so the key is not typed on the command line:
+Hosted (Streamable HTTP), the self-serve path, signing in with your Orinyx account:
+
+```bash
+claude mcp add --transport http orinyx https://orinyx-mcp.fly.dev/mcp
+```
+
+then run `/mcp` inside Claude Code and authenticate; you are sent to the Orinyx sign-in page.
+To use a key issued to you by Orinyx instead of signing in, add
+`--header "Authorization: Bearer $ORINYX_API_KEY"`.
+
+Local (stdio), with a key issued to you by Orinyx. Export the two variables first so the key
+is not typed on the command line:
 
 ```bash
 export ORINYX_API_URL=https://<your orinyx api>
@@ -156,31 +171,28 @@ export ORINYX_API_KEY=<your ork_live_ key>
 claude mcp add orinyx \
   -e ORINYX_API_URL="$ORINYX_API_URL" \
   -e ORINYX_API_KEY="$ORINYX_API_KEY" \
-  -- /absolute/path/to/orinyx-mcp/.venv/bin/python -m orinyx_mcp
+  -- /absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp stdio
 ```
-
-Hosted (Streamable HTTP), signing in with your Orinyx account:
-
-```bash
-claude mcp add --transport http orinyx https://orinyx-mcp.fly.dev/mcp
-```
-
-then run `/mcp` inside Claude Code and authenticate; you are sent to the Orinyx sign-in page.
-To use a key instead of signing in, add `--header "Authorization: Bearer $ORINYX_API_KEY"`.
 
 `claude mcp add` writes to the local scope by default; `-s project` writes `.mcp.json` into
-the repository, so do not use it with a key in `-e`.
+the repository, so do not use it with a key in `-e`. **Never commit a client config file that
+holds a key**, such as `claude_desktop_config.json`, `.cursor/mcp.json` or a project
+`.mcp.json`.
 
 ### Claude Desktop
 
-Edit `claude_desktop_config.json` (Settings > Developer > Edit Config) and restart:
+For the hosted connector, the self-serve path, add `https://orinyx-mcp.fly.dev/mcp` as a
+custom connector and sign in with your Orinyx account.
+
+For the local (stdio) server, with a key issued to you by Orinyx, edit
+`claude_desktop_config.json` (Settings > Developer > Edit Config) and restart:
 
 ```json
 {
   "mcpServers": {
     "orinyx": {
-      "command": "/absolute/path/to/orinyx-mcp/.venv/bin/python",
-      "args": ["-m", "orinyx_mcp"],
+      "command": "/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp",
+      "args": ["stdio"],
       "env": {
         "ORINYX_API_URL": "https://<your orinyx api>",
         "ORINYX_API_KEY": "<your ork_live_ key>"
@@ -190,8 +202,8 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config) and resta
 }
 ```
 
-For a hosted instance, add `https://orinyx-mcp.fly.dev/mcp` as a custom connector instead and sign in
-with your Orinyx account.
+**Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
+`.cursor/mcp.json` or a project `.mcp.json`.
 
 ### Check the connection
 
@@ -200,6 +212,8 @@ python evals/mcp_local_check.py                         # launches python -m ori
 python evals/mcp_local_check.py --url https://orinyx-mcp.fly.dev/mcp  # a hosted endpoint, key as bearer
 ```
 
+Both forms need an `ork_live_` key issued to you by Orinyx in the environment.
+
 It lists the tools, verifies three synthetic warfarin claims, reads the run back, exports it
 and confirms an unknown run id is a readable 404; exit 0 when every step answered as
 expected. Each run writes verification events that cannot be deleted, so point it at a
@@ -207,7 +221,8 @@ sandbox.
 
 ## Check from the shell
 
-The two first-run orders are bundled as files. `orinyx observe` sends each file as one run:
+The `orinyx` CLI needs an Orinyx API URL and an `ork_live_` key issued to you by Orinyx. The
+two first-run orders are bundled as files. `orinyx observe` sends each file as one run:
 
 ```bash
 orinyx observe examples/first-run/    # clean.txt exits 0 on its own, planted.txt 2; together 2
@@ -274,8 +289,9 @@ orinyx export <run id> --format report --out report.pdf   # csv | pdf | report; 
 `orinyx verify` exits 0 clean, 2 flagged (a `contradicted` claim or an `unreadable` order),
 3 not verified (no flag, but an abstain), 1 error. Usage errors exit 1, never 2.
 
-Have your test job write the agent's claims for a fixed set of synthetic inputs to a JSON
-file, then:
+CI needs an `ork_live_` key issued to you by Orinyx: hosted sign-in needs a browser, and a
+self-serve sign-up does not include a key. Have your test job write the agent's claims for a
+fixed set of synthetic inputs to a JSON file, then:
 
 ```yaml
 name: orinyx
@@ -289,7 +305,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install orinyx-mcp (not on PyPI; from its repository)
+      - name: Install orinyx-mcp (from its repository)
         run: pip install "git+https://github.com/lexthirteen-ai/orinyx-mcp.git@<commit>"
       - name: Produce the agent's claims (your own step)
         run: python scripts/run_agent_on_fixtures.py --out out/claims.json
@@ -314,9 +330,12 @@ jobs:
           path: out/orinyx.json
 ```
 
-Pin a commit in the install line. Use a key minted for CI so its rate-limit bucket and
-access-log identity are its own. If your team decides an abstain should not block a merge,
-change the `3)` branch to a warning; it still means the claim was not checked.
+Pin a commit in the install line. Use a separate key for CI, issued by Orinyx, so its
+rate-limit bucket and access-log identity are its own. Keep the key in a repository secret,
+as above. **Never commit a client config file that holds a key**, such as
+`claude_desktop_config.json`, `.cursor/mcp.json` or a project `.mcp.json`. If your team
+decides an abstain should not block a merge, change the `3)` branch to a warning; it still
+means the claim was not checked.
 
 What the CLI does not cover yet: exams and monograph lookups. Free-text orders are covered
 by `orinyx observe`, below.
@@ -325,7 +344,8 @@ by `orinyx observe`, below.
 
 `orinyx verify` checks the claims your agent hands it. `orinyx observe` reads what the agent
 already wrote, its saved transcript or trace export, and checks every order in it, so the
-agent does not choose what gets checked. Run it on the output of a fixed set of synthetic
+agent does not choose what gets checked. Like every `orinyx` command, it needs an
+`ork_live_` key issued to you by Orinyx. Run it on the output of a fixed set of synthetic
 inputs:
 
 ```bash

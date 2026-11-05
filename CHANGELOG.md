@@ -3,6 +3,40 @@
 All notable changes to this project are recorded here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.3] - 2026-11-05
+
+### Added
+
+- Every result row names the Orinyx check that produced it (beta). When Orinyx sends a run's
+  `checks` list, the tool text of `verify_order_text`, `verify_medications` and
+  `get_verification`, and the `orinyx verify` text output, carry a block headed
+  "Checks (beta release candidates; Orinyx names the check behind each row):". It names each
+  check by the label Orinyx sends, with the rows it produced and its own counts (flagged,
+  unreadable, supported, not verified); unreadable rows are never counted as flagged. The
+  block follows the existing output, so the earlier lines are unchanged and `Run id:` is
+  still the last line of tool text. A run without `checks` renders as in 0.1.2.
+- Install docs: a new `docs/TROUBLESHOOTING.md`, a "Supported environments" section in the
+  README and an "Official package" section in SECURITY.md. The README and SECURITY.md name
+  the only official package, `orinyx-mcp`, published only from
+  `github.com/lexthirteen-ai/orinyx-mcp`.
+- `orinyx-mcp stdio` starts the stdio MCP server, the same server as `python -m orinyx_mcp`,
+  and `orinyx-mcp --version` prints the installed version.
+
+### Changed
+
+- The server instructions say every result row names the Orinyx check that produced it
+  (Medication Claims, Semantic Mapping or Source Evidence), and that these checks are beta
+  release candidates, not production-ready, each deciding with deterministic rules only. The
+  descriptions of `verify_medications`, `verify_order_text` and `get_verification` say each
+  row names the check that produced it (beta). Tool names and input schemas are unchanged.
+- Install docs: the README's Installation section puts the hosted connector first as the
+  self-serve path, with Claude Code, Claude Desktop and Cursor steps, and says the stdio
+  server, the CLI and CI need a key issued by Orinyx. Every example that holds a key warns
+  never to commit a client config file that holds one.
+- `orinyx-mcp` with any argument other than `stdio` or `--version` (for example
+  `orinyx-mcp serve`) now exits 1 with a usage line instead of starting the network server.
+  `orinyx-mcp` with no argument is still the network server, unchanged.
+
 ## [0.1.2] - 2026-11-03
 
 ### Changed

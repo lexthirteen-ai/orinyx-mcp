@@ -20,7 +20,9 @@ Apache-2.0. This repository is a **client** of the [Orinyx](https://orinyx.io) A
 rules, no reference data and no verdict logic, and every tool call is an ordinary REST request
 carrying your own credential. The one check it runs itself is a pre-flight refusal: `orinyx
 observe` screens what it reads for identifier-shaped text (the engine's own pattern list)
-before sending anything. Access to the API is arranged with Orinyx.
+before sending anything. Sign up at [orinyx.io/developers](https://orinyx.io/developers) to use
+the hosted connector with your Orinyx account; a key for the stdio server, the CLI or CI is
+issued by Orinyx.
 
 ## Features
 
@@ -45,7 +47,7 @@ What is in the box:
 
 | Piece | Entry point | Use it from |
 |---|---|---|
-| MCP server, stdio | `python -m orinyx_mcp` | Claude Code, Claude Desktop, any local agent host |
+| MCP server, stdio | `orinyx-mcp stdio` or `python -m orinyx_mcp` | Claude Code, Claude Desktop, any local agent host |
 | MCP server, network (Streamable HTTP) | `orinyx-mcp` or `python -m orinyx_mcp serve` | hosted connectors, remote agents |
 | Command-line tool | `orinyx verify --file claims.json` | CI, shell pipelines, frameworks that do not speak MCP |
 | Observer (CLI) | `orinyx observe out/` | CI: checks every order in an agent's saved transcripts, not only the ones it reports |
@@ -70,9 +72,24 @@ or want a clinical decision. Orinyx does not do any of these: see
 
 ## Installation
 
-### Hosted connector (no install)
+Today a self-serve sign-up gives you the hosted connector only. The stdio server, the CLI and
+CI need a key issued by Orinyx.
 
-Nothing to install: this uses the hosted connector.
+| Path | For | What you need |
+|---|---|---|
+| [Hosted connector](#hosted-connector-the-self-serve-path) | the self-serve path | an Orinyx account from [orinyx.io/developers](https://orinyx.io/developers); no install and no key |
+| [Local stdio](#local-stdio-from-source), the [CLI](#cli-in-ci) and CI | a key holder | an Orinyx API URL and an `ork_live_` key issued to you by Orinyx |
+
+The only official package is `orinyx-mcp`, published only from
+`github.com/lexthirteen-ai/orinyx-mcp`. Anything else named orinyx isn't Orinyx's.
+
+If a step fails, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). What is tested is
+under [Supported environments](#supported-environments).
+
+### Hosted connector (the self-serve path)
+
+Nothing to install and no key: this uses the hosted connector, and you sign in with your
+Orinyx account.
 
 1. **Sign up** at [orinyx.io/developers](https://orinyx.io/developers).
 2. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` (Streamable HTTP) in your client.
@@ -80,66 +97,72 @@ Nothing to install: this uses the hosted connector.
 3. **Start a test.** Then ask your agent to call `start_a_test`. It lists what your
    account can run and the next step for each.
 
-A host that can send a header uses your API key as a bearer; one that can only be given a URL
-is sent to the Orinyx sign-in page (OAuth 2.1; the API is the authorization server) and you
-sign in with your Orinyx account.
+The client sends you to the Orinyx sign-in page (OAuth 2.1; the API is the authorization
+server) and you sign in with your Orinyx account. A self-serve account signs in this way and
+has no key.
 
-Per-client setup (Claude Code, Claude Desktop), a CI recipe and exam steps are in
-[docs/QUICKSTART.md](docs/QUICKSTART.md). Its [first run](docs/QUICKSTART.md#first-run) checks
-two bundled synthetic orders, one clean and one with a planted error, and shows the output to
-expect.
+Per-client setup, a CI recipe and exam steps are in [docs/QUICKSTART.md](docs/QUICKSTART.md).
+Its [first run](docs/QUICKSTART.md#first-run) checks two bundled synthetic orders, one clean
+and one with a planted error, and shows the output to expect.
 
-The local (stdio) blocks below start the server from a checkout: install it first, as under
-[Local stdio (from source)](#local-stdio-from-source).
-
-### Claude Code
-
-Hosted (Streamable HTTP), signing in with your Orinyx account:
+#### Claude Code
 
 ```bash
 claude mcp add --transport http orinyx https://orinyx-mcp.fly.dev/mcp
 ```
 
 then run `/mcp` inside Claude Code and authenticate; you are sent to the Orinyx sign-in page.
-To use a key instead of signing in, add `--header "Authorization: Bearer $ORINYX_API_KEY"`.
+To use a key issued to you by Orinyx instead of signing in, add
+`--header "Authorization: Bearer $ORINYX_API_KEY"`.
 
-Local (stdio). Export the two variables first so the key is not typed on the command line:
+**Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
+`.cursor/mcp.json` or a project `.mcp.json`.
 
-```bash
-export ORINYX_API_URL=https://<your orinyx api>
-export ORINYX_API_KEY=<your ork_live_ key>
-claude mcp add orinyx \
-  -e ORINYX_API_URL="$ORINYX_API_URL" \
-  -e ORINYX_API_KEY="$ORINYX_API_KEY" \
-  -- /absolute/path/to/orinyx-mcp/.venv/bin/python -m orinyx_mcp
-```
+#### Claude Desktop
 
-### Claude Desktop
+Add `https://orinyx-mcp.fly.dev/mcp` as a custom connector and sign in with your Orinyx
+account. A hosted connector is added as a connector, not in `claude_desktop_config.json`,
+which is for local servers.
 
-Edit `claude_desktop_config.json` (Settings > Developer > Edit Config) and restart:
+#### Cursor
+
+Add the connector to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
 
 ```json
-{
-  "mcpServers": {
-    "orinyx": {
-      "command": "/absolute/path/to/orinyx-mcp/.venv/bin/python",
-      "args": ["-m", "orinyx_mcp"],
-      "env": {
-        "ORINYX_API_URL": "https://<your orinyx api>",
-        "ORINYX_API_KEY": "<your ork_live_ key>"
-      }
-    }
-  }
-}
+{"mcpServers": {"orinyx": {"url": "https://orinyx-mcp.fly.dev/mcp"}}}
 ```
 
-For a hosted instance, add `https://orinyx-mcp.fly.dev/mcp` as a custom connector instead and sign in
-with your Orinyx account.
+then sign in with your Orinyx account.
+
+#### Codex
+
+```bash
+codex mcp add orinyx --url https://orinyx-mcp.fly.dev/mcp
+```
+
+Codex detects the sign-in and opens the Orinyx sign-in page in your browser. Sign in with your
+Orinyx account. If you missed it, or it expires later, run `codex mcp login orinyx`.
+
+The same server in `~/.codex/config.toml`, if you prefer to edit it (then run
+`codex mcp login orinyx` to sign in):
+
+```toml
+[mcp_servers.orinyx]
+url = "https://orinyx-mcp.fly.dev/mcp"
+```
+
+To use a key issued to you by Orinyx instead of signing in, add
+`bearer_token_env_var = "ORINYX_API_KEY"` to that table and export the key in the shell that
+starts Codex. In the `codex` terminal UI, `/mcp` lists the servers Codex has connected.
+
+**Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
+`.cursor/mcp.json` or a project `.mcp.json`.
 
 ### Local stdio (from source)
 
-For the stdio server, the CLI or CI you need an Orinyx API URL and a key (`ork_live_...`)
-issued to you by Orinyx. The package is not published to PyPI; install it from a checkout.
+Today the stdio server, the CLI and CI each need an Orinyx API URL and a key (`ork_live_...`)
+issued to you by Orinyx; a self-serve sign-up does not include a key. Install it from a
+checkout.
 
 ```bash
 git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
@@ -148,7 +171,8 @@ pip install -e .                                   # Python 3.11+
 
 export ORINYX_API_URL=https://<your orinyx api>
 export ORINYX_API_KEY=<an ork_live_ key issued to you>
-python -m orinyx_mcp                               # speaks MCP on stdin/stdout
+orinyx-mcp stdio                                   # speaks MCP on stdin/stdout
+orinyx-mcp --version                               # prints the installed version
 ```
 
 The key is read from the environment only; no flag takes it. Register the server with your
@@ -158,8 +182,8 @@ agent host as a stdio server:
 {
   "mcpServers": {
     "orinyx": {
-      "command": "/absolute/path/to/orinyx-mcp/.venv/bin/python",
-      "args": ["-m", "orinyx_mcp"],
+      "command": "/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp",
+      "args": ["stdio"],
       "env": {
         "ORINYX_API_URL": "https://<your orinyx api>",
         "ORINYX_API_KEY": "<an ork_live_ key issued to you>"
@@ -169,8 +193,69 @@ agent host as a stdio server:
 }
 ```
 
-Agent hosts launch the stdio server themselves, so point them at the virtualenv's interpreter
-by absolute path; a bare `python` may not be the one you installed into.
+`python -m orinyx_mcp` starts the same stdio server. Any other argument to `orinyx-mcp`
+exits 1 with a usage line. Agent hosts launch the stdio server themselves, so point them at
+the virtualenv's `orinyx-mcp` by absolute path; a bare `orinyx-mcp` or `python` may not be
+the one you installed into.
+
+**Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
+`.cursor/mcp.json` or a project `.mcp.json`.
+
+#### Claude Code (stdio)
+
+Export the two variables first so the key is not typed on the command line. The key is one
+issued to you by Orinyx:
+
+```bash
+export ORINYX_API_URL=https://<your orinyx api>
+export ORINYX_API_KEY=<your ork_live_ key>
+claude mcp add orinyx \
+  -e ORINYX_API_URL="$ORINYX_API_URL" \
+  -e ORINYX_API_KEY="$ORINYX_API_KEY" \
+  -- /absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp stdio
+```
+
+**Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
+`.cursor/mcp.json` or a project `.mcp.json`.
+
+#### Claude Desktop (stdio)
+
+Edit `claude_desktop_config.json` (Settings > Developer > Edit Config) and restart. The key
+is one issued to you by Orinyx:
+
+```json
+{
+  "mcpServers": {
+    "orinyx": {
+      "command": "/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp",
+      "args": ["stdio"],
+      "env": {
+        "ORINYX_API_URL": "https://<your orinyx api>",
+        "ORINYX_API_KEY": "<your ork_live_ key>"
+      }
+    }
+  }
+}
+```
+
+**Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
+`.cursor/mcp.json` or a project `.mcp.json`.
+
+#### Codex (stdio)
+
+Add this to `~/.codex/config.toml`. `env_vars` forwards the two variables from the shell that
+starts Codex, so the key is never written into the file. The key is one issued to you by
+Orinyx:
+
+```toml
+[mcp_servers.orinyx]
+command = "/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp"
+args = ["stdio"]
+env_vars = ["ORINYX_API_URL", "ORINYX_API_KEY"]
+```
+
+**Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
+`.cursor/mcp.json`, `.codex/config.toml` or a project `.mcp.json`.
 
 ### Docker
 
@@ -189,6 +274,18 @@ docker run --rm -p 8000:8000 \
 `MCP_PUBLIC_URL` must be an https URL (plain http only for localhost). The Fly.io layout is in
 [docs/DEPLOY.md](docs/DEPLOY.md).
 
+### Supported environments
+
+| Item | Status |
+|---|---|
+| Python 3.11, 3.12 and 3.13 | tested in CI on Linux |
+| Python 3.14 | used in development; not tested in CI |
+| macOS | used in development; not tested in CI |
+| Windows | untested |
+| Transports | stdio (local) and Streamable HTTP (hosted) |
+
+The hosted connector reports its version at `https://orinyx-mcp.fly.dev/health`.
+
 ## Configuration
 
 ### Stdio server and CLI
@@ -196,7 +293,7 @@ docker run --rm -p 8000:8000 \
 | Variable | Meaning |
 |---|---|
 | `ORINYX_API_URL` | the Orinyx API (https; plain http only for localhost) |
-| `ORINYX_API_KEY` | an `ork_live_` key issued to you |
+| `ORINYX_API_KEY` | an `ork_live_` key issued to you by Orinyx |
 
 Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. The `DOWNSTREAM_MCP_*`
 variables under [Gateway](#gateway-another-mcp-server) work over stdio too.
@@ -798,7 +895,8 @@ orinyx observe <path>... [--field DOTTED.PATH] [--tool NAME] [--tool-version V] 
 
 `claims.json` is a JSON list of claims, or a full request body with an `assertions` list
 (its `toolName`, `toolVersion` and `checkInteractions` are used when the flags are absent).
-Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only.
+Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. Today the CLI, and so CI,
+needs an `ork_live_` key issued to you by Orinyx; a self-serve sign-up does not include one.
 
 `verify` takes structured claims. For orders as written, use `orinyx observe` or the
 `verify_order_text` tool. `observe` checks every order in an agent's saved output, one run per
@@ -813,9 +911,9 @@ Exit codes from `verify` and `get`:
 | Code | Meaning |
 |---|---|
 | 0 | clean: no flag and no abstain |
+| 1 | error: missing credentials, a usage error, an API refusal, a bad file |
 | 2 | flagged: at least one `contradicted` claim or one `unreadable` order |
 | 3 | not verified: no flag, but at least one claim abstained (unchecked, not safe) |
-| 1 | error: missing credentials, a usage error, an API refusal, a bad file |
 
 `observe` exits with the worst run's code, and 1 when it finds no orders at all. `accuracy`
 and `export` exit 0 on success and 1 on error. Usage errors exit 1, never 2, so a
@@ -841,6 +939,9 @@ A GitHub Actions step that fails the job on a flag (full recipe in
     esac
 ```
 
+Keep the key in a repository secret, as above. **Never commit a client config file that holds
+a key**, such as `claude_desktop_config.json`, `.cursor/mcp.json` or a project `.mcp.json`.
+
 Gaps in the CLI today:
 
 - No exam subcommands. A product sits an exam through the MCP tools; operators use
@@ -849,6 +950,8 @@ Gaps in the CLI today:
   `verify(..., context_label=...)` takes one).
 
 ## REST client
+
+The REST client needs an Orinyx API URL and an `ork_live_` key issued to you by Orinyx.
 
 ```python
 from orinyx_mcp.client import OrinyxApiError, OrinyxClient

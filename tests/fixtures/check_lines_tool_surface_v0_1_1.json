@@ -1,0 +1,831 @@
+{
+  "_source": "build_server(...)._tool_manager.list_tools() name -> parameters (the input schema), rendered by the v0.1.1 package itself (the v0.1.1 tree, imported first on the path) with mcp 2.3.0; default build, then ORINYX_ARENA_ENABLED=true. QA, 2026-11-03.",
+  "base": "v0.1.1",
+  "default": {
+    "verify_medications": {
+      "properties": {
+        "claims": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Claims",
+          "type": "array"
+        },
+        "tool_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Name"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        },
+        "check_interactions": {
+          "default": false,
+          "title": "Check Interactions",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "claims"
+      ],
+      "title": "verify_medicationsArguments",
+      "type": "object"
+    },
+    "verify_order_text": {
+      "properties": {
+        "orders": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Orders",
+          "type": "array"
+        },
+        "tool_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Name"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        },
+        "check_interactions": {
+          "default": false,
+          "title": "Check Interactions",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "orders"
+      ],
+      "title": "verify_order_textArguments",
+      "type": "object"
+    },
+    "get_verification": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_verificationArguments",
+      "type": "object"
+    },
+    "get_accuracy": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_accuracyArguments",
+      "type": "object"
+    },
+    "export_verification": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "fmt": {
+          "default": "csv",
+          "title": "Fmt",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "export_verificationArguments",
+      "type": "object"
+    },
+    "find_otc_monographs": {
+      "properties": {
+        "ingredient": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ingredient"
+        },
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "title_contains": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title Contains"
+        }
+      },
+      "title": "find_otc_monographsArguments",
+      "type": "object"
+    },
+    "get_otc_monograph": {
+      "properties": {
+        "monograph_id": {
+          "title": "Monograph Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "monograph_id"
+      ],
+      "title": "get_otc_monographArguments",
+      "type": "object"
+    },
+    "read_otc_monograph_section": {
+      "properties": {
+        "document_id": {
+          "title": "Document Id",
+          "type": "integer"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section"
+        },
+        "offset": {
+          "default": 0,
+          "title": "Offset",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "document_id"
+      ],
+      "title": "read_otc_monograph_sectionArguments",
+      "type": "object"
+    },
+    "find_fda_label": {
+      "properties": {
+        "drug": {
+          "title": "Drug",
+          "type": "string"
+        }
+      },
+      "required": [
+        "drug"
+      ],
+      "title": "find_fda_labelArguments",
+      "type": "object"
+    },
+    "read_fda_label_section": {
+      "properties": {
+        "set_id": {
+          "title": "Set Id",
+          "type": "string"
+        },
+        "section": {
+          "title": "Section",
+          "type": "string"
+        },
+        "offset": {
+          "default": 0,
+          "title": "Offset",
+          "type": "integer"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        },
+        "rxcui": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rxcui"
+        }
+      },
+      "required": [
+        "set_id",
+        "section"
+      ],
+      "title": "read_fda_label_sectionArguments",
+      "type": "object"
+    },
+    "start_a_test": {
+      "properties": {},
+      "title": "start_a_testArguments",
+      "type": "object"
+    },
+    "get_next_exam_case": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_next_exam_caseArguments",
+      "type": "object"
+    },
+    "get_exam_cases": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_exam_casesArguments",
+      "type": "object"
+    },
+    "submit_exam_answers": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        },
+        "answers": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Answers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "answers"
+      ],
+      "title": "submit_exam_answersArguments",
+      "type": "object"
+    },
+    "finish_exam": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        },
+        "allow_partial": {
+          "default": false,
+          "title": "Allow Partial",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "finish_examArguments",
+      "type": "object"
+    },
+    "get_exam_report": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_exam_reportArguments",
+      "type": "object"
+    }
+  },
+  "arena": {
+    "verify_medications": {
+      "properties": {
+        "claims": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Claims",
+          "type": "array"
+        },
+        "tool_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Name"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        },
+        "check_interactions": {
+          "default": false,
+          "title": "Check Interactions",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "claims"
+      ],
+      "title": "verify_medicationsArguments",
+      "type": "object"
+    },
+    "verify_order_text": {
+      "properties": {
+        "orders": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Orders",
+          "type": "array"
+        },
+        "tool_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Name"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        },
+        "check_interactions": {
+          "default": false,
+          "title": "Check Interactions",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "orders"
+      ],
+      "title": "verify_order_textArguments",
+      "type": "object"
+    },
+    "get_verification": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_verificationArguments",
+      "type": "object"
+    },
+    "get_accuracy": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_accuracyArguments",
+      "type": "object"
+    },
+    "export_verification": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "fmt": {
+          "default": "csv",
+          "title": "Fmt",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "export_verificationArguments",
+      "type": "object"
+    },
+    "find_otc_monographs": {
+      "properties": {
+        "ingredient": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ingredient"
+        },
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "title_contains": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title Contains"
+        }
+      },
+      "title": "find_otc_monographsArguments",
+      "type": "object"
+    },
+    "get_otc_monograph": {
+      "properties": {
+        "monograph_id": {
+          "title": "Monograph Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "monograph_id"
+      ],
+      "title": "get_otc_monographArguments",
+      "type": "object"
+    },
+    "read_otc_monograph_section": {
+      "properties": {
+        "document_id": {
+          "title": "Document Id",
+          "type": "integer"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section"
+        },
+        "offset": {
+          "default": 0,
+          "title": "Offset",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "document_id"
+      ],
+      "title": "read_otc_monograph_sectionArguments",
+      "type": "object"
+    },
+    "find_fda_label": {
+      "properties": {
+        "drug": {
+          "title": "Drug",
+          "type": "string"
+        }
+      },
+      "required": [
+        "drug"
+      ],
+      "title": "find_fda_labelArguments",
+      "type": "object"
+    },
+    "read_fda_label_section": {
+      "properties": {
+        "set_id": {
+          "title": "Set Id",
+          "type": "string"
+        },
+        "section": {
+          "title": "Section",
+          "type": "string"
+        },
+        "offset": {
+          "default": 0,
+          "title": "Offset",
+          "type": "integer"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        },
+        "rxcui": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rxcui"
+        }
+      },
+      "required": [
+        "set_id",
+        "section"
+      ],
+      "title": "read_fda_label_sectionArguments",
+      "type": "object"
+    },
+    "start_a_test": {
+      "properties": {},
+      "title": "start_a_testArguments",
+      "type": "object"
+    },
+    "get_next_exam_case": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_next_exam_caseArguments",
+      "type": "object"
+    },
+    "get_exam_cases": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_exam_casesArguments",
+      "type": "object"
+    },
+    "submit_exam_answers": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        },
+        "answers": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Answers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "answers"
+      ],
+      "title": "submit_exam_answersArguments",
+      "type": "object"
+    },
+    "finish_exam": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        },
+        "allow_partial": {
+          "default": false,
+          "title": "Allow Partial",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "finish_examArguments",
+      "type": "object"
+    },
+    "get_exam_report": {
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "get_exam_reportArguments",
+      "type": "object"
+    },
+    "start_arena_challenge": {
+      "properties": {
+        "challenge_id": {
+          "title": "Challenge Id",
+          "type": "string"
+        },
+        "context": {
+          "title": "Context",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "challenge_id",
+        "context",
+        "request_id"
+      ],
+      "title": "start_arena_challengeArguments",
+      "type": "object"
+    },
+    "submit_arena_answer": {
+      "properties": {
+        "battle_id": {
+          "title": "Battle Id",
+          "type": "string"
+        },
+        "attempt_id": {
+          "title": "Attempt Id",
+          "type": "string"
+        },
+        "answer": {
+          "title": "Answer",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "battle_id",
+        "attempt_id",
+        "answer",
+        "request_id"
+      ],
+      "title": "submit_arena_answerArguments",
+      "type": "object"
+    },
+    "start_arena_rematch": {
+      "properties": {
+        "battle_id": {
+          "title": "Battle Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "battle_id",
+        "request_id"
+      ],
+      "title": "start_arena_rematchArguments",
+      "type": "object"
+    },
+    "get_arena_battle": {
+      "properties": {
+        "battle_id": {
+          "title": "Battle Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "battle_id"
+      ],
+      "title": "get_arena_battleArguments",
+      "type": "object"
+    },
+    "get_arena_report": {
+      "properties": {
+        "battle_id": {
+          "title": "Battle Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "battle_id"
+      ],
+      "title": "get_arena_reportArguments",
+      "type": "object"
+    }
+  }
+}

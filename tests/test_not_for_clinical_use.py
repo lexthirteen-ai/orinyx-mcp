@@ -111,3 +111,63 @@ def test_release_notes_carry_the_statement():
     text = (ROOT / "docs" / "RELEASE_NOTES_2026-11-02.md").read_text(encoding="utf-8")
     head = text.split("\n## ", 1)[0]
     assert NOTES_TEXT in head
+
+
+# The check sentence (2026-11-03), in exactly the place the server instructions give it.
+INSTRUCTIONS_CHECK_SENTENCE = (
+    "Every result row names the Orinyx check that produced it (Medication Claims, Semantic "
+    "Mapping or Source Evidence). These checks are beta release candidates, not production-ready, "
+    "and each decides with deterministic rules only."
+)
+TOOL_CHECK_SENTENCE = "Each row names the check that produced it (beta)."
+GET_VERIFICATION_DESCRIPTION = (
+    "Not for clinical use. Orinyx checks medication claims against cited FDA label text for "
+    "testing and evaluation only. Do not use its results to diagnose, treat, prescribe or make "
+    "patient care decisions. Use synthetic test data only. Read a saved verification run (and "
+    "its physician-review accuracy, if any). Each row names the check that produced it (beta)."
+)
+
+
+def test_instructions_carry_the_check_sentence_in_its_place():
+    from orinyx_mcp.server import INSTRUCTIONS
+
+    assert INSTRUCTIONS.startswith(TOOL_TEXT + " ")
+    assert INSTRUCTIONS.count(INSTRUCTIONS_CHECK_SENTENCE) == 1
+    assert (
+        "no language model takes part in a verdict or a severity. "
+        + INSTRUCTIONS_CHECK_SENTENCE
+        + " 'supported' means"
+    ) in INSTRUCTIONS
+
+
+def _collapsed(text: str) -> str:
+    # A docstring's continuation indent is kept on 3.12 (the hosted image) and stripped on 3.13+.
+    return " ".join(text.split())
+
+
+def test_the_three_run_tools_name_the_check_sentence_in_its_place(monkeypatch):
+    pytest.importorskip("mcp")
+    from orinyx_mcp.server import build_server
+
+    monkeypatch.delenv("ORINYX_ARENA_ENABLED", raising=False)
+    descriptions = {k: _collapsed(v) for k, v in _descriptions(build_server(lambda: None)).items()}
+    assert (
+        f"{TOOL_CHECK_SENTENCE} Orders must be synthetic test data"
+        in descriptions["verify_order_text"]
+    )
+    assert (
+        f"{TOOL_CHECK_SENTENCE} Claims must be synthetic test data"
+        in descriptions["verify_medications"]
+    )
+    assert descriptions["get_verification"] == GET_VERIFICATION_DESCRIPTION
+    for name in ("verify_order_text", "verify_medications", "get_verification"):
+        assert descriptions[name].count(TOOL_CHECK_SENTENCE) == 1, name
+        assert descriptions[name].startswith(TOOL_TEXT), name
+
+
+def test_the_get_verification_sentence_sits_last_on_its_own_source_line():
+    source = (ROOT / "orinyx_mcp" / "server.py").read_text(encoding="utf-8")
+    assert (
+        '        """Read a saved verification run (and its physician-review accuracy, if any).\n'
+        '        Each row names the check that produced it (beta)."""\n'
+    ) in source
