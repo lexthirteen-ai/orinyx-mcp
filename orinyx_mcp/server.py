@@ -32,7 +32,10 @@ NOT_FOR_CLINICAL_USE = (
 INSTRUCTIONS = (
     NOT_FOR_CLINICAL_USE + " "
     "Orinyx checks medication claims against cited FDA label text with deterministic rules; "
-    "no language model takes part in a verdict or a severity. 'supported' means one claim "
+    "no language model takes part in a verdict or a severity. Every result row names the "
+    "Orinyx check that produced it (Medication Claims, Semantic Mapping or Source Evidence). "
+    "These checks are beta release candidates, not production-ready, and each decides with "
+    "deterministic rules only. 'supported' means one claim "
     "agrees with the cited label text, not that the order is appropriate. A flag "
     "('contradicted') means the cited label says otherwise, at a rule-derived severity "
     "(minor, moderate or major). 'unreadable' means the order cannot be read as written (a "
@@ -307,6 +310,7 @@ def build_server(
         names a different route; a route written only in a drug name is never carried.
         For an order as written ("warfarin 5 mg by mouth daily") use verify_order_text instead.
         Returns what was checked, every flag with its severity, reason and citation.
+        Each row names the check that produced it (beta).
         Claims must be synthetic test data, never real patient records or identifiers:
         rawText is stored in the audit record."""
         with _calling(client_for) as client:
@@ -329,9 +333,9 @@ def build_server(
         daily" (one drug per order, at most 50 orders of 500 characters). Orinyx splits
         each order into its dose, route and frequency claims itself, with no model, and
         checks each on its own, so a part it cannot read never hides one it can. Pass the
-        text unchanged: never correct, complete or re-spell an order first. Orders must be
-        synthetic test data, never real patient records or identifiers: the text is stored
-        in the audit record."""
+        text unchanged: never correct, complete or re-spell an order first. Each row names
+        the check that produced it (beta). Orders must be synthetic test data, never real
+        patient records or identifiers: the text is stored in the audit record."""
         with _calling(client_for) as client:
             return tools.verify_order_text(
                 client,
@@ -343,7 +347,8 @@ def build_server(
 
     @server.tool()
     def get_verification(run_id: str) -> str:
-        """Read a saved verification run (and its physician-review accuracy, if any)."""
+        """Read a saved verification run (and its physician-review accuracy, if any).
+        Each row names the check that produced it (beta)."""
         with _calling(client_for) as client:
             return tools.get_verification(client, run_id=run_id)
 

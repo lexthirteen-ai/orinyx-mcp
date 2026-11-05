@@ -31,6 +31,11 @@ what you expected and what happened, with synthetic data only.
 records, names, dates or record numbers, and no `ork_live_` key, sign-in token or other
 secret. Use synthetic data, and replace any key with a placeholder.
 
+## Official package
+
+The only official package is `orinyx-mcp`, published only from
+`github.com/lexthirteen-ai/orinyx-mcp`. Anything else named orinyx isn't Orinyx's.
+
 ## What this server is
 
 This repository is a **client** of the [Orinyx](https://orinyx.io) API: it holds no rules, no

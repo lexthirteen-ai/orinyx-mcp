@@ -325,7 +325,85 @@ def render_run_table(run: Mapping, accuracy: Mapping | None = None) -> str:
     completeness = _completeness_lines(run)
     if completeness:
         lines.extend(["", *completeness])
+    checks = _check_lines(run, _sections(unreadable, flags, supported, abstained), plain=False)
+    if checks:
+        lines.extend(["", *checks])
     return "\n".join(lines)
+
+
+# Engine `checks` (2026-11-03): which named beta check produced each row, as
+# NEW lines AFTER everything else, so today's rendering stays an exact prefix and `Run id:`
+# stays last in tool text. Built only from each row's `check` and the run's `checks` list: the
+# name is the engine's `label` (else its raw `check`), the counts are the entry's own (never
+# counted from rows, and unreadable is never folded into flagged), and the MCP holds no table
+# of checks. Nothing is appended when the engine sent no `checks`.
+CHECKS_HEADING = "Checks (beta release candidates; Orinyx names the check behind each row):"
+_CHECK_COUNTS = (
+    ("contradicted", "flagged"),
+    ("unreadable", "unreadable"),
+    ("supported", "supported"),
+    ("abstain", "not verified"),
+)
+
+
+def _sections(unreadable, flags, supported, abstained) -> list[tuple[str, list]]:
+    """The rows in print order, each section with its plain-form word."""
+    return [
+        ("Unreadable", unreadable),
+        ("Flags", flags),
+        ("Supported", supported),
+        ("Abstained", abstained),
+    ]
+
+
+def _check_refs(check, sections: list[tuple[str, list]], *, plain: bool) -> str:
+    """The rows whose `check` is this one: `rows 1, 6` by table number, or
+    `Unreadable 1; Abstained 2` by section and in-section number in the plain form."""
+    table: list[int] = []
+    named: list[str] = []
+    number = 0
+    for word, rows in sections:
+        hits: list[int] = []
+        for index, row in enumerate(rows, start=1):
+            number += 1
+            if check is not None and row.get("check") == check:
+                hits.append(index)
+                table.append(number)
+        if hits:
+            named.append(f"{word} {', '.join(str(n) for n in hits)}")
+    if plain:
+        return "; ".join(named)
+    if not table:
+        return ""
+    return f"{'row' if len(table) == 1 else 'rows'} {', '.join(str(n) for n in table)}"
+
+
+def _check_counts(entry: Mapping) -> str:
+    counts = []
+    for field, word in _CHECK_COUNTS:
+        value = entry.get(field)
+        if isinstance(value, int) and not isinstance(value, bool) and value != 0:
+            counts.append(f"{value} {word}")
+    return ", ".join(counts)
+
+
+def _check_lines(run: Mapping, sections: list[tuple[str, list]], *, plain: bool) -> list[str]:
+    checks = run.get("checks")
+    if not isinstance(checks, list):
+        return []
+    lines = [CHECKS_HEADING]
+    for entry in checks:
+        if not isinstance(entry, Mapping):
+            continue
+        label = entry.get("label")
+        name = _cell(label if isinstance(label, str) and label else entry.get("check"))
+        if entry.get("rows") == 0:
+            lines.append(f"{name} (beta): no rows in this run")
+            continue
+        refs = _check_refs(entry.get("check"), sections, plain=plain)
+        body = " - ".join(part for part in (refs, _check_counts(entry)) if part)
+        lines.append(f"{name} (beta): {body}")
+    return lines
 
 
 def _completeness_lines(run: Mapping) -> list[str]:
@@ -416,10 +494,14 @@ def render_run_text(run: Mapping, accuracy: Mapping | None = None) -> str:
         lines.append("")
         lines.extend(accuracy_lines)
     lines.extend(["", FOOTER])
+    checks = _check_lines(run, _sections(unreadable, flags, supported, abstained), plain=True)
+    if checks:
+        lines.extend(["", *checks])
     return "\n".join(lines)
 
 
 __all__ = [
+    "CHECKS_HEADING",
     "CONTEXT_NOT_EVALUATED_LABEL",
     "FOOTER",
     "INCOMPLETE_CITATION",

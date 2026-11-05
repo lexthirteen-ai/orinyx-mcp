@@ -2,9 +2,9 @@
   "_note": "Contract between the Orinyx API (source of truth) and this client (hand copy). screen_patterns are the API's identifier-screen patterns (name -> regex pattern string, in order). unreadable_markers are the two substrings orinyx_mcp/text.py:_UNREADABLE_MARKERS keys on; the API's own test proves both are produced by its verdict engine. label_sections are the nine section names in orinyx_mcp/client.py LABEL_SECTIONS, which the API's test asserts against its own list. Maintenance: the API's test re-exports this file when a value changes, and this copy is then updated by hand (no shared package exists yet). This copy's note was reworded for publication on 2026-11-02; every value is the export's. sha256 is over the canonical JSON (sort_keys, compact separators, ensure_ascii=False) of this object without the sha256 key.",
   "exported_from": {
     "repo": "orinyx-engine",
-    "commit": "8a7be8bfccbe801f646ef140385a915ddb1844a1",
+    "commit": "c1d5e65225a688689d5d992c331caaa802aa6808",
     "branch_base": "main",
-    "date": "2026-10-21"
+    "date": "2026-11-03"
   },
   "screen_patterns": {
     "phone": "\\b\\d{3}[-. ]\\d{3}[-. ]\\d{4}\\b|\\(\\d{3}\\)\\s?\\d{3}[-. ]\\d{4}\\b",
@@ -39,5 +39,22 @@
     "readability_unit_facet_reason": "'md' is not a recognised dose unit",
     "verify_legacy_abstain_explanation": "'md' is not a recognised dose unit; the claim cannot be checked as written. Abstaining."
   },
-  "sha256": "96a4fac4e8835da603cb73ed5dabc8b1cb347659c120e77d835c30340a74f3d3"
+  "checks": {
+    "checksVersion": 1,
+    "names": [
+      "medication_claims",
+      "semantic_mapping",
+      "source_evidence"
+    ],
+    "labels": {
+      "medication_claims": "Medication Claims",
+      "semantic_mapping": "Semantic Mapping",
+      "source_evidence": "Source Evidence"
+    },
+    "statuses": [
+      "beta",
+      "stable"
+    ]
+  },
+  "sha256": "a1a6aebc91f05353b41421e3bf3d74014a91a7d25241dfc61348e50facb00e01"
 }

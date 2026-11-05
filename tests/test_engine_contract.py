@@ -137,3 +137,52 @@ def test_the_observe_pre_check_allows_a_dose_unit_after_a_long_number():
     assert screen_orders(["id 5000000"]) == "long_number"
     assert screen_orders(["5000000 units, call 555-123-4567"]) == "phone"
     assert screen.screen_strings(["penicillin G 5000000 units IM"]) == "long_number"
+
+
+def test_the_check_block_renders_every_name_the_engine_exports():
+    """The fixture's `checks` block is the engine's. Each exported name renders on its
+    own line with the engine's label; a name outside the list with no label renders raw. The
+    client holds no copy of the names or labels: they reach the text only from the run."""
+    block = _load()["checks"]
+    assert block["checksVersion"] == 1
+    names, labels = block["names"], block["labels"]
+    assert set(labels) == set(names)
+    rows = [
+        dict(RUN_JSON["verdicts"][0], verdict="supported", check=name, relatedChecks=[])
+        for name in [*names, "a_newer_check"]
+    ]
+    checks = [
+        {
+            "check": name,
+            "label": labels[name],
+            # Every exported status, "stable" included, renders "(beta)" in step 1.
+            "status": block["statuses"][index % len(block["statuses"])],
+            "rows": 1,
+            "supported": 1,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 0,
+        }
+        for index, name in enumerate(names)
+    ]
+    checks.append(
+        {
+            "check": "a_newer_check",
+            "status": "stable",
+            "rows": 1,
+            "supported": 1,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 0,
+        }
+    )
+    run = dict(RUN_JSON, verdicts=rows, checks=checks, checksVersion=block["checksVersion"])
+    run["aggregate"] = {"total": len(rows), "supported": len(rows), "contradicted": 0, "abstain": 0}
+    lines = render_run_table(run).split("\n")
+    at = lines.index(text.CHECKS_HEADING)
+    expected = [
+        f"{labels[name]} (beta): row {number} - 1 supported"
+        for number, name in enumerate(names, start=1)
+    ]
+    expected.append(f"a_newer_check (beta): row {len(names) + 1} - 1 supported")
+    assert lines[at + 1 :] == expected

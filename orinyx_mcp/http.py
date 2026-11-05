@@ -426,8 +426,35 @@ _NOT_STARTED = (
 )
 
 
-def serve() -> int:
-    """The `orinyx-mcp` command: the network server, configured from the environment."""
+# The only argument lists `orinyx-mcp` takes. The line names no argument it was given.
+_USAGE = "usage: orinyx-mcp | orinyx-mcp stdio | orinyx-mcp --version"
+
+
+def _run_as_the_command() -> bool:
+    """True when the program running is the `orinyx-mcp` console script. The script pip, uv
+    and pipx write imports this function into `__main__` and calls it with no argument, so
+    only then is `sys.argv` this command's own. An in-process caller (a test runner, or
+    `python -m orinyx_mcp serve`) does not hand its command line to the server."""
+    return getattr(sys.modules.get("__main__"), "serve", None) is serve
+
+
+def serve(argv: list[str] | None = None) -> int:
+    """The `orinyx-mcp` command. With no argument: the network server, configured from the
+    environment. `orinyx-mcp stdio`: the stdio server, the same code as `python -m
+    orinyx_mcp`. `orinyx-mcp --version`: the version on stdout. Any other argument list is
+    a usage error (exit 1) and starts nothing."""
+    if argv is None:
+        argv = sys.argv[1:] if _run_as_the_command() else []
+    if argv == ["stdio"]:
+        from orinyx_mcp.__main__ import main
+
+        return main([])
+    if argv == ["--version"]:
+        print(__version__)
+        return 0
+    if argv:
+        print(_USAGE, file=sys.stderr)
+        return 1
     import uvicorn
 
     from orinyx_mcp.gateway import Gateway, GatewayConfig

@@ -1,0 +1,599 @@
+{
+  "_note": "Exact-prefix evidence for the checks block. Each case is an engine response carrying check, relatedChecks, checksVersion and checks. 'table' and 'text' are what orinyx-mcp v0.1.1's render_run_table and render_run_text return for that response with those four fields removed. They were rendered by the v0.1.1 package itself (the v0.1.1 tree, imported ahead of any other copy), never typed. Do not edit them; regenerate from v0.1.1.",
+  "base": "v0.1.1",
+  "cases": {
+    "after_2_2": {
+      "run": {
+        "runId": "0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55",
+        "toolName": "acme-scribe",
+        "toolVersion": "1.0",
+        "createdAt": null,
+        "aggregate": {
+          "total": 1,
+          "supported": 0,
+          "contradicted": 1,
+          "abstain": 0
+        },
+        "verdicts": [
+          {
+            "verdictId": 1,
+            "assertionId": 1,
+            "rawText": "warfarin 20 mg daily",
+            "drug": "warfarin",
+            "rxcui": "11289",
+            "claimType": "dose_range",
+            "verdict": "contradicted",
+            "severity": "moderate",
+            "explanation": "too much",
+            "severityReason": "Rated Moderate because ...",
+            "citation": {
+              "source": "openFDA",
+              "section": "§2",
+              "citation": "c",
+              "url": "u"
+            },
+            "matchedRuleId": 5,
+            "structuredValue": {
+              "dose": 20,
+              "unit": "mg"
+            },
+            "check": "medication_claims",
+            "relatedChecks": [
+              "source_evidence"
+            ]
+          }
+        ],
+        "checksVersion": 1,
+        "checks": [
+          {
+            "check": "medication_claims",
+            "label": "Medication Claims",
+            "status": "beta",
+            "rows": 1,
+            "supported": 0,
+            "contradicted": 1,
+            "abstain": 0,
+            "unreadable": 0
+          },
+          {
+            "check": "semantic_mapping",
+            "label": "Semantic Mapping",
+            "status": "beta",
+            "rows": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 0
+          },
+          {
+            "check": "source_evidence",
+            "label": "Source Evidence",
+            "status": "beta",
+            "rows": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 0
+          }
+        ]
+      },
+      "accuracy": null,
+      "table": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.0)\nChecked 1 claims: 1 flagged, 0 supported, 0 abstained.\n\n| # | Claim | Part | Result | Severity | Why | Citation |\n|---|---|---|---|---|---|---|\n| 1 | warfarin 20 mg daily | dose | FLAGGED | MODERATE | too much | INCOMPLETE - do not rely on this verdict |\n\nWhy each severity:\nRow 1 (MODERATE): Rated Moderate because ...\n\nFLAGGED: the cited label says otherwise, at the severity shown.\n\nOrinyx flags; the clinician decides.",
+      "text": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.0)\nChecked 1 claims: 1 flagged, 0 supported, 0 abstained.\n\nFLAGS (1)\n1. [MODERATE] warfarin 20 mg daily (dose)\n   Why: too much\n   Severity: Rated Moderate because ...\n   Citation: INCOMPLETE - do not rely on this verdict\n\nSUPPORTED (0)\n\nABSTAINED (0)\n\nOrinyx flags; the clinician decides."
+    },
+    "completeness": {
+      "run": {
+        "runId": "0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55",
+        "toolName": "acme-scribe",
+        "toolVersion": "1.4.2",
+        "createdAt": "2026-10-04T23:10:00+00:00",
+        "aggregate": {
+          "total": 3,
+          "supported": 1,
+          "contradicted": 1,
+          "abstain": 1,
+          "supportedNote": "Supported means one claim agrees with its cited label text."
+        },
+        "verdicts": [
+          {
+            "verdictId": 11,
+            "rawText": "warfarin 20 mg daily",
+            "drug": "warfarin",
+            "claimType": "dose_range",
+            "verdict": "contradicted",
+            "severity": "moderate",
+            "explanation": "Dose 20 mg exceeds the explicitly stated maximum of 10 mg.",
+            "severityReason": "Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.",
+            "citation": {
+              "source": "openFDA",
+              "section": "Dosage and Administration (§2)",
+              "sourceId": "abc-123",
+              "citation": "Coumadin prescribing information",
+              "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123"
+            },
+            "check": "medication_claims",
+            "relatedChecks": [
+              "source_evidence"
+            ]
+          },
+          {
+            "verdictId": 12,
+            "rawText": "warfarin 5 mg daily",
+            "drug": "warfarin",
+            "claimType": "dose_range",
+            "verdict": "supported",
+            "severity": "none",
+            "explanation": "Within the labelled range.",
+            "severityReason": null,
+            "citation": {
+              "source": "openFDA",
+              "section": "§2",
+              "citation": "x",
+              "url": "u"
+            },
+            "check": "medication_claims",
+            "relatedChecks": [
+              "source_evidence"
+            ]
+          },
+          {
+            "verdictId": 13,
+            "rawText": "warfarin for migraine",
+            "drug": "warfarin",
+            "claimType": "indication",
+            "verdict": "abstain",
+            "severity": "none",
+            "explanation": "The label does not address this indication.",
+            "severityReason": null,
+            "citation": null,
+            "check": "source_evidence",
+            "relatedChecks": []
+          }
+        ],
+        "orders": [
+          {
+            "index": 0,
+            "text": "Acetaminophen 2000 mg by mouth every 4 hours",
+            "unparsed": [
+              "hours"
+            ],
+            "notes": []
+          },
+          {
+            "index": 1,
+            "text": "warfarin 5-10 mg IV",
+            "unparsed": [],
+            "notes": [
+              "dose not checked: range"
+            ]
+          },
+          {
+            "index": 2,
+            "text": "warfarin 5 mg daily",
+            "unparsed": [],
+            "notes": []
+          }
+        ],
+        "knowledgeCoverage": [
+          {
+            "drug": "warfarin",
+            "rxcui": "11289",
+            "numericDoseRule": true,
+            "note": null
+          },
+          {
+            "drug": "Metformin",
+            "rxcui": "6809",
+            "numericDoseRule": false,
+            "note": "No numeric dose-range rule covers this drug; abstaining."
+          }
+        ],
+        "durationMs": 12,
+        "checksVersion": 1,
+        "checks": [
+          {
+            "check": "medication_claims",
+            "label": "Medication Claims",
+            "status": "beta",
+            "rows": 2,
+            "supported": 1,
+            "contradicted": 1,
+            "abstain": 0,
+            "unreadable": 0
+          },
+          {
+            "check": "semantic_mapping",
+            "label": "Semantic Mapping",
+            "status": "beta",
+            "rows": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 0
+          },
+          {
+            "check": "source_evidence",
+            "label": "Source Evidence",
+            "status": "beta",
+            "rows": 1,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 1,
+            "unreadable": 0
+          }
+        ]
+      },
+      "accuracy": null,
+      "table": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.4.2, 2026-10-04T23:10:00+00:00)\nChecked 3 claims: 1 flagged, 1 supported, 1 abstained.\n\n| # | Claim | Part | Result | Severity | Why | Citation |\n|---|---|---|---|---|---|---|\n| 1 | warfarin 20 mg daily | dose | FLAGGED | MODERATE | Dose 20 mg exceeds the explicitly stated maximum of 10 mg. | [1] |\n| 2 | warfarin 5 mg daily | dose | SUPPORTED | - | Within the labelled range. | INCOMPLETE - do not rely on this verdict |\n| 3 | warfarin for migraine | indication | NOT VERIFIED (abstain) | - | The label does not address this indication. | - |\n\nCitations:\n[1] openFDA, Dosage and Administration (§2) - id abc-123 - Coumadin prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\n\nWhy each severity:\nRow 1 (MODERATE): Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n\nFLAGGED: the cited label says otherwise, at the severity shown.\nSUPPORTED: consistent with the cited label text; not a judgment that the order suits a patient.\nNOT VERIFIED: Orinyx could not check these, which does not mean they are correct.\n\nOrinyx flags; the clinician decides.\n\nOrder 1: not placed: hours\nOrder 2: note: dose not checked: range\nKnowledge base, Metformin: No numeric dose-range rule covers this drug; abstaining.\nNote: Supported means one claim agrees with its cited label text.\nOrinyx checking time: 12 ms",
+      "text": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.4.2, 2026-10-04T23:10:00+00:00)\nChecked 3 claims: 1 flagged, 1 supported, 1 abstained.\n\nFLAGS (1)\n1. [MODERATE] warfarin 20 mg daily (dose)\n   Why: Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\n   Severity: Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n   Citation: openFDA, Dosage and Administration (§2) - id abc-123 - Coumadin prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\n\nSUPPORTED (1) - consistent with the cited label text; not a judgment that the order suits a patient:\n1. warfarin 5 mg daily (dose)\n   Citation: INCOMPLETE - do not rely on this verdict\n\nABSTAINED (1) - NOT VERIFIED; Orinyx could not check these, which does not mean they are correct:\n1. warfarin for migraine (indication)\n   Why not: The label does not address this indication.\n\nOrinyx flags; the clinician decides."
+    },
+    "accuracy": {
+      "run": {
+        "runId": "0d8b1c6e-3f2a-4b0e-9c21-9d8e2f1a7b55",
+        "toolName": "acme-scribe",
+        "toolVersion": "1.4.2",
+        "createdAt": "2026-10-04T23:10:00+00:00",
+        "aggregate": {
+          "total": 3,
+          "supported": 1,
+          "contradicted": 1,
+          "abstain": 1
+        },
+        "verdicts": [
+          {
+            "verdictId": 11,
+            "rawText": "warfarin 20 mg daily",
+            "drug": "warfarin",
+            "claimType": "dose_range",
+            "verdict": "contradicted",
+            "severity": "moderate",
+            "explanation": "Dose 20 mg exceeds the explicitly stated maximum of 10 mg.",
+            "severityReason": "Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.",
+            "citation": {
+              "source": "openFDA",
+              "section": "Dosage and Administration (§2)",
+              "sourceId": "abc-123",
+              "citation": "Coumadin prescribing information",
+              "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123"
+            },
+            "check": "medication_claims",
+            "relatedChecks": [
+              "source_evidence"
+            ]
+          },
+          {
+            "verdictId": 12,
+            "rawText": "warfarin 5 mg daily",
+            "drug": "warfarin",
+            "claimType": "dose_range",
+            "verdict": "supported",
+            "severity": "none",
+            "explanation": "Within the labelled range.",
+            "severityReason": null,
+            "citation": {
+              "source": "openFDA",
+              "section": "§2",
+              "citation": "x",
+              "url": "u"
+            },
+            "check": "source_evidence",
+            "relatedChecks": []
+          },
+          {
+            "verdictId": 13,
+            "rawText": "warfarin for migraine",
+            "drug": "warfarin",
+            "claimType": "indication",
+            "verdict": "abstain",
+            "severity": "none",
+            "explanation": "The label does not address this indication.",
+            "severityReason": null,
+            "citation": null,
+            "check": "source_evidence",
+            "relatedChecks": []
+          }
+        ],
+        "checksVersion": 1,
+        "checks": [
+          {
+            "check": "medication_claims",
+            "label": "Medication Claims",
+            "status": "beta",
+            "rows": 1,
+            "supported": 0,
+            "contradicted": 1,
+            "abstain": 0,
+            "unreadable": 0
+          },
+          {
+            "check": "semantic_mapping",
+            "label": "Semantic Mapping",
+            "status": "beta",
+            "rows": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 0
+          },
+          {
+            "check": "source_evidence",
+            "label": "Source Evidence",
+            "status": "beta",
+            "rows": 2,
+            "supported": 1,
+            "contradicted": 0,
+            "abstain": 1,
+            "unreadable": 0
+          }
+        ]
+      },
+      "accuracy": {
+        "reviewed": true,
+        "totalFlags": 1,
+        "unflaggedTotal": 2,
+        "accuracy": {
+          "falseFlags": 0,
+          "falseFlagRate": 0.0,
+          "severityCorrections": 1,
+          "other": 0,
+          "catchRate": null,
+          "catchRateUnavailable": "miss review incomplete"
+        }
+      },
+      "table": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.4.2, 2026-10-04T23:10:00+00:00)\nChecked 3 claims: 1 flagged, 1 supported, 1 abstained.\n\n| # | Claim | Part | Result | Severity | Why | Citation |\n|---|---|---|---|---|---|---|\n| 1 | warfarin 20 mg daily | dose | FLAGGED | MODERATE | Dose 20 mg exceeds the explicitly stated maximum of 10 mg. | [1] |\n| 2 | warfarin 5 mg daily | dose | SUPPORTED | - | Within the labelled range. | INCOMPLETE - do not rely on this verdict |\n| 3 | warfarin for migraine | indication | NOT VERIFIED (abstain) | - | The label does not address this indication. | - |\n\nCitations:\n[1] openFDA, Dosage and Administration (§2) - id abc-123 - Coumadin prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\n\nWhy each severity:\nRow 1 (MODERATE): Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n\nFLAGGED: the cited label says otherwise, at the severity shown.\nSUPPORTED: consistent with the cited label text; not a judgment that the order suits a patient.\nNOT VERIFIED: Orinyx could not check these, which does not mean they are correct.\n\nACCURACY (physician review)\n  False-flag rate 0.0% (0 of 1 flags; 0 of 1 carry a physician override, the rest stand)\n  Severity corrections 1 / Other overrides 0\n  Catch rate not estimated (miss review incomplete)\n\nOrinyx flags; the clinician decides.",
+      "text": "Orinyx verification - run 0d8b1c6e (acme-scribe 1.4.2, 2026-10-04T23:10:00+00:00)\nChecked 3 claims: 1 flagged, 1 supported, 1 abstained.\n\nFLAGS (1)\n1. [MODERATE] warfarin 20 mg daily (dose)\n   Why: Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\n   Severity: Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n   Citation: openFDA, Dosage and Administration (§2) - id abc-123 - Coumadin prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=abc-123\n\nSUPPORTED (1) - consistent with the cited label text; not a judgment that the order suits a patient:\n1. warfarin 5 mg daily (dose)\n   Citation: INCOMPLETE - do not rely on this verdict\n\nABSTAINED (1) - NOT VERIFIED; Orinyx could not check these, which does not mean they are correct:\n1. warfarin for migraine (indication)\n   Why not: The label does not address this indication.\n\nACCURACY (physician review)\n  False-flag rate 0.0% (0 of 1 flags; 0 of 1 carry a physician override, the rest stand)\n  Severity corrections 1 / Other overrides 0\n  Catch rate not estimated (miss review incomplete)\n\nOrinyx flags; the clinician decides."
+    },
+    "unreadable": {
+      "run": {
+        "runId": "7a1c0e55-0000-4000-8000-000000000001",
+        "aggregate": {
+          "total": 2,
+          "supported": 0,
+          "contradicted": 0,
+          "abstain": 0,
+          "unreadable": 2
+        },
+        "verdicts": [
+          {
+            "rawText": "wafarin 5 mb by intramuscular injection",
+            "drug": "wafarin",
+            "claimType": "dose_range",
+            "verdict": "unreadable",
+            "severity": "none",
+            "explanation": "The order cannot be read as written: ...",
+            "unreadableFacets": [
+              {
+                "facet": "drug",
+                "value": "wafarin",
+                "reason": "'wafarin' is not a drug name Orinyx recognises"
+              },
+              {
+                "facet": "unit",
+                "value": "mb",
+                "reason": "'mb' is not a recognised dose unit"
+              }
+            ],
+            "suggestions": [
+              {
+                "facet": "drug",
+                "value": "wafarin",
+                "candidates": [
+                  "warfarin"
+                ],
+                "note": "n"
+              },
+              {
+                "facet": "unit",
+                "value": "mb",
+                "candidates": [
+                  "mL",
+                  "mg"
+                ],
+                "note": "n"
+              }
+            ],
+            "check": "semantic_mapping",
+            "relatedChecks": []
+          },
+          {
+            "rawText": "wafarin 5 mb by intramuscular injection",
+            "drug": "wafarin",
+            "claimType": "route",
+            "verdict": "unreadable",
+            "severity": "none",
+            "explanation": "The order cannot be read as written: ...",
+            "unreadableFacets": [
+              {
+                "facet": "drug",
+                "value": "wafarin",
+                "reason": "'wafarin' is not a drug name Orinyx recognises"
+              }
+            ],
+            "suggestions": [
+              {
+                "facet": "drug",
+                "value": "wafarin",
+                "candidates": [
+                  "warfarin"
+                ],
+                "note": "n"
+              }
+            ],
+            "check": "semantic_mapping",
+            "relatedChecks": []
+          }
+        ],
+        "checksVersion": 1,
+        "checks": [
+          {
+            "check": "medication_claims",
+            "label": "Medication Claims",
+            "status": "beta",
+            "rows": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 0
+          },
+          {
+            "check": "semantic_mapping",
+            "label": "Semantic Mapping",
+            "status": "beta",
+            "rows": 2,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 2
+          },
+          {
+            "check": "source_evidence",
+            "label": "Source Evidence",
+            "status": "beta",
+            "rows": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 0,
+            "unreadable": 0
+          }
+        ]
+      },
+      "accuracy": null,
+      "table": "Orinyx verification - run 7a1c0e55\nChecked 2 claims: 0 flagged, 2 unreadable as written, 0 supported, 0 abstained.\n\n| # | Claim | Part | Result | Severity | Why | Citation |\n|---|---|---|---|---|---|---|\n| 1 | wafarin 5 mb by intramuscular injection | dose | UNREADABLE - do not act on it | - | 'wafarin' is not a drug name Orinyx recognises; 'mb' is not a recognised dose unit | - |\n| 2 | wafarin 5 mb by intramuscular injection | route | UNREADABLE - do not act on it | - | 'wafarin' is not a drug name Orinyx recognises | - |\n\nPossible intended (for the clinician to confirm; Orinyx did not check the order under any of these):\nRow 1, drug 'wafarin': warfarin\nRow 1, unit 'mb': mL or mg\nRow 2, drug 'wafarin': warfarin\n\nUNREADABLE: these orders cannot be read as written. Do not act on them until the clinician clarifies them; Orinyx did not check them against any label. Never assume a correction (a name or unit Orinyx cannot read is not a typo anyone may guess at).\nNOT VERIFIED: Orinyx could not check every claim in this run, so this is not a safety clearance.\n\nOrinyx flags; the clinician decides.",
+      "text": "Orinyx verification - run 7a1c0e55\nChecked 2 claims: 0 flagged, 2 unreadable as written, 0 supported, 0 abstained.\n\nUNREADABLE AS WRITTEN (2) - do not act on these until the clinician clarifies them; Orinyx did not check them against any label, and a correction must never be assumed:\n1. wafarin 5 mb by intramuscular injection (dose)\n   Why: 'wafarin' is not a drug name Orinyx recognises; 'mb' is not a recognised dose unit\n2. wafarin 5 mb by intramuscular injection (route)\n   Why: 'wafarin' is not a drug name Orinyx recognises\nPossible intended (for the clinician to confirm; Orinyx did not check the order under any of these):\n   Unreadable 1, drug 'wafarin': warfarin\n   Unreadable 1, unit 'mb': mL or mg\n   Unreadable 2, drug 'wafarin': warfarin\n\nFLAGS (0) - NOT VERIFIED: Orinyx could not check every claim in this run, so this is not a safety clearance.\n\nSUPPORTED (0)\n\nABSTAINED (0)\n\nOrinyx flags; the clinician decides."
+    },
+    "all_three": {
+      "run": {
+        "runId": "5c2e7a10-8d4b-4f61-a3c9-2b7e0d9f4c18",
+        "toolName": "sample-scribe",
+        "toolVersion": "2.1",
+        "durationMs": 38,
+        "checksVersion": 1,
+        "aggregate": {
+          "total": 6,
+          "supported": 2,
+          "contradicted": 1,
+          "abstain": 2,
+          "unreadable": 1,
+          "supportedNote": "Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so."
+        },
+        "verdicts": [
+          {
+            "rawText": "wafarin 5 mg daily",
+            "claimType": "dose_range",
+            "verdict": "unreadable",
+            "unreadableFacets": [
+              {
+                "facet": "drug",
+                "reason": "'wafarin' is not a drug name Orinyx recognises (it is neither in the knowledge base nor on the RxNorm prescribable or brand name lists)"
+              }
+            ],
+            "check": "semantic_mapping",
+            "relatedChecks": []
+          },
+          {
+            "rawText": "warfarin 20 mg daily",
+            "claimType": "dose_range",
+            "verdict": "contradicted",
+            "severity": "moderate",
+            "explanation": "Dose 20 mg exceeds the explicitly stated maximum of 10 mg.",
+            "severityReason": "Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.",
+            "citation": {
+              "source": "openFDA",
+              "section": "Dosage and Administration (§2)",
+              "sourceId": "d4f1a8c2",
+              "citation": "Warfarin sodium tablets prescribing information",
+              "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d4f1a8c2"
+            },
+            "check": "medication_claims",
+            "relatedChecks": [
+              "source_evidence"
+            ]
+          },
+          {
+            "rawText": "lisinopril 10 mg once daily",
+            "claimType": "dose_range",
+            "verdict": "supported",
+            "explanation": "Within the labelled range.",
+            "citation": {
+              "source": "openFDA",
+              "section": "Dosage and Administration (§2)",
+              "sourceId": "7b3e90aa",
+              "citation": "Lisinopril tablets prescribing information",
+              "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7b3e90aa"
+            },
+            "check": "medication_claims",
+            "relatedChecks": [
+              "source_evidence"
+            ]
+          },
+          {
+            "rawText": "lisinopril for hypertension",
+            "claimType": "indication",
+            "verdict": "supported",
+            "explanation": "The label's indications include a match for 'hypertension'.",
+            "citation": {
+              "source": "openFDA",
+              "section": "Indications and Usage (§1)",
+              "sourceId": "7b3e90aa",
+              "citation": "Lisinopril tablets prescribing information",
+              "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7b3e90aa"
+            },
+            "check": "source_evidence",
+            "relatedChecks": []
+          },
+          {
+            "rawText": "lisinopril for migraine",
+            "claimType": "indication",
+            "verdict": "abstain",
+            "explanation": "The label does not address 'migraine' (possible legitimate off-label use); abstaining.",
+            "check": "source_evidence",
+            "relatedChecks": []
+          },
+          {
+            "rawText": "dapsone 100 mg daily",
+            "claimType": "dose_range",
+            "verdict": "abstain",
+            "explanation": "Drug 'dapsone' is not in the knowledge base; abstaining.",
+            "check": "semantic_mapping",
+            "relatedChecks": []
+          }
+        ],
+        "checks": [
+          {
+            "check": "medication_claims",
+            "label": "Medication Claims",
+            "status": "beta",
+            "rows": 2,
+            "supported": 1,
+            "contradicted": 1,
+            "abstain": 0,
+            "unreadable": 0
+          },
+          {
+            "check": "semantic_mapping",
+            "label": "Semantic Mapping",
+            "status": "beta",
+            "rows": 2,
+            "supported": 0,
+            "contradicted": 0,
+            "abstain": 1,
+            "unreadable": 1
+          },
+          {
+            "check": "source_evidence",
+            "label": "Source Evidence",
+            "status": "beta",
+            "rows": 2,
+            "supported": 1,
+            "contradicted": 0,
+            "abstain": 1,
+            "unreadable": 0
+          }
+        ]
+      },
+      "accuracy": null,
+      "table": "Orinyx verification - run 5c2e7a10 (sample-scribe 2.1)\nChecked 6 claims: 1 flagged, 1 unreadable as written, 2 supported, 2 abstained.\n\n| # | Claim | Part | Result | Severity | Why | Citation |\n|---|---|---|---|---|---|---|\n| 1 | wafarin 5 mg daily | dose | UNREADABLE - do not act on it | - | 'wafarin' is not a drug name Orinyx recognises (it is neither in the knowledge base nor on the RxNorm prescribable or brand name lists) | - |\n| 2 | warfarin 20 mg daily | dose | FLAGGED | MODERATE | Dose 20 mg exceeds the explicitly stated maximum of 10 mg. | [1] |\n| 3 | lisinopril 10 mg once daily | dose | SUPPORTED | - | Within the labelled range. | [2] |\n| 4 | lisinopril for hypertension | indication | SUPPORTED | - | The label's indications include a match for 'hypertension'. | [3] |\n| 5 | lisinopril for migraine | indication | NOT VERIFIED (abstain) | - | The label does not address 'migraine' (possible legitimate off-label use); abstaining. | - |\n| 6 | dapsone 100 mg daily | dose | NOT VERIFIED (abstain) | - | Drug 'dapsone' is not in the knowledge base; abstaining. | - |\n\nCitations:\n[1] openFDA, Dosage and Administration (§2) - id d4f1a8c2 - Warfarin sodium tablets prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d4f1a8c2\n[2] openFDA, Dosage and Administration (§2) - id 7b3e90aa - Lisinopril tablets prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7b3e90aa\n[3] openFDA, Indications and Usage (§1) - id 7b3e90aa - Lisinopril tablets prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7b3e90aa\n\nWhy each severity:\nRow 2 (MODERATE): Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n\nUNREADABLE: these orders cannot be read as written. Do not act on them until the clinician clarifies them; Orinyx did not check them against any label. Never assume a correction (a name or unit Orinyx cannot read is not a typo anyone may guess at).\nFLAGGED: the cited label says otherwise, at the severity shown.\nSUPPORTED: consistent with the cited label text; not a judgment that the order suits a patient.\nNOT VERIFIED: Orinyx could not check these, which does not mean they are correct.\n\nOrinyx flags; the clinician decides.\n\nNote: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.\nOrinyx checking time: 38 ms",
+      "text": "Orinyx verification - run 5c2e7a10 (sample-scribe 2.1)\nChecked 6 claims: 1 flagged, 1 unreadable as written, 2 supported, 2 abstained.\n\nUNREADABLE AS WRITTEN (1) - do not act on these until the clinician clarifies them; Orinyx did not check them against any label, and a correction must never be assumed:\n1. wafarin 5 mg daily (dose)\n   Why: 'wafarin' is not a drug name Orinyx recognises (it is neither in the knowledge base nor on the RxNorm prescribable or brand name lists)\n\nFLAGS (1)\n1. [MODERATE] warfarin 20 mg daily (dose)\n   Why: Dose 20 mg exceeds the explicitly stated maximum of 10 mg.\n   Severity: Rated Moderate because a dose above the label's stated maximum is Moderate under Orinyx's fixed rule for dose claims.\n   Citation: openFDA, Dosage and Administration (§2) - id d4f1a8c2 - Warfarin sodium tablets prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d4f1a8c2\n\nSUPPORTED (2) - consistent with the cited label text; not a judgment that the order suits a patient:\n1. lisinopril 10 mg once daily (dose)\n   Citation: openFDA, Dosage and Administration (§2) - id 7b3e90aa - Lisinopril tablets prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7b3e90aa\n2. lisinopril for hypertension (indication)\n   Citation: openFDA, Indications and Usage (§1) - id 7b3e90aa - Lisinopril tablets prescribing information - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7b3e90aa\n\nABSTAINED (2) - NOT VERIFIED; Orinyx could not check these, which does not mean they are correct:\n1. lisinopril for migraine (indication)\n   Why not: The label does not address 'migraine' (possible legitimate off-label use); abstaining.\n2. dapsone 100 mg daily (dose)\n   Why not: Drug 'dapsone' is not in the knowledge base; abstaining.\n\nOrinyx flags; the clinician decides."
+    }
+  }
+}

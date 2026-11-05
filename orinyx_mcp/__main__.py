@@ -1,5 +1,5 @@
-"""`python -m orinyx_mcp`: serve Orinyx tools over stdio to a local MCP client.
-`python -m orinyx_mcp serve` (or the `orinyx-mcp` command): the network server.
+"""`python -m orinyx_mcp` (or `orinyx-mcp stdio`): serve Orinyx tools over stdio to a local
+MCP client. `python -m orinyx_mcp serve` (or the `orinyx-mcp` command): the network server.
 
 Configuration is the environment only: ORINYX_API_URL (the running API) and
 ORINYX_API_KEY (an ork_live_* key, minted per agent so each one has its own rate-limit
@@ -15,7 +15,7 @@ def main(argv: list[str] | None = None) -> int:
     if args == ["serve"]:
         from orinyx_mcp.http import serve
 
-        return serve()
+        return serve([])
     if args:
         print("usage: python -m orinyx_mcp [serve]", file=sys.stderr)
         return 1
