@@ -5,13 +5,15 @@ through the MCP call path. The mock admits each account type to each route the w
 own guards do today:
 
 - the verification list admits clinician, quality_lead, admin and developer accounts;
-- the label, monograph and document routes admit clinician, quality_lead and admin only;
+- the label, monograph and document lookup routes admit clinician, quality_lead, admin and
+  developer accounts, and not product (vendor) accounts;
 - a product (vendor) account reaches the exam list and not the verification list.
 
 Proven here:
 
-- a developer account can check claims but is not offered any of the five lookup tools, and is
-  told so in one sentence; every other line of its menu is unchanged;
+- a developer account can check claims and is offered all five lookup tools;
+- an account that can check claims but whose lookup read is refused (401 or 403, for example
+  an API that does not admit it) is not offered the lookups and is told so in one sentence;
 - clinician, quality_lead and admin accounts are still offered the lookups, and their menus
   read byte for byte as before;
 - a product account's menu is unchanged and it is not asked the extra read;
@@ -95,11 +97,13 @@ ACCOUNTS: dict[str, tuple[Handler, Handler, Handler, str]] = {
         _no_runs,
         menu(MENU_QUICK_CHECK_TESTER, MENU_EXAM_NONE_OPEN, MENU_LOOKUP_TESTER),
     ),
+    # The lookup read answers a developer 200 since the API admitted developer accounts to the
+    # five lookup routes (2026-11-05), so the menu offers the lookups.
     "developer": (
         _no_runs,
         refusing(403),
-        refusing(403),
-        menu(MENU_QUICK_CHECK_TESTER, MENU_EXAM_NEEDS_PRODUCT, MENU_LOOKUP_NOT_THIS_ACCOUNT),
+        _no_runs,
+        menu(MENU_QUICK_CHECK_TESTER, MENU_EXAM_NEEDS_PRODUCT, MENU_LOOKUP_TESTER),
     ),
     "product": (
         refusing(403),
@@ -125,11 +129,12 @@ async def test_each_account_type_reads_its_whole_menu(account):
     assert text == expected
 
 
-async def test_a_developer_is_offered_none_of_the_lookup_tools():
+async def test_a_developer_is_offered_every_lookup_tool():
     is_error, text, _ = await start_a_test(*ACCOUNTS["developer"][:3])
     assert not is_error, text
     for name in LOOKUP_TOOLS:
-        assert name not in text, name
+        assert name in text, name
+    assert MENU_LOOKUP_NOT_THIS_ACCOUNT not in text
     assert MENU_LOOKUP_PRODUCT + "\n" not in text  # a developer is not a product account
 
 
@@ -159,13 +164,17 @@ async def test_a_product_account_is_not_asked_the_extra_read():
 
 
 # The lookup read refused outright (401) or not cleared (403): not offered, as can_verify reads
-# the same two statuses.
+# the same two statuses. No account type the API knows is refused the read while it can check
+# claims, but the sentence stays the answer for any credential that is (for example the hosted
+# MCP in front of an API that does not admit developer accounts to the lookups).
 @pytest.mark.parametrize("status", [401, 403])
 async def test_a_refused_lookup_read_is_answered_with_the_sentence(status):
     verifications, exams, _, _ = ACCOUNTS["developer"]
     is_error, text, _ = await start_a_test(verifications, exams, refusing(status))
     assert not is_error, text
-    assert text == ACCOUNTS["developer"][3]
+    assert text == menu(
+        MENU_QUICK_CHECK_TESTER, MENU_EXAM_NEEDS_PRODUCT, MENU_LOOKUP_NOT_THIS_ACCOUNT
+    )
     assert text != CREDENTIAL_REFUSED_TEXT
 
 

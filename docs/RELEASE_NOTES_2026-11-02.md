@@ -86,6 +86,8 @@ in the audit record, and audit records cannot be deleted.
   so under LOOK SOMETHING UP: "Not available to this account. Ask the Orinyx operator if you
   need FDA label or monograph text." Every supported or flagged row already carries its
   citation with a link to the source.
+  *Updated 2026-11-05: this is no longer true. Developer accounts can use these five lookups,
+  and `start_a_test` lists them. See the [changelog](../CHANGELOG.md).*
 - **The dashboard is for staff accounts.** Signing in there with a developer account shows a
   page that points back to the connector.
 
