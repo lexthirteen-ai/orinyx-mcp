@@ -33,7 +33,7 @@ issued by Orinyx.
 - **Cited results.** Each supported or flagged row cites the label section or monograph
   paragraph it was judged against. A flag carries a rule-derived severity.
 - **FDA reference lookups.** Prescribing-label sections and OTC monograph text, with the SPL
-  set ID, version and source address, for staff accounts. Reference text, not a verdict.
+  set ID, version and source address, for developer accounts. Reference text, not a verdict.
 - **Scored exams for AI products.** A product account sits an exam on a fixed, synthetic test
   set held on the server; every report adds speed. Families and their limits are in
   [docs/EXAMS.md](docs/EXAMS.md).
@@ -61,7 +61,7 @@ What is in the box:
 - **Check claims your agent already structures** with `verify_medications`.
 - **Read a run back** with `get_verification`, `get_accuracy` or `export_verification`.
 - **Read FDA reference text** with `find_fda_label` and `read_fda_label_section`, or the OTC
-  monograph tools (staff accounts). Reference text, not a verdict.
+  monograph tools (developer accounts). Reference text, not a verdict.
 - **Score an AI product on a fixed test set** with the exam tools (product accounts).
 - **Not sure yet?** Call `start_a_test`: it lists what your account can run and the next step
   for each.
@@ -156,7 +156,7 @@ To use a key issued to you by Orinyx instead of signing in, add
 starts Codex. In the `codex` terminal UI, `/mcp` lists the servers Codex has connected.
 
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
-`.cursor/mcp.json` or a project `.mcp.json`.
+`.cursor/mcp.json`, `.codex/config.toml` or a project `.mcp.json`.
 
 ### Local stdio (from source)
 
@@ -349,8 +349,8 @@ What is relayed, and what is never sent there, is in
 | `get_verification` | developer | a saved run, with its physician-review accuracy if any |
 | `get_accuracy` | developer | false-flag rate and catch-rate estimate from physician review |
 | `export_verification` | developer | `csv`, `pdf` (full audit) or `report` (one-page committee PDF) |
-| `find_otc_monographs`, `get_otc_monograph`, `read_otc_monograph_section` | staff | FDA OTC monograph reference text; not a verdict |
-| `find_fda_label`, `read_fda_label_section` | staff | FDA prescribing-label section text as Orinyx cached it from openFDA, with the SPL set ID, version, the product the label describes and the DailyMed address; superseded versions on request, `rxcui` when one set ID backs two drugs; not a verdict |
+| `find_otc_monographs`, `get_otc_monograph`, `read_otc_monograph_section` | developer | FDA OTC monograph reference text; not a verdict |
+| `find_fda_label`, `read_fda_label_section` | developer | FDA prescribing-label section text as Orinyx cached it from openFDA, with the SPL set ID, version, the product the label describes and the DailyMed address; superseded versions on request, `rxcui` when one set ID backs two drugs; not a verdict |
 | `get_next_exam_case` | product | the next case; Orinyx starts its clock |
 | `get_exam_cases` | product | every case at once; speed is then reported as not measured |
 | `submit_exam_answers` | product | record answers (`claims`, `replyText` or `codes`, by the case's kind) |
@@ -364,19 +364,25 @@ What a credential can reach is fixed by its account type, enforced by the API:
 - **Developer account** (a self-serve sign-up at
   [orinyx.io/developers](https://orinyx.io/developers)): the verification tools
   (`verify_order_text`, `verify_medications`, `get_verification`, `get_accuracy`,
-  `export_verification`).
+  `export_verification`) and the FDA reference lookups (`find_fda_label`,
+  `read_fda_label_section`, `find_otc_monographs`, `get_otc_monograph`,
+  `read_otc_monograph_section`). Lookups return reference text, not a verdict, and are not
+  charged against the monthly checks of the free plan.
 - **Product (vendor) account**: the exam tools (`get_next_exam_case`, `get_exam_cases`,
   `submit_exam_answers`, `finish_exam`, `get_exam_report`). A product sitting an exam cannot
-  check claims with the clinical verifier.
+  check claims with the clinical verifier, and a product account calling a lookup tool is
+  refused.
 - **Operator or staff account** (an Orinyx quality lead or admin): registers the product and
   opens its exam with `evals/product_exam.py`. You do not open your own exam; Orinyx does, and
-  gives you the run number and a product sign-in. The FDA label and OTC monograph lookups and
-  the dashboard are for staff accounts.
+  gives you the run number and a product sign-in. The dashboard is for staff accounts. A label's version
+  history and diff, a monograph's version history and its separate orders listing, and a
+  regulatory document's content are staff-only too, and are not part of the lookups.
+  `get_otc_monograph` still shows the orders that come with a monograph.
 
 `start_a_test` works for every account and says which of these applies.
 
-A developer account runs quick checks: the exam tools and the label and monograph lookups
-are refused for a developer account
+A developer account runs quick checks and the FDA reference lookups: the exam tools are
+refused for a developer account
 ([release notes](docs/RELEASE_NOTES_2026-11-02.md#what-is-not-in-this-release)).
 
 ## Available tools
@@ -415,10 +421,10 @@ step for the account that is signed in.
 
 **Returns:** three sections, QUICK CHECK, SCORED EXAM and LOOK SOMETHING UP, each saying
 whether this account can use it and what to call next. For a product account it lists the open
-exam runs and the steps to sit one. For a developer account, LOOK SOMETHING UP reads "Not
-available to this account. Ask the Orinyx operator if you need FDA label or monograph text."
-When the API refuses the key or sign-in itself (401), it returns none of the three sections,
-only a short message that says so and what to check.
+exam runs and the steps to sit one. For a developer account, LOOK SOMETHING UP lists the five
+lookup tools; if the API refuses an account the lookups, that section says so. When the API
+refuses the key or sign-in itself (401), it returns none of the three sections, only a short
+message that says so and what to check.
 
 ### 2. `verify_order_text`
 
@@ -620,7 +626,7 @@ PDF; `report.pdf` is accepted too). The default is `csv`.
 
 ### 7. `find_fda_label`
 
-Account: staff. Find the FDA prescribing label Orinyx holds for a drug name or RxCUI (a brand
+Account: developer. Find the FDA prescribing label Orinyx holds for a drug name or RxCUI (a brand
 name only where Orinyx has a curated alias for it): the SPL set ID, label version, effective
 date and which sections carry text. Reference text only: not a verification and not a
 verdict.
@@ -630,8 +636,6 @@ verdict.
 
 **Not recommended for:**
 - Checking an order: a label's presence says nothing about any order.
-- A developer account: the lookups are for staff accounts and are refused for a developer
-  account.
 
 **Common mistakes:**
 - Respelling a name that is not found, or trying a guessed alternative. A name that is not
@@ -648,10 +652,13 @@ verdict.
 **Returns:** each label with its source, SPL set ID, rxcui, version, effective date, whether it
 is current, the retrieval date and the DailyMed address; the product the label describes;
 and the sections that carry text, with their length.
+When the name was matched through an alias, the reply says how it matched; when the name
+carried a formulation or salt that Orinyx stripped, it adds a caution that the label may not
+describe that formulation.
 
 ### 8. `read_fda_label_section`
 
-Account: staff. Read one section of a cached FDA prescribing label by its SPL set ID.
+Account: developer. Read one section of a cached FDA prescribing label by its SPL set ID.
 `section` is one of: `contraindications`, `boxed_warning`, `warnings`,
 `warnings_and_cautions`, `overdosage`, `dosage_and_administration`, `indications_and_usage`,
 `drug_interactions`, `dosage_forms_and_strengths`. Reference text, not a verdict and not
@@ -660,10 +667,6 @@ clinical advice.
 **Best for:**
 - Quoting a label section with its citation.
 - A superseded label version: pass `version`, and the reply says so.
-
-**Not recommended for:**
-- A developer account: the lookups are for staff accounts and are refused for a developer
-  account.
 
 **Common mistakes:**
 - Relying on a section marked TRUNCATED. A long section comes in parts: call again with the
@@ -685,13 +688,9 @@ DailyMed link is the authoritative copy.
 
 ### 9. `find_otc_monographs`
 
-Account: staff. Find FDA over-the-counter (OTC) drug monographs by exact ingredient name (for
+Account: developer. Find FDA over-the-counter (OTC) drug monographs by exact ingredient name (for
 example 'acetaminophen'), exact category name, or words in the title. Reference text only: it
 is not a verification and not a verdict.
-
-**Not recommended for:**
-- A developer account: the lookups are for staff accounts and are refused for a developer
-  account.
 
 **Common mistakes:**
 - A partial ingredient or category name. Those two are exact names; `title_contains`
@@ -710,12 +709,8 @@ date and registry address.
 
 ### 10. `get_otc_monograph`
 
-Account: staff. What one FDA OTC monograph (id like M013) covers: ingredients, categories,
+Account: developer. What one FDA OTC monograph (id like M013) covers: ingredients, categories,
 its current documents and its orders.
-
-**Not recommended for:**
-- A developer account: the lookups are for staff accounts and are refused for a developer
-  account.
 
 **Common mistakes:**
 - Passing an ingredient name. It takes a monograph id like `M013`, which
@@ -735,13 +730,9 @@ takes) and its orders.
 
 ### 11. `read_otc_monograph_section`
 
-Account: staff. Read FDA OTC monograph text. With only a document number: lists its
+Account: developer. Read FDA OTC monograph text. With only a document number: lists its
 sections. With a section reference (like M013.50): returns that section's text and where it
 came from. Reference text, not a verdict and not clinical advice.
-
-**Not recommended for:**
-- A developer account: the lookups are for staff accounts and are refused for a developer
-  account.
 
 **Common mistakes:**
 - Relying on a section marked TRUNCATED. A long section comes in parts: call again with the

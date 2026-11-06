@@ -3,6 +3,22 @@
 All notable changes to this project are recorded here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+## [0.1.4] - 2026-11-05
+
+### Changed
+
+- Developer accounts can use the five FDA reference lookups: `find_fda_label`,
+  `read_fda_label_section`, `find_otc_monographs`, `get_otc_monograph` and
+  `read_otc_monograph_section`. `start_a_test` lists them under LOOK SOMETHING UP for a
+  developer account. They return reference text, not a verdict, and are not charged against
+  the monthly checks of the free plan. On a label lookup the reply says how the name was
+  matched, and a formulation or salt Orinyx stripped from the name is shown as a caution.
+- Still staff-only: a label's version history and diff, a monograph's version history and its
+  separate orders listing, and a regulatory document's content. Product (vendor) accounts are still refused
+  every lookup. The change is in the Orinyx API; tool names and input schemas are unchanged.
+
 ## [0.1.3] - 2026-11-05
 
 ### Added
@@ -112,6 +128,8 @@ drug, and combination products. Most show up as a NOT VERIFIED row, a refused or
 total that was not checked, so a missing flag is never evidence that an order is safe. See
 [Known limits](docs/RELEASE_NOTES_2026-11-02.md#known-limits).
 
-[Unreleased]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.1...v0.1.2
 [0.1.1]: docs/RELEASE_NOTES_2026-11-02.md
