@@ -35,20 +35,14 @@ def is_terminal(stream: TextIO | None) -> bool:
 
 
 def wanted(words: Sequence[str], stream: TextIO, environ: Mapping[str, str]) -> bool:
-    """Whether to show the banner, decided from the raw command-line words before argparse
-    reads them: argparse prints the help the moment it reaches `-h`, before a later
-    `--no-banner` has been read. Only the top-level words count, the ones before the first
-    word that does not start with `-` and before `--`."""
+    """Show the banner for a bare invocation or top-level help on its own."""
     if not is_terminal(stream):
         return False
     if environ.get("ORINYX_NO_BANNER") or environ.get("CI"):
         return False
-    for word in words:
-        if word == "--" or not word.startswith("-"):
-            break
-        if turns_off(word):
-            return False
-    return True
+    # argparse handles short option clusters and can print help before reading other words.
+    long_help = {"--h", "--he", "--hel", "--help"}
+    return all(word.startswith("-h") or word in long_help for word in words)
 
 
 def _asset_file():
@@ -81,9 +75,8 @@ def _encodable(text: str, stream: TextIO) -> bool:
 
 
 def _coloured(environ: Mapping[str, str]) -> bool:
-    """no-color.org: any non-empty NO_COLOR turns colour off. A Windows console other than
-    Windows Terminal (which sets WT_SESSION) gets no colour, rather than enabling VT codes."""
-    if environ.get("NO_COLOR") or environ.get("TERM") == "dumb":
+    """Use colour only when permitted, and on Windows only in Windows Terminal."""
+    if "NO_COLOR" in environ or environ.get("TERM") == "dumb":
         return False
     return sys.platform != "win32" or "WT_SESSION" in environ
 

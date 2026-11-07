@@ -249,25 +249,16 @@ def test_the_switch_after_a_subcommand_is_an_ordinary_usage_error(argv):
 
 
 @pytest.mark.parametrize(
-    ("words", "shown"),
+    "argv",
     [
-        ([], True),
-        (["-h"], True),
-        (["--help"], True),
-        (["-hX"], True),
-        (["--no-banner"], False),
-        (["--no-b"], False),
-        (["--n"], False),
-        (["-h", "--no-banner"], False),
-        (["--", "--no-banner"], True),  # past `--`, a value
-        (["verify", "--no-banner"], True),  # past the command, not a top-level word
-        (["-h", "verify", "--no"], True),
-        (["-n"], True),
-        (["--"], True),
+        ["--help", "--json"],
+        ["--json", "--help"],
+        ["-h", "verify"],
+        ["-h", "verify", "--json"],
     ],
 )
-def test_wanted_reads_only_the_top_level_words(words, shown):
-    assert banner.wanted(words, FakeTTY(), {}) is shown
+def test_top_level_help_with_other_arguments_prints_only_help(argv):
+    assert run(argv) == BEFORE["-h"]
 
 
 def test_wanted_needs_a_terminal_and_no_switch_in_the_environment():
@@ -400,7 +391,7 @@ def test_a_terminal_that_cannot_encode_the_art_gets_the_compact_line(encoding):
         ("linux", {"TERM": "dumb"}, False),
         ("win32", {}, False),
         ("win32", {"WT_SESSION": "0f1e2d3c"}, True),
-        ("linux", {"NO_COLOR": ""}, True),
+        ("linux", {"NO_COLOR": ""}, False),
         ("linux", {"TERM": "xterm-256color"}, True),
         ("darwin", {}, True),
     ],
