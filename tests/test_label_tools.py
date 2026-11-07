@@ -50,6 +50,11 @@ class FakeClient:
         return SECTION | {"sectionText": SECTION["sectionText"]}
 
 
+LABEL_URL = (
+    "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0ab7c1d2-1111-4a2b-9c3d-123456789abc"
+)
+
+
 def test_finding_a_label_names_the_set_id_version_sections_and_the_dailymed_address():
     client = FakeClient()
     text = tools.find_fda_label(client, drug="Coumadin")
@@ -57,7 +62,7 @@ def test_finding_a_label_names_the_set_id_version_sections_and_the_dailymed_addr
     assert "warfarin" in text and "0ab7c1d2-1111-4a2b-9c3d-123456789abc" in text
     assert "version 3" in text and "effective 20250612" in text and "current" in text
     assert "boxed_warning" in text and "dosage_and_administration" in text and "14022" in text
-    assert "dailymed.nlm.nih.gov" in text
+    assert LABEL_URL in text
     assert "matched as alias" in text.lower()
     assert "This label is for WARFARIN SODIUM" in text and "ORAL, INTRAVENOUS" in text
     assert "extended-release" in text and "may not be the one this label describes" in text
@@ -91,7 +96,7 @@ def test_reading_a_section_returns_paged_cited_text_with_the_notice_first():
     assert "This label is for WARFARIN SODIUM" in text
     assert "openFDA label" in text and "SPL set ID 0ab7c1d2" in text and "version 3" in text
     assert "effective 20250612" in text and "retrieved 2026-10-06" in text
-    assert "dailymed.nlm.nih.gov" in text
+    assert LABEL_URL in text
     assert text.index("TRUNCATED: characters 1 to") < text.index("Individualize")  # said FIRST
     assert "offset=" in text
     body = text.split("\n\n")[2]
