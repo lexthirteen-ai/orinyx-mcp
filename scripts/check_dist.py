@@ -36,6 +36,8 @@ banner files or a credential-shaped string.
 
 Checks, in addition to the exact member sets:
 
+* the archives are named `orinyx_mcp-<version>.tar.gz` and
+  `orinyx_mcp-<version>-py3-none-any.whl`, with the manifest's version;
 * no member path matches a deny rule: SMOKE_TEST, docs/qa/, .worktrees/, .env, fly.toml,
   CLAUDE.md (case-insensitive substrings) or a `.pem` suffix;
 * no member contains a credential-shaped string (`ork_live_`, `ork_test_`, `ork_oat_` or
@@ -78,6 +80,7 @@ MARKER = "mcp-name: io.github.lexthirteen-ai/orinyx-mcp"
 LICENSE_EXPRESSION = "Apache-2.0"
 MIN_METADATA_VERSION = (2, 4)
 PACKAGE = "orinyx_mcp"
+WHEEL_TAG = "py3-none-any"
 # Hatchling writes this one file into the sdist; the build generates it, the tree has none.
 # It also always copies .gitignore in. That is a tree file, so it is not listed here: a manifest
 # names it, and --source compares its bytes like any other member.
@@ -332,6 +335,18 @@ def check_directory(dist_dir: Path, wheel_only: bool) -> tuple[Path | None, Path
     )
 
 
+def check_file_names(sdist_path: Path | None, wheel_path: Path | None, version: str) -> list[str]:
+    """The index reads a release's project and version from these names, not from the bytes."""
+    failures = []
+    for label, path, expected in (
+        ("sdist", sdist_path, f"{PACKAGE}-{version}.tar.gz"),
+        ("wheel", wheel_path, f"{PACKAGE}-{version}-{WHEEL_TAG}.whl"),
+    ):
+        if path is not None and path.name != expected:
+            failures.append(f"{label} file is named {path.name!r}, expected {expected!r}")
+    return failures
+
+
 def run(
     dist_dir: Path,
     manifest_path: Path,
@@ -349,9 +364,11 @@ def run(
     notes: list[str] = []
     if "version" not in manifest or not isinstance(manifest.get("version"), str):
         return failures, notes
+    failures += check_file_names(sdist_path, wheel_path, manifest["version"])
+    listed = manifest.get("deny_exemptions", [])  # anything but a list is already a failure
     exemptions = {
         e["path"]: e["reason"]
-        for e in manifest.get("deny_exemptions", [])
+        for e in (listed if isinstance(listed, list) else [])
         if isinstance(e, dict)
         and isinstance(e.get("path"), str)
         and isinstance(e.get("reason"), str)
