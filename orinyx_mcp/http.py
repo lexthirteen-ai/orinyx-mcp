@@ -23,8 +23,10 @@ import logging
 import os
 import re
 import sys
+import threading
 import time
 import uuid
+from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
@@ -207,18 +209,77 @@ def caller_headers(config: Config) -> dict[str, str]:
     return headers
 
 
-def client_factory(config: Config) -> Callable[[], OrinyxClient]:
-    """One REST client per tool call, carrying the calling agent's own credential."""
+class ClientPool:
+    """REST clients for the tool calls, one pooled connection per caller credential.
 
-    def client_for() -> OrinyxClient:
-        return OrinyxClient(
-            config.api_url,
-            caller_credential(),
-            headers=caller_headers(config),
-            allow_http=config.api_allow_http,
-        )
+    A caller's client is reused across that caller's calls and never handed to another
+    credential: the pool is keyed by a hash of the credential. Each call gets a `bound` view
+    carrying its own request id and forwarded address; closing the view releases it. Idle
+    clients beyond `max_idle` are closed oldest first; one in use is never closed."""
 
-    return client_for
+    def __init__(self, config: Config, *, max_idle: int = 256, transport=None):
+        self._config = config
+        self._max_idle = max_idle
+        self._transport = transport
+        self._lock = threading.Lock()
+        self._clients: OrderedDict[str, list] = OrderedDict()  # key -> [client, users]
+        # The engine-owned lists read from the API (orinyx_mcp.contract), shared by every
+        # pooled client and checked once, by the first.
+        self._contract_cache: dict = {}
+        self._checked = False
+
+    def __call__(self) -> OrinyxClient:
+        credential = caller_credential()
+        headers = caller_headers(self._config)
+        key = hashlib.sha256(credential.encode("utf-8", "surrogatepass")).hexdigest()
+        evicted: list[OrinyxClient] = []
+        check = False
+        with self._lock:
+            entry = self._clients.pop(key, None)
+            if entry is None:
+                entry = [
+                    OrinyxClient(
+                        self._config.api_url,
+                        credential,
+                        allow_http=self._config.api_allow_http,
+                        transport=self._transport,
+                    ),
+                    0,
+                ]
+                entry[0]._contract_cache = self._contract_cache
+                check, self._checked = not self._checked, True
+            entry[1] += 1
+            self._clients[key] = entry
+            idle = [k for k, (_, users) in self._clients.items() if users == 0]
+            while len(self._clients) > self._max_idle and idle:
+                evicted.append(self._clients.pop(idle.pop(0))[0])
+        for client in evicted:
+            client.close()
+        if check:
+            from orinyx_mcp.contract import check_in_background
+
+            check_in_background(entry[0])
+        return entry[0].bound(headers, release=lambda: self._release(entry))
+
+    def _release(self, entry: list) -> None:
+        with self._lock:
+            entry[1] -= 1
+
+    def __len__(self) -> int:
+        return len(self._clients)
+
+    def close(self) -> None:
+        with self._lock:
+            clients = [client for client, _ in self._clients.values()]
+            self._clients.clear()
+        for client in clients:
+            client.close()
+
+
+def client_factory(config: Config) -> ClientPool:
+    """The REST clients for the tool calls: each carries the calling agent's own credential,
+    over a connection pooled per credential."""
+    return ClientPool(config)
 
 
 def _address(value: str | None) -> str | None:
@@ -339,8 +400,9 @@ def build_app(
     verifier = verifier or IntrospectionVerifier(
         config.api_url, config.resource, http, extra_headers=lambda: caller_headers(config)
     )
+    client_for = client_for or client_factory(config)
     server = build_server(
-        client_for or client_factory(config),
+        client_for,
         auth=AuthSettings(
             issuer_url=config.issuer_url,
             # The 401 challenge names the protected-resource document below, where an
@@ -399,6 +461,9 @@ def build_app(
             if owned:
                 await verifier.http.aclose()
                 verifier.http = None
+            close = getattr(client_for, "close", None)
+            if close is not None:
+                close()
 
     app = Starlette(routes=routes, lifespan=lifespan)
     return _Headers(app, hsts=parts.scheme == "https"), app
@@ -487,6 +552,7 @@ __all__ = [
     "build_app",
     "caller_credential",
     "caller_headers",
+    "ClientPool",
     "client_factory",
     "serve",
 ]

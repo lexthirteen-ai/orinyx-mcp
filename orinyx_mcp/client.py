@@ -7,9 +7,10 @@ same API10 posture the engine applies to its upstreams), and the error envelope 
 a typed exception.
 """
 
+import copy
 import re
 import uuid
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -44,6 +45,14 @@ LABEL_SECTIONS: tuple[str, ...] = (
     "drug_interactions",
     "dosage_forms_and_strengths",
 )
+# sha256 of the tuple above as canonical JSON (orinyx_mcp.contract.digest): the version of this
+# copy. The API's own list is the source of truth; `contract.check` compares the two at
+# startup and says so loudly when they differ. Editing the tuple means updating this too.
+LABEL_SECTIONS_SHA256 = "f8d11b8f2676c6b3549e845d785c2ae98c97fa523f2d2b537dcd797c0efe6c81"
+# What a section name may be before it is spliced into a path, whoever supplied the list.
+_SECTION_RE = re.compile(r"[a-z0-9_]{1,64}")
+# Per-request headers a pooled client may add; never ones that would replace these.
+_PROTECTED_HEADERS = frozenset({"authorization", "user-agent", "accept"})
 _FILENAME_RE = re.compile(r'filename="?([^";]+)"?')
 
 
@@ -173,9 +182,35 @@ class OrinyxClient:
             timeout=timeout,
             transport=transport,
         )
+        self._owns_http = True
+        self._extra_headers: dict[str, str] = {}
+        self._release: Callable[[], None] | None = None
+        # Shared by every bound() view of this client: engine-owned lists read from the API.
+        self._contract_cache: dict[str, Any] = {}
+
+    def bound(
+        self, headers: Mapping[str, str], release: Callable[[], None] | None = None
+    ) -> "OrinyxClient":
+        """A view of this client for one call: the same pooled connection and credential, plus
+        `headers` on each request (never the credential, the user agent or Accept). Closing the
+        view calls `release` instead of closing the connection."""
+        view = copy.copy(self)
+        view._owns_http = False
+        view._extra_headers = {
+            name: value
+            for name, value in dict(headers).items()
+            if name.lower() not in _PROTECTED_HEADERS
+        }
+        view._release = release
+        return view
 
     def close(self) -> None:
-        self._http.close()
+        if self._owns_http:
+            self._http.close()
+            return
+        release, self._release = self._release, None
+        if release is not None:
+            release()
 
     def __enter__(self) -> "OrinyxClient":
         return self
@@ -187,6 +222,8 @@ class OrinyxClient:
 
     def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
         refused = False
+        if self._extra_headers:
+            kwargs["headers"] = {**self._extra_headers, **(kwargs.get("headers") or {})}
         try:
             response = self._http.request(method, path, **kwargs)
         except httpx.LocalProtocolError:
@@ -486,6 +523,23 @@ class OrinyxClient:
             raise OrinyxApiError(200, "invalid_response", "unexpected label list shape")
         return data
 
+    def contract_document(self, path: str) -> dict[str, Any]:
+        """One of the API's documents describing engine-owned data (orinyx_mcp.contract)."""
+        return self._json_object(self._request("GET", path))
+
+    def label_sections(self) -> tuple[str, ...]:
+        """The label sections the API serves, read once per client; this package's copy
+        (LABEL_SECTIONS) when the API does not publish the list or cannot be reached."""
+        cached = self._contract_cache.get("label_sections")
+        if cached is not None:
+            return cached
+        from orinyx_mcp import contract
+
+        sections, settled = contract.label_sections(self)
+        if settled:
+            self._contract_cache["label_sections"] = sections
+        return sections
+
     def label_section(
         self,
         set_id: str,
@@ -497,7 +551,11 @@ class OrinyxClient:
         if not _SET_ID_RE.fullmatch(candidate):
             raise ValueError("set_id is an SPL set ID (letters, digits and hyphens only)")
         if section not in LABEL_SECTIONS:
-            raise ValueError("section must be one of: " + ", ".join(LABEL_SECTIONS))
+            # Not in this package's copy: the API's list, once read (contract.check), may name
+            # a section added since. Validation itself never sends a request.
+            served = self._contract_cache.get("label_sections", LABEL_SECTIONS)
+            if section not in served:
+                raise ValueError("section must be one of: " + ", ".join(served))
         params: dict[str, Any] = {}
         if version is not None:
             if isinstance(version, bool) or not isinstance(version, int) or version < 1:
@@ -517,6 +575,7 @@ class OrinyxClient:
 
 __all__ = [
     "LABEL_SECTIONS",
+    "LABEL_SECTIONS_SHA256",
     "Aggregate",
     "Citation",
     "ExportFile",

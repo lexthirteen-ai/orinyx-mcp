@@ -35,7 +35,8 @@ Agents, CI jobs and published examples depend on these exactly. A pull request t
 any of them needs a decision from the repository owner first:
 
 - **Readable text** printed by the tools and the CLI (`orinyx_mcp/text.py` and the report
-  renderers in `orinyx_mcp/tools.py`). No line is added, reordered or reworded.
+  renderer in `orinyx_mcp/tools/reports.py`, the tools under `orinyx_mcp/tools/` and the prose in
+  `orinyx_mcp/copy.py`). No line is added, reordered or reworded.
 - **Fixed strings:** `Run id: <uuid>` (parsed by `evals/mcp_local_check.py`) and
   `UNREADABLE - do not act on it`.
 - **`--json`** prints the API's response unchanged.

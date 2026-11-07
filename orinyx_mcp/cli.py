@@ -29,7 +29,7 @@ from orinyx_mcp.client import (
     VerificationResult,
 )
 from orinyx_mcp.config import ConfigError
-from orinyx_mcp.screen import screen_orders
+from orinyx_mcp.screen import SCREEN_PATTERNS, Patterns, patterns_for, screen_orders
 from orinyx_mcp.text import render_accuracy_lines, render_run_text
 from orinyx_mcp.verdicts import KNOWN_VERDICTS, aggregate_disagreements, count_verdicts
 
@@ -300,7 +300,7 @@ def _load_observed(paths: Sequence[Path], field: str) -> list[_Record]:
     return records
 
 
-def _preflight(records: Sequence[_Record]) -> None:
+def _preflight(records: Sequence[_Record], patterns: Patterns = SCREEN_PATTERNS) -> None:
     """Fail closed before any request: one refused record stops the whole invocation."""
     for record in records:
         if len(record.orders) > MAX_ORDERS_PER_RUN:
@@ -314,7 +314,7 @@ def _preflight(records: Sequence[_Record]) -> None:
                     f"{record.source}: order {number} is {len(order)} characters; the API "
                     f"takes at most {MAX_ORDER_CHARS} characters. Nothing was sent."
                 )
-        hit = screen_orders(record.orders)
+        hit = screen_orders(record.orders, patterns)
         if hit:
             # The pattern's name only, never the text it matched.
             raise ValueError(
@@ -361,7 +361,10 @@ def _print_observed(runs: list[tuple[str, VerificationResult]], skipped: list[st
 
 def _observe(client: OrinyxClient, args) -> int:
     records = _load_observed(args.paths, args.field)
-    _preflight(records)
+    _preflight(records)  # this package's copy first: a hit refuses before any request
+    patterns = patterns_for(client)  # the API's screen, when this copy is not it
+    if patterns is not SCREEN_PATTERNS:
+        _preflight(records, patterns)
     to_check = [record for record in records if record.orders]
     skipped = [record.source for record in records if not record.orders]
     if not to_check:

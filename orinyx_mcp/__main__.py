@@ -56,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     with client:
         try:
-            server = build_server(shared(client), gateway=gateway)
+            server = build_server(shared(client, check_contract=True), gateway=gateway)
         except ConfigError as exc:
             print(str(exc), file=sys.stderr)
             return 1

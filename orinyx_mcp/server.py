@@ -105,7 +105,9 @@ def _refusals():
 
 @contextmanager
 def _calling(client_for: Callable[[], OrinyxClient]):
-    """One client per tool call, with API refusals turned into readable tool errors."""
+    """A client for one tool call (a factory's shared or pooled client, or a fresh one), with
+    API refusals turned into readable tool errors. A factory marked `per_call = False` owns
+    its client; otherwise the call closes what it got (for a pooled view, that releases it)."""
     with _refusals():
         client = client_for()
         try:
@@ -215,10 +217,18 @@ def _single_case(answers: Any) -> str | None:
     return None
 
 
-def shared(client: OrinyxClient) -> Callable[[], OrinyxClient]:
-    """A factory for a process that owns ONE client for its whole life (stdio)."""
+def shared(client: OrinyxClient, *, check_contract: bool = False) -> Callable[[], OrinyxClient]:
+    """A factory for a process that owns ONE client for its whole life (stdio). With
+    `check_contract`, the first tool call also compares the engine-owned lists this package
+    copies with the API's (orinyx_mcp.contract), in the background: drift is logged, not
+    silent, and starting the server never sends a request."""
+    pending = [check_contract]
 
     def client_for() -> OrinyxClient:
+        if pending and pending.pop():
+            from orinyx_mcp.contract import check_in_background
+
+            check_in_background(client)
         return client
 
     client_for.per_call = False  # the owner closes it, not each tool call
