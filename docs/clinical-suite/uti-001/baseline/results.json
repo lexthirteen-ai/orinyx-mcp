@@ -21,6 +21,7 @@
       "version": "0.3.1",
       "source": "GET /openapi.json",
       "commit": "b1687ccbbbe596902f89e40463fc74485d9527e3",
+      "branch": "build/2026-10-22-password-reset",
       "commit_note": "REST gives no commit: pass --engine-commit or ORINYX_ENGINE_COMMIT."
     },
     "config": {

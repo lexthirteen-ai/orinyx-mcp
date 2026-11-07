@@ -11,6 +11,7 @@
 - **Fixture file:** tests/fixtures/clinical/uti-001.json (sha256 566d37f23751d6b7...)
 - **Runner:** orinyx-mcp 0.1.0, commit 4a15a162e776bcf64d4f39ee6aa236e38bbb721b, working tree dirty: True
 - **Orinyx API:** http://localhost:8765, engine version 0.3.1, engine commit b1687ccbbbe596902f89e40463fc74485d9527e3
+- **Engine branch at the time of the run:** `build/2026-10-22-password-reset` at the commit above. Engine `main` was at `bc86d37`.
 - **Models:** none: no model in the verdict path, none called by this suite
 - **Exit code:** **3**: not clean: UTI-001-C, UTI-001-D, UTI-001-F, UTI-001-H, UTI-001-I, UTI-001-I-ctrl, UTI-001-J, UTI-001-K, UTI-001-K-ctrl
 

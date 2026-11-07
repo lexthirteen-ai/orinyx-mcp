@@ -66,9 +66,10 @@ never merged. An UNSUPPORTED check is INCONCLUSIVE, never a pass; a TRUE_NEGATIV
 
 ## Baseline provenance
 
-Run against a local engine 0.3.1 at commit `b1687ccbbbe596902f89e40463fc74485d9527e3`, which is the head of
-the then-unmerged `build/2026-10-22-password-reset` branch, not `main` (`bc86d37`). That branch adds no migration
-and no knowledge-base or verifier change, so the verdicts should match `main`; re-run on `main` to confirm. It ran on a disposable
-copy of the development database (`orinyx_uti001_baseline`; the original was only read). Orinyx run ids
-in `results.json` point into that copy's audit trail. Runner commit `4a15a16` with uncommitted changes
-(the working tree was dirty: these files were new).
+The baseline ran against a local engine 0.3.1 at `b1687ccbbbe596902f89e40463fc74485d9527e3`, the
+head of `build/2026-10-22-password-reset` at the time. Engine `main` was at `bc86d37`. Establishing
+a baseline for `main` requires a separate run against a pinned `main` commit.
+
+The run used a disposable copy of the development database (`orinyx_uti001_baseline`). Orinyx run IDs
+in `results.json` point into that copy's audit trail. The runner used orinyx-mcp commit `4a15a16`
+with a dirty working tree containing the new suite files.
