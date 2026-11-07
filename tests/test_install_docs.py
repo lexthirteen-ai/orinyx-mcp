@@ -311,7 +311,7 @@ def test_no_doc_names_a_cli_login(rel):
 
 def test_troubleshooting_exists_and_is_linked_from_installation():
     installation = _section(_read("README.md"), "## Installation")
-    assert "(docs/TROUBLESHOOTING.md)" in installation
+    assert "blob/main/docs/TROUBLESHOOTING.md)" in installation
     lines = _read("docs/TROUBLESHOOTING.md").splitlines()
     assert "| Symptom | Cause | Fix |" in lines
     body = [line for line in lines if line.startswith("| ") and line != "| Symptom | Cause | Fix |"]

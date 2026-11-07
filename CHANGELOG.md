@@ -5,6 +5,22 @@ All notable changes to this project are recorded here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+
+- Packaging for PyPI: the package metadata is complete (authors, keywords, classifiers and
+  project URLs), dependency ranges stop before the next major version, the build backend has
+  a bounded range, the source distribution holds a reviewed list of files, and the README's
+  links and logo are absolute so they work on the PyPI page. The lowest allowed versions rise
+  to `httpx` 0.28, `pydantic` 2.12, `starlette` 1.3.1 and `uvicorn` 0.31.1.
+- Before it sends orders, `orinyx observe` asks the Orinyx API for the current identifier
+  screen. If the API serves a different list, `observe` screens with that list. If the API
+  says its screen differs but does not send it, `observe` refuses rather than screen with a
+  stale list. If the API does not serve the list or cannot answer, the local copy is used; a
+  failed request is logged.
+- On the first tool call, the MCP server checks its copies of the label sections and the
+  identifier screen against the API's, in the background, when the API serves those lists. A
+  difference is logged. The API does not serve them yet, so for now the local copies are used.
+
 ## [0.1.4] - 2026-11-05
 
 ### Changed
