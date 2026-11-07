@@ -574,11 +574,11 @@ one.
   from the `Run id:` line.
 
 **Prompt example:**
-> "Read Orinyx run 926f7677-c90e-4236-8f98-3f71f3f61f8a again."
+> "Read Orinyx run f57fc863-a31b-4a0a-af73-440f5d1215b8 again."
 
 **Usage example:**
 ```json
-{"name": "get_verification", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a"}}
+{"name": "get_verification", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8"}}
 ```
 
 **Returns:** the run as the same table, with its accuracy block if the run has one, and the
@@ -596,11 +596,11 @@ estimate, with its sample size. With no review yet it says so and gives no accur
 - Passing the abbreviated id from the report header instead of the full run id.
 
 **Prompt example:**
-> "Show the false-flag rate for run 926f7677-c90e-4236-8f98-3f71f3f61f8a."
+> "Show the false-flag rate for run f57fc863-a31b-4a0a-af73-440f5d1215b8."
 
 **Usage example:**
 ```json
-{"name": "get_accuracy", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a"}}
+{"name": "get_accuracy", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8"}}
 ```
 
 **Returns:** the tally as text. With no review yet it says so, with the number of flags
@@ -619,11 +619,11 @@ PDF; `report.pdf` is accepted too). The default is `csv`.
   pdf or report".
 
 **Prompt example:**
-> "Export run 926f7677-c90e-4236-8f98-3f71f3f61f8a as the one-page committee report."
+> "Export run f57fc863-a31b-4a0a-af73-440f5d1215b8 as the one-page committee report."
 
 **Usage example:**
 ```json
-{"name": "export_verification", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a", "fmt": "report"}}
+{"name": "export_verification", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8", "fmt": "report"}}
 ```
 
 **Returns:** the file as an embedded resource (base64, with its MIME type) at
