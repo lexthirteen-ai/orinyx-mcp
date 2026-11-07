@@ -9,9 +9,12 @@ no LLM in the verdict.
 
 > **Not for clinical use. Orinyx is a testing and evaluation tool that checks medication claims against cited FDA label text. It does not give medical advice, and its results must not be used for diagnosis, treatment or prescribing decisions. A "supported" result means one claim matches the cited label text, not that an order is safe or appropriate. Submit synthetic test data only, never real patient information.**
 
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![CI](https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml"><img src="https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11%2B-blue.svg" alt="Python 3.11+"></a>
+  <a href="https://mcprush.com/to/orinyx-mcp?ref=badge"><img src="https://mcprush.com/badge/orinyx-mcp/score.svg" alt="Orinyx MCP on mcprush"></a>
+</p>
 
 > **Synthetic data only:** never send real patient records, names, dates or record numbers (claim
 > text is stored in the API's audit record).
