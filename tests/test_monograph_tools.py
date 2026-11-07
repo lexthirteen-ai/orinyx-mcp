@@ -77,7 +77,7 @@ def test_finding_monographs_lists_ids_titles_and_the_fda_address():
     text = tools.find_otc_monographs(client, ingredient="Acetaminophen")
     assert client.calls == [("monographs", {"ingredient": "Acetaminophen"})]
     assert "M013" in text and "Internal Analgesic" in text
-    assert "accessdata.fda.gov" in text
+    assert "https://www.accessdata.fda.gov/scripts/cder/omuf/x?id=M013" in text
     assert "not a verdict" in text.lower()
 
 
@@ -103,7 +103,8 @@ def test_reading_a_document_lists_sections_then_returns_capped_cited_text():
     assert "M013.50" in index and "Directions" in index and "page 12" in index
     text = tools.read_otc_monograph_section(client, document_id=7, section="M013.50")
     assert "Do not exceed 4,000 mg" in text
-    assert "M013.50" in text and "version 2" in text and "accessdata.fda.gov" in text
+    assert "M013.50" in text and "version 2" in text
+    assert "https://www.accessdata.fda.gov/drugsatfda_docs/omuf/M013.pdf" in text
     assert "monograph document 7 of M013" in text and "current version" in text
     assert text.index("TRUNCATED: characters 1 to") < text.index("Do not exceed")  # said FIRST
     assert "may contain limits, warnings or exceptions" in text and "offset=" in text
