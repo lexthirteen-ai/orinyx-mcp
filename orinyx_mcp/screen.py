@@ -67,6 +67,7 @@ def screen_strings(texts: Iterable[str | None], patterns: Patterns = SCREEN_PATT
 # exempt. Only the long-number rule relents; every other pattern reads the whole order. Not part
 # of the pinned contract (the engine's copy lives outside SCREEN_PATTERNS too).
 _COUNT_UNIT = r"(?:international[ \t]+units?|usp[ \t]+units?|million[ \t]+units?|units?|iu|miu|mu)"
+_LOCAL_LONG_NUMBER = dict(SCREEN_PATTERNS)["long_number"].pattern
 _LONG_NUMBER_NOT_A_DOSE = re.compile(rf"\b\d{{7,}}\b(?![ \t]?{_COUNT_UNIT}(?![A-Za-z]))", re.I)
 
 
@@ -76,7 +77,9 @@ def screen_orders(orders: Iterable[str | None], patterns: Patterns = SCREEN_PATT
         if not text:
             continue
         for name, pattern in patterns:
-            if name == "long_number":
+            if name == "long_number" and pattern.pattern == _LOCAL_LONG_NUMBER:
+                # The exemption is for this copy's long-number rule only; a long-number rule
+                # the API has since changed is read as the API wrote it.
                 if _LONG_NUMBER_NOT_A_DOSE.search(text):
                     return name
             elif pattern.search(text):

@@ -232,7 +232,6 @@ class ClientPool:
         credential = caller_credential()
         headers = caller_headers(self._config)
         key = hashlib.sha256(credential.encode("utf-8", "surrogatepass")).hexdigest()
-        evicted: list[OrinyxClient] = []
         check = False
         with self._lock:
             entry = self._clients.pop(key, None)
@@ -250,9 +249,7 @@ class ClientPool:
                 check, self._checked = not self._checked, True
             entry[1] += 1
             self._clients[key] = entry
-            idle = [k for k, (_, users) in self._clients.items() if users == 0]
-            while len(self._clients) > self._max_idle and idle:
-                evicted.append(self._clients.pop(idle.pop(0))[0])
+            evicted = self._over_cap()
         for client in evicted:
             client.close()
         if check:
@@ -264,6 +261,16 @@ class ClientPool:
     def _release(self, entry: list) -> None:
         with self._lock:
             entry[1] -= 1
+            evicted = self._over_cap() if entry[1] == 0 else []
+        for client in evicted:
+            client.close()
+
+    def _over_cap(self) -> list[OrinyxClient]:
+        """Under the lock: remove the oldest idle clients beyond `max_idle` and return them,
+        to be closed outside it. A client in use is never among them."""
+        idle = [key for key, (_, users) in self._clients.items() if users == 0]
+        excess = len(idle) - self._max_idle
+        return [self._clients.pop(key)[0] for key in idle[: max(excess, 0)]]
 
     def __len__(self) -> int:
         return len(self._clients)

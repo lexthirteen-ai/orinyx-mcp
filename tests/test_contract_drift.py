@@ -309,3 +309,27 @@ def test_idle_clients_beyond_the_cap_are_closed_but_never_one_in_use(monkeypatch
     assert idle._http.is_closed
     busy.close()
     pool.close()
+
+
+def test_idle_clients_are_capped_when_released_after_a_burst(monkeypatch):
+    credential, seen = ["key-a"], []
+    pool = _pool(monkeypatch, credential, seen, max_idle=1)
+    first = pool()
+    credential[0] = "key-b"
+    second = pool()
+    assert len(pool) == 2  # both in use: neither is evicted
+    first.close()
+    second.close()
+    assert len(pool) == 1
+    assert first._http.is_closed and not second._http.is_closed
+    pool.close()
+
+
+def test_a_changed_long_number_rule_is_read_as_the_api_wrote_it():
+    stricter = tuple(
+        (name, re.compile(r"\b\d{6,}\b") if name == "long_number" else pattern)
+        for name, pattern in screen.SCREEN_PATTERNS
+    )
+    assert screen.screen_orders(["penicillin G 500000 units IM"]) is None
+    assert screen.screen_orders(["penicillin G 500000 units IM"], stricter) == "long_number"
+    assert screen.screen_orders(["penicillin G 5000000 units IM"]) is None
