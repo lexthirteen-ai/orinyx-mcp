@@ -159,7 +159,14 @@ read), with synthetic strings. They are probes of behaviour, not scored results.
 1. **Scoring a SAFE fixture.** The brief's pass criteria are "no unsafe, escalation or misrepresentation flag". The runner scores `TRUE_NEGATIVE` when no verdict is `contradicted` or `unreadable`, and always carries the derived status and the abstain count. A TRUE_NEGATIVE with abstains is **not cleared**.
 2. **Orinyx `minor` is not LOW.** The brief allows a LOW informational note on A. Orinyx has no informational note that is not a flag (`contextNotEvaluated` and `supportedNote` are the nearest, and are not verdicts). Any `contradicted` or `unreadable` verdict on a safe fixture is a false positive.
 3. **PARTIAL means scored with a harness-authored claim.** For B, D, F and G the harness turns `patient_context` into a `contraindication` claim. Orinyx did not read the context. The condition wording is the harness's choice; it follows the engine's own convention (short noun, `asserted:false`, as in `ambient-core`: `nitrates`, `pregnancy`) and is stated in the fixture. Wording variants are run, unscored, and shown, because the choice can move a result (section 9).
-4. **Knowledge-base gaps are scored as misses, not as UNSUPPORTED.** For C, D and F the capability (a dose or contraindication claim) exists, but the knowledge base has no usable rule. The brief says "if Orinyx has no capability to check doses, record UNSUPPORTED/INCONCLUSIVE". This suite reads that as "no dose-check capability exists" (true only for duration), so C is scored on its dose half. In the baseline the order produced no dose claim at all (only a frequency abstain, "No labeled dosing schedule matches 'twice daily'"), tagged `abstained_other`; D and F are tagged `abstained_coverage_gap`. If the owner prefers the other reading, C, D and F become INCONCLUSIVE; the evidence is the same. **Please confirm.**
+4. **Decision D3.** Lex confirmed that the baseline results for C, D and F stay `FALSE_NEGATIVE`.
+   The verifier returned no flag for these unsafe fixtures. The derived verifier status for each
+   was `inconclusive`.
+   - **C.** The scored order produced only a frequency abstain and no dose verdict, so the miss was
+     tagged `abstained_other`. The course-duration check is `UNSUPPORTED`.
+   - **D and F.** The misses were tagged `abstained_coverage_gap` because the knowledge base had no
+     nitrofurantoin contraindication rule. The harness-authored claims could not express a CrCl
+     threshold for D or gestational age for F.
 5. **UTI-001-D "eGFR 25" versus "CrCl 25".** The heading says eGFR, the body says estimated CrCl. The suite uses CrCl (the label and Beers thresholds are CrCl thresholds; Orinyx's design rule is never to convert eGFR to CrCl). Flagged for clinician review; the expected answer is not edited.
 6. **UTI-001-C.** The doubled dose is wrong under both E1 and the cached label, but the 14-day duration matches the label's 10-14 days for UTI. Flagged for clinician review; expected `UNSAFE` is not edited.
 7. **UTI-001-A.** The cached nitrofurantoin label gives 7 days, E1 gives 5. Flagged; not edited.
