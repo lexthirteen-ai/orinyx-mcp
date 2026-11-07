@@ -328,6 +328,24 @@ def test_an_exemption_needs_a_reason(tmp_path, capsys):
     assert "deny_exemptions must be a list" in failing(release.write(), capsys)
 
 
+@pytest.mark.parametrize("value", [None, 5, True, "fly.toml", {"path": "x", "reason": "y"}])
+def test_deny_exemptions_that_are_not_a_list_fail_without_a_traceback(tmp_path, capsys, value):
+    release = Release(tmp_path)
+    release.manifest["deny_exemptions"] = value
+    out = failing(release.write(), capsys)
+    assert "FAIL: manifest deny_exemptions must be a list" in out
+    assert "check_dist: FAIL" in out
+
+
+@pytest.mark.parametrize("value", [None, 5])
+def test_deny_exemptions_that_are_not_a_list_excuse_nothing(tmp_path, capsys, value):
+    release = Release(tmp_path)
+    release.wheel_files["orinyx_mcp/fly.toml"] = b"x"
+    release.manifest["wheel"] = sorted(release.wheel_files)
+    release.manifest["deny_exemptions"] = value
+    assert "holds a path the deny rules refuse" in failing(release.write(), capsys, source=False)
+
+
 def test_a_version_mismatch_in_the_wheel_fails(tmp_path, capsys):
     release = Release(tmp_path)
     release.wheel_files[f"{DIST_INFO}/METADATA"] = metadata(version="9.9.8")
@@ -413,6 +431,100 @@ def test_a_checksum_file_is_allowed(tmp_path):
     release = Release(tmp_path).write()
     (release.dist / "SHA256SUMS").write_text("0  file\n")
     assert release.run() == 0
+
+
+def rename_archive(release: Release, suffix: str, name: str) -> None:
+    """Give the one archive with this suffix a new file name. Its bytes do not change."""
+    [archive] = release.dist.glob(f"*{suffix}")
+    before = archive.read_bytes()
+    assert archive.rename(release.dist / name).read_bytes() == before
+
+
+def test_the_correct_file_names_pass(tmp_path, capsys):
+    release = Release(tmp_path).write()
+    assert sorted(p.name for p in release.dist.iterdir()) == [
+        "orinyx_mcp-9.9.9-py3-none-any.whl",
+        "orinyx_mcp-9.9.9.tar.gz",
+    ]
+    assert release.run() == 0
+    assert "check_dist: ok" in capsys.readouterr().out
+
+
+def test_the_correct_wheel_name_passes_in_a_wheel_only_release(tmp_path):
+    release = Release(tmp_path).make_wheel_only().write(sdist=False)
+    assert [p.name for p in release.dist.iterdir()] == ["orinyx_mcp-9.9.9-py3-none-any.whl"]
+    assert release.run() == 0
+
+
+@pytest.mark.parametrize("source", [True, False])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "orinyx_mcp-9.9.8.tar.gz",  # wrong version
+        "orinyx_mcp-9.9.9rc1.tar.gz",
+        "other_project-9.9.9.tar.gz",  # wrong project
+        "orinyx-mcp-9.9.9.tar.gz",
+        "Orinyx_mcp-9.9.9.tar.gz",
+    ],
+)
+def test_a_valid_sdist_under_a_wrong_name_fails(tmp_path, capsys, name, source):
+    release = Release(tmp_path).write()
+    rename_archive(release, ".tar.gz", name)
+    out = failing(release, capsys, source=source)
+    assert f"sdist file is named {name!r}, expected 'orinyx_mcp-9.9.9.tar.gz'" in out
+    assert "check_dist: FAIL" in out
+    assert "Traceback" not in out
+
+
+WRONG_WHEEL_NAMES = [
+    "orinyx_mcp-9.9.8-py3-none-any.whl",  # wrong version
+    "orinyx_mcp-9.9.9rc1-py3-none-any.whl",
+    "other_project-9.9.9-py3-none-any.whl",  # wrong project
+    "orinyx-mcp-9.9.9-py3-none-any.whl",
+    "Orinyx_mcp-9.9.9-py3-none-any.whl",
+    "orinyx_mcp-9.9.9-py2.py3-none-any.whl",  # wrong tag
+    "orinyx_mcp-9.9.9-cp312-cp312-macosx_11_0_arm64.whl",
+    "orinyx_mcp-9.9.9-py3-none-linux_x86_64.whl",
+    "orinyx_mcp-9.9.9-1-py3-none-any.whl",  # a build number
+    "orinyx_mcp-9.9.9.whl",
+]
+
+
+@pytest.mark.parametrize("source", [True, False])
+@pytest.mark.parametrize("name", WRONG_WHEEL_NAMES)
+def test_a_valid_wheel_under_a_wrong_name_fails(tmp_path, capsys, name, source):
+    release = Release(tmp_path).write()
+    rename_archive(release, ".whl", name)
+    out = failing(release, capsys, source=source)
+    assert f"wheel file is named {name!r}, expected 'orinyx_mcp-9.9.9-py3-none-any.whl'" in out
+    assert "check_dist: FAIL" in out
+    assert "Traceback" not in out
+
+
+@pytest.mark.parametrize("name", WRONG_WHEEL_NAMES)
+def test_a_wheel_only_release_refuses_a_wrong_wheel_name(tmp_path, capsys, name):
+    release = Release(tmp_path).make_wheel_only().write(sdist=False)
+    rename_archive(release, ".whl", name)
+    assert f"wheel file is named {name!r}" in failing(release, capsys)
+
+
+def test_both_wrong_names_are_reported(tmp_path, capsys):
+    release = Release(tmp_path).write()
+    rename_archive(release, ".tar.gz", "orinyx_mcp-9.9.8.tar.gz")
+    rename_archive(release, ".whl", "orinyx_mcp-9.9.8-py3-none-any.whl")
+    out = failing(release, capsys)
+    assert "sdist file is named" in out
+    assert "wheel file is named" in out
+
+
+def test_the_names_follow_the_manifest_version_not_the_source_version(tmp_path, capsys):
+    """A manifest that is ahead of the tree already fails; the names are held to the manifest."""
+    release = Release(tmp_path)
+    release.manifest["version"] = "9.9.8"
+    out = failing(release.write(), capsys)
+    assert "differs from __version__" in out
+    assert "expected 'orinyx_mcp-9.9.8.tar.gz'" in out
+    assert "expected 'orinyx_mcp-9.9.8-py3-none-any.whl'" in out
 
 
 def test_a_wheel_only_manifest_needs_no_sdist(tmp_path, capsys):
