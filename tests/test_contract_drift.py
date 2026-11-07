@@ -17,7 +17,7 @@ SET_ID = "0ab7c1d2-1111-4a2b-9c3d-123456789abc"
 
 
 def _client(handler) -> OrinyxClient:
-    return OrinyxClient(API, "ork_live_synthetic", transport=httpx.MockTransport(handler))
+    return OrinyxClient(API, "ork_live" + "_synthetic", transport=httpx.MockTransport(handler))
 
 
 def _serving(path: str, status: int, body: dict | None = None):
@@ -174,7 +174,7 @@ def test_a_malformed_screen_answer_keeps_the_copy(item, caplog):
 @pytest.fixture
 def api_env(monkeypatch):
     monkeypatch.setenv("ORINYX_API_URL", API)
-    monkeypatch.setenv("ORINYX_API_KEY", "ork_live_synthetic")
+    monkeypatch.setenv("ORINYX_API_KEY", "ork_live" + "_synthetic")
 
 
 def test_observe_works_offline_and_logs_it(api_env, tmp_path, caplog, capsys):

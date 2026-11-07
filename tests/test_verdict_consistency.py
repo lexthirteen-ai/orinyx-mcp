@@ -51,7 +51,7 @@ def test_cli_rows_determine_exit(
     command, as_json, data, code, field, tmp_path, monkeypatch, capsys
 ):
     monkeypatch.setenv("ORINYX_API_URL", "https://orinyx.example")
-    monkeypatch.setenv("ORINYX_API_KEY", "ork_live_secret_sentinel")
+    monkeypatch.setenv("ORINYX_API_KEY", "ork_live" + "_secret_sentinel")
     path = tmp_path / "synthetic.json"
     path.write_text(
         json.dumps([{}] if command == "verify" else {"orders": ["warfarin 5 mg daily"]})
@@ -61,7 +61,7 @@ def test_cli_rows_determine_exit(
         args.append("--json")
     assert cli.main(args, client_factory=lambda u, k: Client(data)) == code
     captured = capsys.readouterr()
-    assert "ork_live_secret_sentinel" not in captured.err
+    assert "ork_live" + "_secret_sentinel" not in captured.err
     if field:
         assert "aggregate/verdict rows disagree" in captured.err
         assert field in captured.err

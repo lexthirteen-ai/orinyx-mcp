@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="orinyx_mcp/assets/orinyx-star-96.png" alt="Orinyx star logo" width="96" height="96">
+  <img src="https://raw.githubusercontent.com/lexthirteen-ai/orinyx-mcp/main/orinyx_mcp/assets/orinyx-star-96.png" alt="Orinyx star logo" width="96" height="96">
 </p>
 
 <h1 align="center">Orinyx MCP Server</h1>
@@ -9,9 +9,9 @@ no LLM in the verdict.
 
 > **Not for clinical use. Orinyx is a testing and evaluation tool that checks medication claims against cited FDA label text. It does not give medical advice, and its results must not be used for diagnosis, treatment or prescribing decisions. A "supported" result means one claim matches the cited label text, not that an order is safe or appropriate. Submit synthetic test data only, never real patient information.**
 
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/LICENSE)
 [![CI](https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/pyproject.toml)
 
 > **Synthetic data only:** never send real patient records, names, dates or record numbers (claim
 > text is stored in the API's audit record).
@@ -36,7 +36,7 @@ issued by Orinyx.
   set ID, version and source address, for developer accounts. Reference text, not a verdict.
 - **Scored exams for AI products.** A product account sits an exam on a fixed, synthetic test
   set held on the server; every report adds speed. Families and their limits are in
-  [docs/EXAMS.md](docs/EXAMS.md).
+  [docs/EXAMS.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/EXAMS.md).
 - **A CLI for CI.** `orinyx verify` and `orinyx observe` exit 0 clean, 2 flagged, 3 not
   verified and 1 on error, so a pipeline can fail on a flag.
 - **Hosted or local.** A hosted connector with nothing to install, or a stdio server from a
@@ -83,7 +83,7 @@ CI need a key issued by Orinyx.
 The only official package is `orinyx-mcp`, published only from
 `github.com/lexthirteen-ai/orinyx-mcp`. Anything else named orinyx isn't Orinyx's.
 
-If a step fails, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). What is tested is
+If a step fails, see [docs/TROUBLESHOOTING.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/TROUBLESHOOTING.md). What is tested is
 under [Supported environments](#supported-environments).
 
 ### Hosted connector (the self-serve path)
@@ -101,8 +101,8 @@ The client sends you to the Orinyx sign-in page (OAuth 2.1; the API is the autho
 server) and you sign in with your Orinyx account. A self-serve account signs in this way and
 has no key.
 
-Per-client setup, a CI recipe and exam steps are in [docs/QUICKSTART.md](docs/QUICKSTART.md).
-Its [first run](docs/QUICKSTART.md#first-run) checks two bundled synthetic orders, one clean
+Per-client setup, a CI recipe and exam steps are in [docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md).
+Its [first run](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#first-run) checks two bundled synthetic orders, one clean
 and one with a planted error, and shows the output to expect.
 
 #### Claude Code
@@ -272,7 +272,7 @@ docker run --rm -p 8000:8000 \
 ```
 
 `MCP_PUBLIC_URL` must be an https URL (plain http only for localhost). The Fly.io layout is in
-[docs/DEPLOY.md](docs/DEPLOY.md).
+[docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md).
 
 ### Supported environments
 
@@ -318,8 +318,8 @@ MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example orinyx-mcp
 ```
 
 How the server handles the bearer an agent presents is in
-[docs/DEPLOY.md](docs/DEPLOY.md#how-the-network-server-works).
-[docs/DEPLOY.md](docs/DEPLOY.md) has the Fly.io layout.
+[docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md#how-the-network-server-works).
+[docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md) has the Fly.io layout.
 
 ### Gateway (another MCP server)
 
@@ -335,8 +335,8 @@ carries both. It is off unless `DOWNSTREAM_MCP_URL` is set:
 | `DOWNSTREAM_MCP_NAME` | how agents are told where those tools come from (default: its host name) |
 
 What is relayed, and what is never sent there, is in
-[docs/GATEWAY_TESTING.md](docs/GATEWAY_TESTING.md#how-the-gateway-works). Partners follow
-[docs/GATEWAY_TESTING.md](docs/GATEWAY_TESTING.md), starting with
+[docs/GATEWAY_TESTING.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/GATEWAY_TESTING.md#how-the-gateway-works). Partners follow
+[docs/GATEWAY_TESTING.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/GATEWAY_TESTING.md), starting with
 `python evals/gateway_check.py`.
 
 ## How to choose a tool
@@ -383,7 +383,7 @@ What a credential can reach is fixed by its account type, enforced by the API:
 
 A developer account runs quick checks and the FDA reference lookups: the exam tools are
 refused for a developer account
-([release notes](docs/RELEASE_NOTES_2026-11-02.md#what-is-not-in-this-release)).
+([release notes](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/RELEASE_NOTES_2026-11-02.md#what-is-not-in-this-release)).
 
 ## Available tools
 
@@ -468,7 +468,7 @@ Optional: `tool_name` and `tool_version` (named in the report header) and `check
 
 **Returns:** Orinyx splits each order into its dose, route and frequency claims (rules, no
 model) and answers with one table row per claim. The order above is one of the two
-[first-run examples](examples/first-run/), with its dose error planted. The output below was
+[first-run examples](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/examples/first-run/), with its dose error planted. The output below was
 captured on 2026-10-22 from Orinyx engine 0.3.1 running on a local machine. It was not written
 by hand. Run ids and times differ from run to run:
 
@@ -855,7 +855,7 @@ per case.
 ```
 
 **Returns:** the scored report. What each exam family measures is in
-[docs/EXAMS.md](docs/EXAMS.md).
+[docs/EXAMS.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/EXAMS.md).
 
 While a product account sits an exam over the network server, the service posts one trace row
 per exam tool call to the API with the caller's own credential; a failed trace post is logged
@@ -895,7 +895,7 @@ record: a `.txt` file is one record with one order per line; in `.jsonl` or `.js
 (default `orders`) is the dotted path to each record's orders; a directory reads its `.txt`,
 `.jsonl` and `.json` files. Before anything is sent, a record that looks like it holds a
 patient identifier refuses the whole run. Setup and output are in
-[docs/QUICKSTART.md](docs/QUICKSTART.md#observe-a-test-run).
+[docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#observe-a-test-run).
 
 Exit codes from `verify` and `get`:
 
@@ -911,7 +911,7 @@ and `export` exit 0 on success and 1 on error. Usage errors exit 1, never 2, so 
 typo cannot read as "flagged".
 
 A GitHub Actions step that fails the job on a flag (full recipe in
-[docs/QUICKSTART.md](docs/QUICKSTART.md#ci-recipe)):
+[docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#ci-recipe)):
 
 ```yaml
 - name: Check the agent's medication claims with Orinyx
@@ -978,7 +978,7 @@ Every non-2xx answer, malformed answer or transport failure raises `OrinyxApiErr
 - **No "safe by default".** `abstain` means unchecked, never safe.
 - **No model in the verdict.** No language model decides a verdict, a severity or a score.
 
-The release notes list this release's [known limits](docs/RELEASE_NOTES_2026-11-02.md#known-limits):
+The release notes list this release's [known limits](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/RELEASE_NOTES_2026-11-02.md#known-limits):
 gaps in the knowledge base and the checks. Most show up as a NOT VERIFIED row, a refused
 order or a daily total that was not checked, so a missing flag is never evidence that an order
 is safe.
@@ -1004,11 +1004,11 @@ Scripted checks:
 ## Contributing
 
 Contributions are welcome. Setup, the rules a change must keep and how licensing works are in
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/CONTRIBUTING.md).
 
 ## Security
 
-Report a vulnerability privately, never in a public issue: see [SECURITY.md](SECURITY.md).
+Report a vulnerability privately, never in a public issue: see [SECURITY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/SECURITY.md).
 
 ## Acknowledgements
 
@@ -1026,4 +1026,4 @@ dataset by NVIDIA Corporation, licensed under CC BY 4.0
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+Apache-2.0. See [LICENSE](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/LICENSE).
