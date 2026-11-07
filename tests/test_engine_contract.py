@@ -6,7 +6,9 @@ copy of the contract fixture the Orinyx API exports, which the API's own tests r
 its identifier screen, its verdict engine and its label sections. Its `_note` belongs to this
 copy and was reworded for publication (2026-11-02). A change on either side fails that side's
 test; the maintenance step, until a shared package exists, is: change the engine, re-export
-its fixture, copy the VALUES here, keep this copy's `_note`, and recompute `sha256`."""
+its fixture, copy the VALUES here, keep this copy's `_note`, and recompute `sha256`
+(and `LABEL_SECTIONS_SHA256` / `SCREEN_PATTERNS_SHA256`). At run time `orinyx_mcp.contract`
+checks the copies against the API's own lists and logs drift (tests/test_contract_drift.py)."""
 
 import hashlib
 import json
