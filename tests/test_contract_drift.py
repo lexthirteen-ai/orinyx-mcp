@@ -273,7 +273,7 @@ def _pool(monkeypatch, credential: list[str], seen: list[httpx.Request], **kwarg
 
 
 def test_one_pooled_client_per_credential_never_shared(monkeypatch):
-    credential, seen = ["ork_live_synthetic_a"], []
+    credential, seen = ["key-a"], []
     pool = _pool(monkeypatch, credential, seen)
     first = pool()
     first.labels("warfarin")
@@ -281,14 +281,14 @@ def test_one_pooled_client_per_credential_never_shared(monkeypatch):
     second = pool()
     assert second._http is first._http
     second.close()
-    credential[0] = "ork_live_synthetic_b"
+    credential[0] = "key-b"
     other = pool()
     assert other._http is not first._http
     other.labels("warfarin")
     other.close()
     assert [r.headers["Authorization"] for r in seen] == [
-        "Bearer ork_live_synthetic_a",
-        "Bearer ork_live_synthetic_b",
+        "Bearer key-a",
+        "Bearer key-b",
     ]
     assert all(r.headers["X-Request-Id"] == "req-1" for r in seen)
     assert len(pool) == 2
@@ -297,13 +297,13 @@ def test_one_pooled_client_per_credential_never_shared(monkeypatch):
 
 
 def test_idle_clients_beyond_the_cap_are_closed_but_never_one_in_use(monkeypatch):
-    credential, seen = ["ork_live_synthetic_a"], []
+    credential, seen = ["key-a"], []
     pool = _pool(monkeypatch, credential, seen, max_idle=1)
     busy = pool()
-    credential[0] = "ork_live_synthetic_b"
+    credential[0] = "key-b"
     idle = pool()
     idle.close()
-    credential[0] = "ork_live_synthetic_c"
+    credential[0] = "key-c"
     pool().close()
     assert not busy._http.is_closed
     assert idle._http.is_closed
