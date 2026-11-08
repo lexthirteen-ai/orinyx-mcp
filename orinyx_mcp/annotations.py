@@ -3,18 +3,17 @@
 Each hint follows the tool's real effect on the Orinyx API it calls (checked against the
 engine's routes, 2026-11-08):
 
-- readOnlyHint: the call writes nothing. The verification reads, the reference lookups,
-  start_a_test, the exam report and the Arena reads are GETs. The exam tools also post the
-  call's own trace row on the service hop; that row records the call and never changes a
-  run or a result, as the access log does not.
+- readOnlyHint: the verification reads, the reference lookups, start_a_test, the exam report
+  and the Arena reads are classified as read-only. The exam report keeps its owner-approved
+  read-only classification even though exam calls post trace rows on the service hop.
 - destructiveHint: the call ends something that cannot be reopened. finish_exam closes the
   sitting: it is scored and no answer can be added afterwards. Every other write is additive.
 - idempotentHint: repeating the call with the same arguments has no further effect.
-  get_next_exam_case serves the same unanswered case without restarting its clock;
-  get_exam_cases writes its one "listed in bulk" marker once; a repeated exam answer is
-  accepted as recorded or refused (409) when it differs; a second finish_exam is refused
-  (409); the Arena writes take a request_id the engine deduplicates on. A verification and
-  an export each append a new run or a new audit-chain event, so neither is idempotent.
+  The four exam writes are not idempotent: every vendor attempt adds a trace row, including
+  cached answers and refusals, and those attempts change the report's trajectory measurements
+  even when the exam state is unchanged. The Arena writes take a request_id the engine
+  deduplicates on. A verification and an export each append a new run or a new audit-chain
+  event, so neither is idempotent.
 - openWorldHint is false throughout: every tool reaches the Orinyx API only, never the web
   or another service.
 
@@ -36,7 +35,7 @@ def _hints(*, read_only: bool, destructive: bool = False, idempotent: bool) -> T
 _READ = _hints(read_only=True, idempotent=True)
 _ADD = _hints(read_only=False, idempotent=False)
 _ADD_ONCE = _hints(read_only=False, idempotent=True)
-_CLOSE = _hints(read_only=False, destructive=True, idempotent=True)
+_CLOSE = _hints(read_only=False, destructive=True, idempotent=False)
 
 TOOL_METADATA: dict[str, tuple[str, ToolAnnotations]] = {
     # Medication checks and their runs
@@ -53,9 +52,9 @@ TOOL_METADATA: dict[str, tuple[str, ToolAnnotations]] = {
     "read_fda_label_section": ("Read an FDA label section", _READ),
     # Tests and exams
     "start_a_test": ("Choose a test", _READ),
-    "get_next_exam_case": ("Get the next exam case", _ADD_ONCE),
-    "get_exam_cases": ("Get every exam case", _ADD_ONCE),
-    "submit_exam_answers": ("Submit exam answers", _ADD_ONCE),
+    "get_next_exam_case": ("Get the next exam case", _ADD),
+    "get_exam_cases": ("Get every exam case", _ADD),
+    "submit_exam_answers": ("Submit exam answers", _ADD),
     "finish_exam": ("Finish an exam", _CLOSE),
     "get_exam_report": ("Read an exam report", _READ),
     # Arena (registered only when ORINYX_ARENA_ENABLED is "true")
