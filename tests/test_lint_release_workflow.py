@@ -52,7 +52,7 @@ jobs:
       # python -m build is only a comment
   testpypi:
     needs: build
-    if: ${{{{ needs.preflight.outputs.target == 'testpypi' }}}}
+    environment: testpypi
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -64,8 +64,8 @@ jobs:
           rm -f dist/SHA256SUMS
       - uses: pypa/gh-action-pypi-publish@{SHA} # v1.14.3
   pypi:
-    needs: build
-    if: ${{{{ needs.preflight.outputs.target == 'pypi' }}}}
+    needs: [build, testpypi]
+    environment: pypi
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -193,8 +193,34 @@ LATE = GOOD.replace(CHECK_STEP, "").replace(
         ),
         (mutated("release-${{ github.ref_name }}", "release"), "github.ref_name"),
         (mutated("TAG: ${{ github.ref_name }}", "TAG: ${{ inputs.tag }}"), "reads inputs."),
-        (mutated("target == 'pypi'", "target != 'testpypi'"), "only on target pypi"),
-        (mutated("target == 'testpypi'", "target != 'pypi'"), "only on target testpypi"),
+        (mutated("needs: [build, testpypi]", "needs: build"), "must depend on testpypi"),
+        (
+            mutated("needs: [build, testpypi]", "needs: build # testpypi"),
+            "must depend on testpypi",
+        ),
+        (
+            mutated("needs: [build, testpypi]", "needs: [build] # testpypi"),
+            "must depend on testpypi",
+        ),
+        (
+            mutated("needs: [build, testpypi]", "needs: testpypi # build"),
+            "must depend on build",
+        ),
+        (mutated("needs: [build, testpypi]", "needs: testpypi"), "must depend on build"),
+        (mutated("needs: build", "needs: preflight"), "must depend on build"),
+        (mutated("needs: build", "needs: preflight # build"), "must depend on build"),
+        (mutated("environment: pypi", "environment: production"), "environment pypi"),
+        (mutated("environment: testpypi", "environment: pypi"), "environment testpypi"),
+        (
+            mutated("environment: pypi", "environment: pypi\n    if: always()"),
+            "default success condition",
+        ),
+        (
+            mutated("environment: testpypi", "environment: testpypi\n    if: false"),
+            "default success condition",
+        ),
+        (mutated("  testpypi:", "  staging:"), "no testpypi publish job"),
+        (mutated("  pypi:", "  production:"), "no pypi publish job"),
         (mutated("--signer-workflow r/.github/workflows/release.yml", ""), "--signer-workflow"),
     ],
 )
@@ -210,6 +236,13 @@ def test_an_expression_in_env_or_with_is_allowed():
         )
         == []
     )
+
+
+def test_valid_dependencies_can_have_inline_comments():
+    annotated = GOOD.replace("needs: build", "needs: build # wait for build").replace(
+        "needs: [build, testpypi]", "needs: [build, testpypi] # wait for rehearsal"
+    )
+    assert lint_mod.lint(annotated) == []
 
 
 def test_main_exit_codes(tmp_path, capsys):
