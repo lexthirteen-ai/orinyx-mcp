@@ -88,7 +88,13 @@ package to PyPI. Before the November 9 announcement:
    the combined release notes before tagging. Existing tags must not be moved. From
    the reviewed release commit, create and push the matching `v0.1.5` tag. The workflow refuses a
    tag/version mismatch, tests the package, then builds a wheel and sdist with
-   `python -I -m build` and validates their metadata with Twine.
+   `python -I -m build` and validates their metadata with Twine. Only stable
+   `v<major>.<minor>.<patch>` tags select PyPI; prerelease tags are refused.
+   `scripts/lint_release_workflow.py` governs the workflow, and
+   `scripts/check_dist.py` validates both archives against the version's exact
+   manifest in `release/manifests/`, the source tree and the Registry marker.
+   Update that manifest whenever packaged files change. Checksums and an exact
+   file-list check are repeated in the publishing job before upload.
 5. Approve the `pypi` environment deployment. Only the publishing job has
    `id-token: write`; it downloads the build artifact and uses
    `pypa/gh-action-pypi-publish` with OIDC, with no source checkout or build there.

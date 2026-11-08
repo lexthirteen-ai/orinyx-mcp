@@ -4,6 +4,8 @@
 
 <h1 align="center">Orinyx MCP Server</h1>
 
+<!-- mcp-name: io.github.lexthirteen-ai/orinyx-mcp -->
+
 Test your healthcare AI agent against cited FDA labels and coded answer keys. Deterministic:
 no LLM in the verdict.
 
