@@ -194,8 +194,21 @@ LATE = GOOD.replace(CHECK_STEP, "").replace(
         (mutated("release-${{ github.ref_name }}", "release"), "github.ref_name"),
         (mutated("TAG: ${{ github.ref_name }}", "TAG: ${{ inputs.tag }}"), "reads inputs."),
         (mutated("needs: [build, testpypi]", "needs: build"), "must depend on testpypi"),
+        (
+            mutated("needs: [build, testpypi]", "needs: build # testpypi"),
+            "must depend on testpypi",
+        ),
+        (
+            mutated("needs: [build, testpypi]", "needs: [build] # testpypi"),
+            "must depend on testpypi",
+        ),
+        (
+            mutated("needs: [build, testpypi]", "needs: testpypi # build"),
+            "must depend on build",
+        ),
         (mutated("needs: [build, testpypi]", "needs: testpypi"), "must depend on build"),
         (mutated("needs: build", "needs: preflight"), "must depend on build"),
+        (mutated("needs: build", "needs: preflight # build"), "must depend on build"),
         (mutated("environment: pypi", "environment: production"), "environment pypi"),
         (mutated("environment: testpypi", "environment: pypi"), "environment testpypi"),
         (
@@ -223,6 +236,13 @@ def test_an_expression_in_env_or_with_is_allowed():
         )
         == []
     )
+
+
+def test_valid_dependencies_can_have_inline_comments():
+    annotated = GOOD.replace("needs: build", "needs: build # wait for build").replace(
+        "needs: [build, testpypi]", "needs: [build, testpypi] # wait for rehearsal"
+    )
+    assert lint_mod.lint(annotated) == []
 
 
 def test_main_exit_codes(tmp_path, capsys):

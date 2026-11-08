@@ -202,7 +202,7 @@ def lint(text: str) -> list[str]:
             (line.removeprefix("    needs:") for line in body if line.startswith("    needs:")),
             "",
         )
-        dependencies = set(re.findall(r"[A-Za-z0-9_-]+", needs))
+        dependencies = set(re.findall(r"[A-Za-z0-9_-]+", needs.partition("#")[0]))
         for dependency in ("build", "testpypi") if name == "pypi" else ("build",):
             if dependency not in dependencies:
                 failures.append(f"job {name!r} must depend on {dependency}")
