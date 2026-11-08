@@ -12,8 +12,8 @@ Planned release: **0.1.5**.
 - Tag-driven PyPI publishing through GitHub OIDC and the protected `pypi` environment.
   The workflow tests and builds the package, requires a matching version tag, and publishes
   only the resulting wheel and source distribution without a long-lived PyPI token.
-- Local installation with `pip install orinyx-mcp` and `uvx orinyx-mcp stdio`, CLI examples,
-  and the engine's session-only self-serve key flow. The engine must be deployed first;
+- [Local package/stdio setup and CLI examples](README.md#install), alongside the engine's
+  session-only self-serve key flow. The engine must be deployed first;
   developer keys carry only `verify:read` and `verify:write` and expire within 90 days.
 
 ### Changed
