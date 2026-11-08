@@ -19,6 +19,7 @@ NOT_EXPORTED = ("SMOKE_TEST", "docs/qa/")
 # No README target stays relative.
 HELD_RELATIVE = []
 DEPENDENCIES = [
+    "keyring>=25.7,<26",
     "mcp>=2.3,<3",
     "httpx>=0.28,<1",
     "httpx2>=2.13,<3",
@@ -61,7 +62,7 @@ def test_the_dependencies_are_exactly_the_bounded_ranges():
 
 def test_every_locked_version_is_inside_its_range():
     locked = dict(
-        line.split("==")
+        line.split(";", 1)[0].strip().split("==", 1)
         for line in (ROOT / "requirements.lock").read_text(encoding="utf-8").splitlines()
         if "==" in line and not line.startswith("#")
     )

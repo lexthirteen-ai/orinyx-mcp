@@ -9,6 +9,11 @@ Planned release: **0.1.5**.
 
 ### Added
 
+- `orinyx login`, `logout`, and `status`: browser OAuth with native keychain storage,
+  rotating refresh, and CLI/stdio credential resolution. Verification and Arena are included
+  according to account permissions; exams remain excluded. Explicit environment keys win.
+  Requires the companion L9 engine policy update before use; not yet deployed or published.
+
 - Tag-driven PyPI publishing through GitHub OIDC and the protected `pypi` environment.
   The workflow tests and builds the package, requires a matching version tag, and publishes
   only the resulting wheel and source distribution without a long-lived PyPI token.

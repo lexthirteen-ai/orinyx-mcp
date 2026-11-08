@@ -3,8 +3,8 @@ MCP (LangChain, CrewAI, AutoGen call it as a subprocess, or import OrinyxClient)
 `orinyx observe` reads an agent's saved output instead and checks every order in it, so the
 agent under test does not choose what gets checked.
 
-Credentials come from the environment only (ORINYX_API_URL, ORINYX_API_KEY), never from
-flags, so an API key never lands in shell history. Exit codes: 0 clean, 2 flagged (a
+API keys come only from the environment (ORINYX_API_URL, ORINYX_API_KEY), never from
+flags. Local OAuth login is stored in the OS keychain. Exit codes: 0 clean, 2 flagged (a
 label flag, or an order that cannot be read as written), 3 not verified (no flag but an
 abstain: the label did not settle a claim), 1 error — so a calling framework can branch on
 the result without parsing text.
@@ -122,7 +122,7 @@ def _without_values(message: str) -> str:
 
 _FORMATS = {"csv": "csv", "pdf": "pdf", "report": "report.pdf"}
 
-ClientFactory = Callable[[str, str], OrinyxClient]
+ClientFactory = Callable[..., OrinyxClient]
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -134,6 +134,12 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     sub = parser.add_subparsers(dest="command", required=True, parser_class=_Parser)
+
+    login = sub.add_parser("login", help="sign in for verification and Arena")
+    login.add_argument("--no-browser", action="store_true", help="open the printed URL yourself")
+    sub.add_parser("logout", help="revoke and remove the saved login (leaves API keys unchanged)")
+    status = sub.add_parser("status", help="show the credential source without displaying secrets")
+    status.add_argument("--json", action="store_true")
 
     verify = sub.add_parser("verify", help="verify claims from a JSON file")
     verify.add_argument(
@@ -391,16 +397,79 @@ def _observe(client: OrinyxClient, args) -> int:
     return EXIT_CLEAN
 
 
+def _auth_command(args, url: str, key: str | None) -> int:
+    from orinyx_mcp.credentials import AuthError, CredentialStore
+    from orinyx_mcp.login import login, logout
+
+    try:
+        if args.command == "login":
+            login(url, no_browser=args.no_browser)
+            print("Signed in for verification and Arena (subject to your account's permissions).")
+            if key:
+                print(
+                    "ORINYX_API_KEY is set and still takes precedence over this login.",
+                    file=sys.stderr,
+                )
+        elif args.command == "logout":
+            logout(url)
+            print("Saved login removed. Environment API keys are unchanged.")
+        else:
+            if key:
+                status = {"credentialSource": "environment", "apiKeyOverridesLogin": True}
+            else:
+                record = CredentialStore(url).load()
+                status = {
+                    "credentialSource": "login" if record and record.tokens else "none",
+                    "scopes": (record.tokens.scope or "").split()
+                    if record and record.tokens
+                    else [],
+                }
+            print(
+                json.dumps(status)
+                if args.json
+                else f"Credential source: {status['credentialSource']}."
+            )
+        return EXIT_CLEAN
+    except AuthError as exc:
+        print(f"orinyx: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    except OSError:
+        print(
+            "orinyx: Login operation failed on this device. No credential is shown.",
+            file=sys.stderr,
+        )
+        return EXIT_ERROR
+    except KeyboardInterrupt:
+        print("orinyx: Sign-in cancelled.", file=sys.stderr)
+        return EXIT_ERROR
+
+
 def main(argv: Sequence[str] | None = None, client_factory: ClientFactory | None = None) -> int:
     args = _parser().parse_args(argv)
     url = os.environ.get("ORINYX_API_URL")
     key = os.environ.get("ORINYX_API_KEY")
-    if not url or not key:
+    from orinyx_mcp.credentials import DEFAULT_API_URL, AuthError, saved_login
+
+    if args.command in ("login", "logout", "status"):
+        return _auth_command(args, url or DEFAULT_API_URL, key)
+    provider = None
+    if not key:
+        try:
+            provider = saved_login(url or DEFAULT_API_URL)
+        except AuthError as exc:
+            print(f"orinyx: {exc}", file=sys.stderr)
+            return EXIT_ERROR
+        if provider:
+            url = url or DEFAULT_API_URL
+    if not url or (not key and provider is None):
         print("Set ORINYX_API_URL and ORINYX_API_KEY in the environment.", file=sys.stderr)
         return EXIT_ERROR
     factory = client_factory or OrinyxClient
     try:
-        client = factory(url, key)
+        if provider is not None:
+            client = factory(url, "", token_provider=provider)
+        else:
+            client = factory(url, key or "")
     except (InsecureUrlError, ConfigError) as exc:
         print(f"orinyx: {exc}", file=sys.stderr)
         return EXIT_ERROR
