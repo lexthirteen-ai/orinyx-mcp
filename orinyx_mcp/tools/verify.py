@@ -41,9 +41,10 @@ def verify_order_text(
     tool_version: str | None = None,
     check_interactions: bool = False,
 ) -> str:
-    """Verify free-text orders: Orinyx splits each into its dose, route and frequency
-    claims (deterministically, no model), so an unreadable part never hides a checkable
-    one; one table row per claim."""
+    """Verify medication identity, dose, route and frequency for free-text orders.
+
+    Orinyx returns one row per claim, so an unreadable part never hides a checkable one.
+    """
     result = client.verify_orders(
         orders,
         tool_name=tool_name,
