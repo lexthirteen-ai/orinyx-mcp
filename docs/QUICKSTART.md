@@ -14,7 +14,7 @@ Nothing to install: this uses the hosted connector.
 
 1. **Sign up** at [orinyx.io/developers](https://orinyx.io/developers).
 2. **Open the welcome email** and follow its link to set your password. The link can be used
-   once.
+   once. If the email has not arrived after 10 minutes, contact [hello@orinyx.io](mailto:hello@orinyx.io).
 3. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` in Claude (steps for each client
    are under [Connect your client](#connect-your-client)). The client sends you to the
    Orinyx sign-in page. Sign in with your email and the password you set.
