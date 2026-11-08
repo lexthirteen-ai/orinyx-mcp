@@ -203,7 +203,7 @@ def test_every_repository_link_in_the_readme_points_at_a_public_file_in_this_tre
         for prefix in (PAGE, IMAGE)
         if target.startswith(prefix)
     ]
-    assert len(paths) == 21 - len(HELD_RELATIVE)
+    assert len(paths) == 22 - len(HELD_RELATIVE)
     for path in paths:
         assert (ROOT / path).exists(), path
         assert not any(rule in path for rule in NOT_EXPORTED), path

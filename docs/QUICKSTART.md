@@ -15,7 +15,7 @@ Nothing to install: this uses the hosted connector.
 1. **Sign up** at [orinyx.io/developers](https://orinyx.io/developers).
 2. **Open the welcome email** and follow its link to set your password. The link can be used
    once.
-3. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` in Claude (steps for each client
+3. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` in your client (steps for each client
    are under [Connect your client](#connect-your-client)). The client sends you to the
    Orinyx sign-in page. Sign in with your email and the password you set.
 4. **Type "start a test".** The agent calls `start_a_test`, which lists what your account can
@@ -214,6 +214,25 @@ For the local (stdio) server, with a key issued to you by Orinyx, edit
 
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json` or a project `.mcp.json`.
+
+### Cursor CLI
+
+Add the [hosted Orinyx connector to Cursor's `mcp.json`](../README.md#cursor). From your
+project directory, run `agent mcp list`. If `orinyx` is disabled, run
+`agent mcp enable orinyx`. Then run:
+
+```bash
+agent mcp login orinyx
+agent mcp list
+```
+
+Sign in to Orinyx when your browser opens. The list should show `orinyx: ready`. The
+hosted connection needs no Orinyx API key.
+
+Sign in to Cursor with `agent login` if needed. Ask Cursor Agent to call `start_a_test`
+and approve the tool call when prompted. Then run the planted synthetic order from
+[First run](#first-run) with `verify_order_text` and compare it with the
+[expected output](#expected-output).
 
 ### Check the connection
 
