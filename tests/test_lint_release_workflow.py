@@ -1,7 +1,7 @@
 """`scripts/lint_release_workflow.py` refuses a release workflow that breaks the publishing rules.
 
-The workflow file itself is not part of this repository; these tests use a small stand-in
-with the same shape and change one thing at a time.
+These tests use a small stand-in with the same shape and change one thing at a time.
+The concrete publishing workflow is covered by test_publish_workflow.py.
 """
 
 import importlib.util

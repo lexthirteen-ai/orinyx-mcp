@@ -1,0 +1,117 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+concurrency:
+  group: publish-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      target: ${{ steps.release.outputs.target }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Select the production publisher from the tag
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python -I - <<'PY'
+          import os
+          import re
+
+          tag = os.environ["RELEASE_TAG"]
+          if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", tag):
+              raise SystemExit("Only stable v<major>.<minor>.<patch> tags publish to PyPI")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"target=pypi\nversion={tag[1:]}\n")
+          PY
+
+  build:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      PACKAGE_VERSION: ${{ needs.preflight.outputs.version }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Check build inputs
+        run: |
+          python -I scripts/lint_release_workflow.py .github/workflows/publish.yml
+          python -I scripts/check_build_inputs.py .
+      - name: Require tag to match the package version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python -I - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          source = Path("orinyx_mcp/__init__.py").read_text()
+          version = re.search(r'^__version__ = "([^"]+)"$', source, re.MULTILINE).group(1)
+          if os.environ["RELEASE_TAG"] != f"v{version}":
+              raise SystemExit("Release tag must match orinyx_mcp.__version__")
+          PY
+      - name: Install test and build tools
+        run: |
+          python -I -m pip install -r requirements.lock
+          python -I -m pip install ".[dev]" build twine
+      - name: Test
+        run: python -I -m pytest -q
+      - name: Build and validate wheel and sdist
+        run: |
+          manifest="release/manifests/${PACKAGE_VERSION}.json"
+          shape="$(python -I scripts/check_dist.py --manifest "$manifest" --print-shape)"
+          test "$shape" = "wheel_only=false" || { echo "This workflow requires wheel and sdist"; exit 1; }
+          python -I -m build
+          python -I -m twine check --strict dist/*
+          python -I scripts/check_dist.py dist --manifest "$manifest" --source . --require-marker
+          (cd dist && sha256sum *.whl *.tar.gz > SHA256SUMS)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: python-distributions
+          path: dist/
+          if-no-files-found: error
+
+  pypi:
+    needs: [preflight, build]
+    if: ${{ needs.preflight.outputs.target == 'pypi' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: pypi
+      url: https://pypi.org/p/orinyx-mcp
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: python-distributions
+          path: dist/
+      - name: Verify the exact distribution file set and checksums
+        shell: bash
+        run: |
+          (cd dist && sha256sum -c SHA256SUMS)
+          diff <(cd dist && find . -mindepth 1 -maxdepth 1 ! -name SHA256SUMS \
+              | sed 's|^\./||' | LC_ALL=C sort) \
+            <(sed -E 's/^[0-9a-f]{64} [ *]//' dist/SHA256SUMS | LC_ALL=C sort) \
+            || { echo "::error::the files in dist/ are not exactly the files SHA256SUMS lists"; exit 1; }
+          rm -f dist/SHA256SUMS
+      - name: Publish with trusted publishing
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0

@@ -4,6 +4,8 @@
 
 <h1 align="center">Orinyx MCP Server</h1>
 
+<!-- mcp-name: io.github.lexthirteen-ai/orinyx-mcp -->
+
 Test your healthcare AI agent against cited FDA labels and coded answer keys. Deterministic:
 no LLM in the verdict.
 
@@ -21,8 +23,8 @@ rules, no reference data and no verdict logic, and every tool call is an ordinar
 carrying your own credential. The one check it runs itself is a pre-flight refusal: `orinyx
 observe` screens what it reads for identifier-shaped text (the engine's own pattern list)
 before sending anything. Sign up at [orinyx.io/developers](https://orinyx.io/developers) to use
-the hosted connector with your Orinyx account; a key for the stdio server, the CLI or CI is
-issued by Orinyx.
+the hosted connector with your Orinyx account, or mint a personal key for stdio, the CLI
+or CI through the [self-serve API](#get-an-api-key).
 
 ## Features
 
@@ -39,8 +41,8 @@ issued by Orinyx.
   [docs/EXAMS.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/EXAMS.md).
 - **A CLI for CI.** `orinyx verify` and `orinyx observe` exit 0 clean, 2 flagged, 3 not
   verified and 1 on error, so a pipeline can fail on a flag.
-- **Hosted or local.** A hosted connector with nothing to install, or a stdio server from a
-  checkout, plus a REST client for your own Python code.
+- **Hosted or local.** A hosted connector with nothing to install, or a stdio server from
+  PyPI or a checkout, plus a REST client for your own Python code.
 - **No model in the verdict.** No language model decides a verdict, a severity or a score.
 
 What is in the box:
@@ -72,13 +74,13 @@ or want a clinical decision. Orinyx does not do any of these: see
 
 ## Installation
 
-Today a self-serve sign-up gives you the hosted connector only. The stdio server, the CLI and
-CI need a key issued by Orinyx.
+Use the hosted connector with OAuth, or install the Python package for stdio, the CLI
+and CI. Local use needs an API URL and a [personal API key](#get-an-api-key).
 
 | Path | For | What you need |
 |---|---|---|
 | [Hosted connector](#hosted-connector-the-self-serve-path) | the self-serve path | an Orinyx account from [orinyx.io/developers](https://orinyx.io/developers); no install and no key |
-| [Local stdio](#local-stdio-from-source), the [CLI](#cli-in-ci) and CI | a key holder | an Orinyx API URL and an `ork_live_` key issued to you by Orinyx |
+| [Local stdio](#install-from-pypi), the [CLI](#cli-in-ci) and CI | a key holder | an Orinyx API URL and an `ork_live_` key from the self-serve API or an operator |
 
 The only official package is `orinyx-mcp`, published only from
 `github.com/lexthirteen-ai/orinyx-mcp`. Anything else named orinyx isn't Orinyx's.
@@ -98,8 +100,7 @@ Orinyx account.
    account can run and the next step for each.
 
 The client sends you to the Orinyx sign-in page (OAuth 2.1; the API is the authorization
-server) and you sign in with your Orinyx account. A self-serve account signs in this way and
-has no key.
+server) and you sign in with your Orinyx account. No API key is needed for this path.
 
 Per-client setup, a CI recipe and exam steps are in [docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md).
 Its [first run](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#first-run) checks two bundled synthetic orders, one clean
@@ -160,11 +161,64 @@ starts Codex. In the `codex` terminal UI, `/mcp` lists the servers Codex has con
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json`, `.codex/config.toml` or a project `.mcp.json`.
 
+### Get an API key
+
+Beta developers can mint their own keys after signing up and setting a password:
+
+1. Send `POST /v1/auth/login` to your API host with `{"email":"<your email>",
+   "password":"<your password>"}` and keep the returned session `token` private.
+2. Send `POST /v1/auth/api-keys/self` with `Authorization: Bearer <session token>` and
+   `Content-Type: application/json`:
+
+   ```json
+   {"name":"beta-laptop","scopes":["verify:read","verify:write"],"expiresDays":30}
+   ```
+
+3. Save the response's `key` in your secret store; the raw key is shown only once.
+   The `apiKey` object contains its id and metadata. Set `ORINYX_API_URL` to your API
+   host (hosted: `https://orinyx-api.fly.dev`) and `ORINYX_API_KEY` to that key in the
+   environment of your client process.
+
+Only `verify:read` and `verify:write` are accepted, with at least one required.
+Expiry is 1–90 days (default 30). Do not send `email` or `fullAccess`: the key belongs
+to your signed-in user only. The session-only `GET /v1/auth/api-keys/self` lists your
+keys (`data` and `pagination`; `includeRevoked=true` includes revoked entries), and
+`DELETE /v1/auth/api-keys/self/{key_id}` revokes one. API keys and connector OAuth
+tokens cannot mint or manage keys. If your API deployment has not enabled these
+endpoints yet, use the hosted connector's OAuth sign-in or ask an operator for a key.
+
+Never paste passwords or session tokens into an agent prompt or commit them.
+
+### Install from PyPI
+
+Python 3.11 or later. Once the first PyPI release is published:
+
+```bash
+pip install orinyx-mcp
+orinyx-mcp stdio
+orinyx --help
+orinyx verify --file claims.json --tool my-agent
+```
+
+Set the API URL and key in the process environment first; see [Get an API key](#get-an-api-key).
+For an isolated run without installing into your current Python environment, use
+[uv](https://docs.astral.sh/uv/):
+
+```bash
+uvx orinyx-mcp stdio
+uvx --from orinyx-mcp orinyx --help
+```
+
+The `stdio` argument is required: bare `orinyx-mcp` (or `uvx orinyx-mcp`) starts the
+HTTP server, not stdio. Agent hosts can launch `uvx` with `args: ["orinyx-mcp", "stdio"]`
+and the same API environment variables. Before the first PyPI upload, use the source
+install below; a GitHub release alone does not publish the package to PyPI.
+
 ### Local stdio (from source)
 
-Today the stdio server, the CLI and CI each need an Orinyx API URL and a key (`ork_live_...`)
-issued to you by Orinyx; a self-serve sign-up does not include a key. Install it from a
-checkout.
+The stdio server, the CLI and CI each need an Orinyx API URL and a key (`ork_live_...`)
+issued by Orinyx through the [self-serve API](#get-an-api-key) or an operator. To develop
+from a checkout instead of using PyPI:
 
 ```bash
 git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
@@ -895,7 +949,8 @@ orinyx observe <path>... [--field DOTTED.PATH] [--tool NAME] [--tool-version V] 
 `claims.json` is a JSON list of claims, or a full request body with an `assertions` list
 (its `toolName`, `toolVersion` and `checkInteractions` are used when the flags are absent).
 Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. Today the CLI, and so CI,
-needs an `ork_live_` key issued to you by Orinyx; a self-serve sign-up does not include one.
+needs an `ork_live_` key issued by Orinyx through the [self-serve API](#get-an-api-key)
+or an operator; hosted connector OAuth is not a CLI credential.
 
 `verify` takes structured claims. For orders as written, use `orinyx observe` or the
 `verify_order_text` tool. `observe` checks every order in an agent's saved output, one run per
@@ -950,7 +1005,8 @@ Gaps in the CLI today:
 
 ## REST client
 
-The REST client needs an Orinyx API URL and an `ork_live_` key issued to you by Orinyx.
+The REST client needs an Orinyx API URL and an `ork_live_` key from the
+[self-serve API](#get-an-api-key) or an operator.
 
 ```python
 from orinyx_mcp.client import OrinyxApiError, OrinyxClient

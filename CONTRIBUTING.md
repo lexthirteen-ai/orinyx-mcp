@@ -64,6 +64,48 @@ examples, issues, pull requests or logs you paste. Use synthetic data throughout
   request.
 - Add or update tests with a change in behaviour.
 
+## Publishing to PyPI (owner checklist)
+
+The repository is already public and has GitHub release tags; those do not upload a
+package to PyPI. Before the November 9 announcement:
+
+1. Merge the publishing workflow and deploy the engine's self-serve key endpoints
+   before advertising that credential path.
+2. In [GitHub's `pypi` environment](https://github.com/lexthirteen-ai/orinyx-mcp/settings/environments),
+   retain the required owner review and add a **tag** deployment rule such as `v*`.
+   A rule allowing only the `main` branch blocks the tag-triggered publishing job.
+3. At https://pypi.org/manage/account/publishing/, add a pending trusted publisher
+   (or add one to an existing project) with these exact values:
+   - PyPI project: `orinyx-mcp`
+   - GitHub owner: `lexthirteen-ai`
+   - Repository: `orinyx-mcp`
+   - Workflow filename: `publish.yml` (not a path or `release.yml`)
+   - Environment: `pypi`
+   No PyPI API token or GitHub repository secret is needed.
+4. This work targets **0.1.5**, alongside the other changes accumulating on `main`.
+   Merge the engine API first, then the dashboard/MCP consumers; do not copy engine
+   authorization into either client. The package version is set to `0.1.5`; review
+   the combined release notes before tagging. Existing tags must not be moved. From
+   the reviewed release commit, create and push the matching `v0.1.5` tag. The workflow refuses a
+   tag/version mismatch, tests the package, then builds a wheel and sdist with
+   `python -I -m build` and validates their metadata with Twine. Only stable
+   `v<major>.<minor>.<patch>` tags select PyPI; prerelease tags are refused.
+   `scripts/lint_release_workflow.py` governs the workflow, and
+   `scripts/check_dist.py` validates both archives against the version's exact
+   manifest in `release/manifests/`, the source tree and the Registry marker.
+   Update that manifest whenever packaged files change. Checksums and an exact
+   file-list check are repeated in the publishing job before upload.
+5. Approve the `pypi` environment deployment. Only the publishing job has
+   `id-token: write`; it downloads the build artifact and uses
+   `pypa/gh-action-pypi-publish` with OIDC, with no source checkout or build there.
+6. Verify https://pypi.org/project/orinyx-mcp/ and install the new version in a clean
+   environment (`pip install orinyx-mcp`); check `orinyx --help`,
+   `orinyx-mcp --version` and `uvx orinyx-mcp stdio` with your own API environment.
+
+Do not announce PyPI availability until the upload and clean install succeed.
+The workflow does not change repository visibility, environment policies or PyPI
+account settings, and never creates a release tag itself.
+
 ## License
 
 This project is licensed under the [Apache License 2.0](LICENSE). Unless you explicitly state
