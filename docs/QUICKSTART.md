@@ -216,6 +216,19 @@ For the local (stdio) server, with a key issued to you by Orinyx, edit
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json` or a project `.mcp.json`.
 
+### Cursor editor
+
+1. Sign in to Cursor and open your project. Add the
+   [hosted Orinyx connector to Cursor's `mcp.json`](../README.md#cursor).
+2. Open **Cursor Settings**, then **Customize → MCPs**. If `orinyx` is disabled,
+   select it and enable it for your project.
+3. Choose **Authenticate** next to `orinyx`. In your browser, sign in to Orinyx and
+   choose **Sign in and approve**. Return to Cursor and confirm that `orinyx` is
+   listed under **Connected** with its tools. The hosted connection needs no Orinyx API key.
+4. In Cursor Agent, ask it to call `start_a_test`. Then run the planted synthetic order
+   from [First run](#first-run) with `verify_order_text`. Ask the agent to put the order
+   in the `orders` array and compare the result with the [expected output](#expected-output).
+
 ### Cursor CLI
 
 Add the [hosted Orinyx connector to Cursor's `mcp.json`](../README.md#cursor). From your
