@@ -16,6 +16,13 @@ Planned release: **0.1.5**.
   session-only self-serve key flow. The engine must be deployed first;
   developer keys carry only `verify:read` and `verify:write` and expire within 90 days.
 
+- Every tool now has a human-readable title and MCP behaviour hints in `tools/list`
+  (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), set from what each
+  call does on the Orinyx API. The reads and lookups are read-only. `finish_exam` is marked
+  destructive, since it closes a sitting for good. The verifications and exports are
+  additive and not idempotent, since each adds a run or an audit-chain entry. Tool names,
+  input schemas and descriptions are unchanged.
+
 ### Changed
 
 - Packaging for PyPI: the package metadata is complete (authors, keywords, classifiers and
