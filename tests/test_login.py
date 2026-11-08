@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import httpx
 import pytest
+from mcp.server.auth.handlers.revoke import RevocationRequest
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 from orinyx_mcp import cli, credentials, login
 from orinyx_mcp.client import OrinyxClient
@@ -91,7 +92,7 @@ def test_login_pkce_resource_callback_and_logout(store, monkeypatch, capsys, no_
             body = json.loads(request.content)
             assert body["scope"] == " ".join(credentials.SCOPES)
             return httpx.Response(201, json=body | {"client_id": "client-a"})
-        form = parse_qs(request.content.decode())
+        form = parse_qs(request.content.decode(), keep_blank_values=True)
         if request.url.path == "/token":
             assert form["resource"] == [API]
             if form["grant_type"] == ["authorization_code"]:
@@ -101,6 +102,8 @@ def test_login_pkce_resource_callback_and_logout(store, monkeypatch, capsys, no_
                 assert form["redirect_uri"] == seen["redirect_uri"]
             return httpx.Response(200, json=record().tokens.model_dump())
         assert request.url.path == "/revoke"
+        wire = RevocationRequest.model_validate({key: values[0] for key, values in form.items()})
+        assert wire.client_secret == ""
         assert form["token"] == [REFRESH]
         return httpx.Response(200)
 

@@ -235,6 +235,8 @@ class OAuthSession:
                     "token": token,
                     "token_type_hint": "refresh_token",
                     "client_id": record.client.client_id,
+                    # The pinned server SDK requires this field even for public clients.
+                    "client_secret": "",
                 },
             ) as response:
                 if not response.is_success:
