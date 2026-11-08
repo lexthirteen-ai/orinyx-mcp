@@ -451,6 +451,65 @@ async def test_a_refused_exam_call_is_traced_as_refused_with_its_code():
         assert row["caseId"] == "nope"
 
 
+@pytest.mark.parametrize(
+    "tool,arguments",
+    [
+        ("get_next_exam_case", {"run_id": 12}),
+        ("get_exam_cases", {"run_id": 12}),
+        (
+            "submit_exam_answers",
+            {"run_id": 12, "answers": [{"caseId": "amb-003", "claims": []}]},
+        ),
+        ("finish_exam", {"run_id": 12}),
+    ],
+)
+async def test_exam_retries_add_trace_rows_and_are_not_advertised_as_idempotent(tool, arguments):
+    finished = False
+    submitted = False
+
+    class RetryClient(RecordingClient):
+        def exam_cases(self, run_id):
+            return {"runId": run_id, "cases": [{"caseId": "amb-003", "vignette": "x"}]}
+
+        def exam_submit(self, run_id, answers):
+            nonlocal submitted
+            result = [{"caseId": "amb-003", "cached": submitted}]
+            submitted = True
+            return result
+
+        def exam_finish(self, run_id, allow_partial=False):
+            nonlocal finished
+            if finished:
+                raise OrinyxApiError(409, "conflict", "This sitting is already finished")
+            finished = True
+            return {"id": run_id, "status": "completed"}
+
+    async with _remote(_config(hop_secret=SECRET), client_class=RetryClient) as remote:
+        response = await remote.post("/mcp", json=_rpc("tools/list"), headers=_auth(SIGNED_IN))
+        listed = {item["name"]: item for item in response.json()["result"]["tools"]}
+        call = _rpc("tools/call", {"name": tool, "arguments": arguments})
+        for attempt in range(2):
+            response = await remote.post("/mcp", json=call, headers=_auth(SIGNED_IN))
+            result = response.json()["result"]
+            assert bool(result.get("isError")) == (tool == "finish_exam" and attempt == 1)
+            if tool == "submit_exam_answers" and attempt == 1:
+                assert "already been recorded unchanged" in result["content"][0]["text"]
+
+        assert len(RecordingClient.traces) == 2
+        rows = []
+        for run_id, calls in RecordingClient.traces:
+            assert run_id == "12" and len(calls) == 1
+            assert calls[0]["tool"] == tool
+            rows.extend(calls)
+        assert [row["outcome"] for row in rows] == [
+            "ok",
+            "refused" if tool == "finish_exam" else "ok",
+        ]
+        if tool == "finish_exam":
+            assert rows[1]["refusalCode"] == "conflict"
+        assert listed[tool]["annotations"]["idempotentHint"] is False
+
+
 async def test_an_unexpected_failure_is_traced_as_an_error_and_still_raised(caplog):
     """A failure that is neither an API refusal nor an argument error leaves a trace row too,
     and the warning names the post's status."""
