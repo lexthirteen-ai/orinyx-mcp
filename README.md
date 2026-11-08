@@ -126,13 +126,15 @@ which is for local servers.
 
 #### Cursor
 
-Add the connector to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
+For Cursor CLI, add the connector to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
 
 ```json
 {"mcpServers": {"orinyx": {"url": "https://orinyx-mcp.fly.dev/mcp"}}}
 ```
 
-then sign in with your Orinyx account.
+From your project directory, run `agent mcp login orinyx` and sign in with your Orinyx
+account. See the [Cursor CLI quickstart](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#cursor-cli)
+to check the connection and run a synthetic test.
 
 #### Codex
 
@@ -283,6 +285,7 @@ docker run --rm -p 8000:8000 \
 | macOS | used in development; not tested in CI |
 | Windows | untested |
 | Transports | stdio (local) and Streamable HTTP (hosted) |
+| Cursor CLI on macOS | hosted OAuth and synthetic verification smoke tested |
 
 The hosted connector reports its version at `https://orinyx-mcp.fly.dev/health`.
 
