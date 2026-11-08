@@ -82,9 +82,11 @@ package to PyPI. Before the November 9 announcement:
    - Workflow filename: `publish.yml` (not a path or `release.yml`)
    - Environment: `pypi`
    No PyPI API token or GitHub repository secret is needed.
-4. Set `orinyx_mcp/__init__.py`'s version to the intended, unused release version and
-   merge it with release notes. Existing tags must not be moved. From the reviewed
-   commit, create and push a new matching `v<version>` tag. The workflow refuses a
+4. This work targets **0.1.5**, alongside the other changes accumulating on `main`.
+   Merge the engine API first, then the dashboard/MCP consumers; do not copy engine
+   authorization into either client. The package version is set to `0.1.5`; review
+   the combined release notes before tagging. Existing tags must not be moved. From
+   the reviewed release commit, create and push the matching `v0.1.5` tag. The workflow refuses a
    tag/version mismatch, tests the package, then builds a wheel and sdist with
    `python -I -m build` and validates their metadata with Twine.
 5. Approve the `pypi` environment deployment. Only the publishing job has
