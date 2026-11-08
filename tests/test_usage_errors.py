@@ -34,10 +34,13 @@ HOSTILE_BODY = "H0ST'IL\"E q7=x\\zé"
 HOSTILE = "ork_live_" + HOSTILE_BODY
 VALUES = {"sentinel": (SENTINEL_KEY, SENTINEL_BODY), "hostile": (HOSTILE, "H0ST")}
 
-TOP_USAGE = "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\n"
+TOP_USAGE = (
+    "usage: orinyx [-h]\n"
+    "              {login,logout,status,verify,get,accuracy,export,observe} ...\n"
+)
 COMMAND_CHOICES = (
-    "'verify', 'get', 'accuracy', 'export', 'observe'",
-    "verify, get, accuracy, export, observe",
+    "'login', 'logout', 'status', 'verify', 'get', 'accuracy', 'export', 'observe'",
+    "login, logout, status, verify, get, accuracy, export, observe",
 )
 FORMAT_CHOICES = ("'csv', 'pdf', 'report'", "csv, pdf, report")
 

@@ -163,6 +163,7 @@ class OrinyxClient:
         transport: httpx.BaseTransport | None = None,
         headers: Mapping[str, str] | None = None,
         allow_http: bool = False,
+        token_provider: Callable[[], str] | None = None,
     ) -> None:
         parts = split_config_url(base_url, "ORINYX_API_URL")
         local = parts.hostname in ("localhost", "127.0.0.1", "::1")
@@ -183,6 +184,7 @@ class OrinyxClient:
             transport=transport,
         )
         self._owns_http = True
+        self._token_provider = token_provider
         self._extra_headers: dict[str, str] = {}
         self._release: Callable[[], None] | None = None
         # Shared by every bound() view of this client: engine-owned lists read from the API.
@@ -224,6 +226,17 @@ class OrinyxClient:
         refused = False
         if self._extra_headers:
             kwargs["headers"] = {**self._extra_headers, **(kwargs.get("headers") or {})}
+        if self._token_provider is not None:
+            from orinyx_mcp.credentials import AuthError
+
+            try:
+                bearer = self._token_provider()
+            except AuthError as exc:
+                raise OrinyxApiError(401, "login_required", str(exc)) from None
+            kwargs["headers"] = {
+                **(kwargs.get("headers") or {}),
+                "Authorization": f"Bearer {bearer}",
+            }
         try:
             response = self._http.request(method, path, **kwargs)
         except httpx.LocalProtocolError:
