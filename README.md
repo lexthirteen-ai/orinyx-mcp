@@ -368,7 +368,7 @@ Configuration is the environment only:
 | `MCP_PUBLIC_URL` | the https origin agents connect to; `/mcp` is served there (the `Host` check is built from it) |
 | `ORINYX_API_URL` | the Orinyx API this service calls on the caller's behalf |
 | `ORINYX_ISSUER_URL` | the API's public origin, named in the resource metadata for sign-in (defaults to the `ORINYX_API_URL` origin) |
-| `ORINYX_HOP_SECRET` | optional, at least 32 characters, shared with the API so each agent keeps its own rate-limit bucket |
+| `ORINYX_HOP_SECRET` | required for hosted MCP, at least 32 ASCII characters, shared with the API; the backend must reach the API from an admitted private peer |
 | `ORINYX_API_ALLOW_HTTP` | `true` only on a private network trusted end to end |
 | `TRUST_PROXY_FORWARDED_FOR` | `true` behind exactly one proxy (the host's edge) |
 | `TRUSTED_CLIENT_IP_HEADER` | a header that proxy sets to the caller's address (Fly: `fly-client-ip`) |

@@ -90,6 +90,8 @@ class Config:
             raise ConfigError("ORINYX_ISSUER_URL must be an https origin")
         if self.hop_secret is not None and len(self.hop_secret) < MIN_SECRET_CHARS:
             raise ConfigError(f"ORINYX_HOP_SECRET must be at least {MIN_SECRET_CHARS} characters")
+        if self.hop_secret is not None and not self.hop_secret.isascii():
+            raise ConfigError("ORINYX_HOP_SECRET must contain only ASCII characters")
         if not 0 < self.port < 65536:
             raise ConfigError("PORT must be a port number")
         if self.trusted_client_ip_header is not None and not re.fullmatch(

@@ -268,7 +268,12 @@ def _pool(monkeypatch, credential: list[str], seen: list[httpx.Request], **kwarg
         lambda config: {"X-Request-Id": "req-1", "Authorization": "Bearer spoofed"},
     )
     monkeypatch.setattr(contract, "check_in_background", lambda client: None)
-    config = Config(public_url="https://mcp.example", api_url=API, issuer_url=API)
+    config = Config(
+        public_url="https://mcp.example",
+        api_url=API,
+        issuer_url=API,
+        hop_secret="synthetic-hop-secret-at-least-32-characters",
+    )
     return ClientPool(config, transport=httpx.MockTransport(handler), **kwargs)
 
 

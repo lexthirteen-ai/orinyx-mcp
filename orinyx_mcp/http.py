@@ -393,6 +393,11 @@ def build_app(
     """The ASGI application: `/mcp` (and `/mcp/`: both must ANSWER, since a mount alone
     redirects the bare path and behind a TLS proxy that redirect names http), the
     protected-resource document at the origin, and `/health`."""
+    if not config.hop_secret:
+        raise ConfigError(
+            "Hosted MCP requires ORINYX_HOP_SECRET; no public REST fallback is allowed"
+        )
+
     from mcp.server.auth.routes import create_protected_resource_routes
     from mcp.server.auth.settings import AuthSettings
     from mcp.server.transport_security import TransportSecuritySettings

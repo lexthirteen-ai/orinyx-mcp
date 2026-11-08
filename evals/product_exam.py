@@ -4,13 +4,16 @@
     python evals/product_exam.py setup  --name "Acme" --product "Scribe 2.1 (prompt v3)" \\
         --contact-email qa@acme.example
     python evals/product_exam.py open   --vendor-id 3 --case-set ambient-core --version 1.0.0
+    python evals/product_exam.py open --vendor-id 3 --case-set ambient-core \\
+        --version 1.0.0 --operator-entry
     python evals/product_exam.py answer --run 12 --answers answers.json [--finish]
     python evals/product_exam.py report --run 12
 
 `setup` and `open` need an OPERATOR key (a quality-lead or admin user's key with
 `benchmark:read` and `benchmark:write`). A product that can connect an agent sits the exam
 itself through the connector (`start_a_test`); `answer` is for a product that cannot: the
-operator runs the product on each case by hand and records what it said in `answers.json`,
+operator first opens a SEPARATE sitting with `--operator-entry`, then runs the product on
+each case by hand and records what it said in `answers.json`,
 a list of `{"caseId": ..., "claims": [...]}`, `{"caseId": ..., "replyText": "..."}` for a
 patient-message exam, or `{"caseId": ..., "codes": ["E11.9", ...]}` for an ICD-10-CM coding
 exam (no date: the case has its date of service). Answers recorded this way are NOT timed: the
@@ -20,6 +23,8 @@ separately as your own measurement. The product's name, version and prompt belon
 
 Nothing here imports the engine or reads a case-set file: the file is the answer key and
 stays on the server. Prints ids and the report text; the key is read from the environment.
+The engine entry-mode migration and enforcement must deploy before this update. A sitting's
+mode cannot be changed, and manual entry cannot complete a hosted-MCP vendor sitting.
 """
 
 import argparse
@@ -51,10 +56,11 @@ def _setup(client: OrinyxClient, args) -> str:
 
 
 def _open(client: OrinyxClient, args) -> str:
-    run = client.open_exam(args.vendor_id, args.case_set, args.version)
+    mode = "operator" if args.operator_entry else "hosted_mcp"
+    run = client.open_exam(args.vendor_id, args.case_set, args.version, entry_mode=mode)
     return (
         f"run {run['id']} is open for vendor {run.get('vendorId')} on {run.get('caseSetId')} "
-        f"{run.get('caseSetVersion')}. Give this run number to the product's tester."
+        f"{run.get('caseSetVersion')}. Entry mode: {mode}."
     )
 
 
@@ -114,6 +120,11 @@ def run(argv: list[str], client: OrinyxClient) -> str:
     opened.add_argument("--vendor-id", type=int, required=True)
     opened.add_argument("--case-set", required=True)
     opened.add_argument("--version", required=True)
+    opened.add_argument(
+        "--operator-entry",
+        action="store_true",
+        help="open a separate untimed operator-entry sitting",
+    )
     answer = sub.add_parser("answer", help="record a product's answers from a file")
     answer.add_argument("--run", type=int, required=True)
     answer.add_argument("--answers", required=True)

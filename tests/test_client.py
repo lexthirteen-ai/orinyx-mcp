@@ -40,6 +40,25 @@ def _client(handler) -> OrinyxClient:
     )
 
 
+@pytest.mark.parametrize("mode", ["hosted_mcp", "operator"])
+def test_operator_opens_an_explicit_entry_mode(mode):
+    def handler(request):
+        assert request.url.path == "/v1/vendors/3/benchmark-runs"
+        assert json.loads(request.content)["entryMode"] == mode
+        return httpx.Response(201, json={"id": 12, "entryMode": mode})
+
+    with _client(handler) as client:
+        assert client.open_exam(3, "s", "1", entry_mode=mode)["entryMode"] == mode
+
+
+def test_unknown_entry_modes_do_not_send_a_request():
+    def handler(request):
+        pytest.fail("invalid mode must not reach the API")
+
+    with _client(handler) as client, pytest.raises(ValueError, match="entry_mode"):
+        client.open_exam(3, "s", "1", entry_mode="mixed")
+
+
 def test_verify_orders_posts_the_text_unchanged_and_counts_unreadable_as_flagged():
     seen = {}
     unreadable = {
