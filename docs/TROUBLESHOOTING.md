@@ -6,7 +6,7 @@ README's [Installation](../README.md#installation) section and in
 
 The hosted connector `https://orinyx-mcp.fly.dev/mcp` is the self-serve path: you sign in with
 your Orinyx account and need no key. The stdio server, the CLI and CI need an `ork_live_` key
-issued to you by Orinyx; a self-serve sign-up does not include one.
+issued by Orinyx through the [self-serve API](../README.md#get-an-api-key) or an operator.
 
 | Symptom | Cause | Fix |
 |---|---|---|

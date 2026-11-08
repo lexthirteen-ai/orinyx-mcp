@@ -5,6 +5,24 @@ All notable changes to this project are recorded here. The format is based on
 
 ## [Unreleased]
 
+Planned release: **0.1.5**.
+
+### Added
+
+- Tag-driven PyPI publishing through GitHub OIDC and the protected `pypi` environment.
+  The workflow tests and builds the package, requires a matching version tag, and publishes
+  only the resulting wheel and source distribution without a long-lived PyPI token.
+- [Local package/stdio setup and CLI examples](README.md#install), alongside the engine's
+  session-only self-serve key flow. The engine must be deployed first;
+  developer keys carry only `verify:read` and `verify:write` and expire within 90 days.
+
+- Every tool now has a human-readable title and MCP behaviour hints in `tools/list`
+  (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), set from what each
+  call does on the Orinyx API. The reads and lookups are read-only. `finish_exam` is marked
+  destructive, since it closes a sitting for good. The verifications and exports are
+  additive and not idempotent, since each adds a run or an audit-chain entry. Tool names,
+  input schemas and descriptions are unchanged.
+
 ### Changed
 
 - Onboarding docs: the README includes the welcome-email password step before connecting,
@@ -24,6 +42,13 @@ All notable changes to this project are recorded here. The format is based on
 - On the first tool call, the MCP server checks its copies of the label sections and the
   identifier screen against the API's, in the background, when the API serves those lists. A
   difference is logged. The API does not serve them yet, so for now the local copies are used.
+
+### Fixed
+
+- The HTTP app keeps an explicitly supplied client pool even when it is empty. Previously,
+  an empty pool was treated as missing and replaced by the default, discarding its custom
+  transport and idle-client limit. Omitting the pool or passing `None` still selects the
+  default; the selected pool is closed when the app shuts down.
 
 ## [0.1.4] - 2026-11-05
 

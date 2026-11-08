@@ -197,6 +197,63 @@ async def test_a_sign_in_token_for_this_endpoint_is_admitted():
         assert response.status_code == 200
 
 
+@pytest.mark.parametrize("factory_mode", ["empty_pool", "omitted", "none"])
+async def test_build_app_preserves_the_selected_pool_and_closes_it(monkeypatch, factory_mode):
+    from orinyx_mcp import contract
+
+    config = _config()
+    seen = []
+
+    def handler(request):
+        seen.append(request.headers["Authorization"])
+        if request.url.path.endswith("/accuracy"):
+            return httpx.Response(
+                404, json={"error": {"code": "not_found", "message": "no review"}}
+            )
+        assert request.url.path == f"/v1/verifications/{RUN['runId']}"
+        return httpx.Response(200, json=RUN)
+
+    pool = mcp_http.ClientPool(config, max_idle=1, transport=httpx.MockTransport(handler))
+    assert len(pool) == 0
+    default_calls = []
+
+    def default_factory(selected_config):
+        default_calls.append(selected_config)
+        return pool
+
+    monkeypatch.setattr(mcp_http, "client_factory", default_factory)
+    monkeypatch.setattr(contract, "check_in_background", lambda client: None)
+    kwargs = {"client_for": pool} if factory_mode == "empty_pool" else {}
+    if factory_mode == "none":
+        kwargs["client_for"] = None
+
+    api = FakeApi()
+    async with httpx.AsyncClient(transport=httpx.MockTransport(api.handler)) as fake_http:
+        wrapped, app = mcp_http.build_app(config, http=fake_http, **kwargs)
+        assert default_calls == ([] if factory_mode == "empty_pool" else [config])
+        connections = []
+        async with app.router.lifespan_context(app):
+            transport = httpx.ASGITransport(app=wrapped)
+            async with httpx.AsyncClient(transport=transport, base_url=PUBLIC) as remote:
+                call = _rpc(
+                    "tools/call",
+                    {"name": "get_verification", "arguments": {"run_id": RUN["runId"]}},
+                )
+                for token in (GOOD, SIGNED_IN):
+                    response = await remote.post("/mcp", json=call, headers=_auth(token))
+                    assert response.status_code == 200
+                    result = response.json()["result"]
+                    assert not result.get("isError")
+                    assert f"Run id: {RUN['runId']}" in result["content"][0]["text"]
+                    assert len(pool) == 1
+                    connections.append(next(iter(pool._clients.values()))[0]._http)
+            assert connections[0] is not connections[1]
+            assert connections[0].is_closed and not connections[1].is_closed
+        assert len(pool) == 0
+        assert all(connection.is_closed for connection in connections)
+    assert seen == [f"Bearer {token}" for token in (GOOD, SIGNED_IN) for _ in range(2)]
+
+
 async def test_a_tool_call_reaches_the_api_with_the_callers_own_credential_and_address():
     config = _config(hop_secret=SECRET, trust_proxy_forwarded_for=True)
     async with _remote(config) as remote:
@@ -449,6 +506,65 @@ async def test_a_refused_exam_call_is_traced_as_refused_with_its_code():
         [(_, [row])] = RecordingClient.traces
         assert row["outcome"] == "refused" and row["refusalCode"] == "validation"
         assert row["caseId"] == "nope"
+
+
+@pytest.mark.parametrize(
+    "tool,arguments",
+    [
+        ("get_next_exam_case", {"run_id": 12}),
+        ("get_exam_cases", {"run_id": 12}),
+        (
+            "submit_exam_answers",
+            {"run_id": 12, "answers": [{"caseId": "amb-003", "claims": []}]},
+        ),
+        ("finish_exam", {"run_id": 12}),
+    ],
+)
+async def test_exam_retries_add_trace_rows_and_are_not_advertised_as_idempotent(tool, arguments):
+    finished = False
+    submitted = False
+
+    class RetryClient(RecordingClient):
+        def exam_cases(self, run_id):
+            return {"runId": run_id, "cases": [{"caseId": "amb-003", "vignette": "x"}]}
+
+        def exam_submit(self, run_id, answers):
+            nonlocal submitted
+            result = [{"caseId": "amb-003", "cached": submitted}]
+            submitted = True
+            return result
+
+        def exam_finish(self, run_id, allow_partial=False):
+            nonlocal finished
+            if finished:
+                raise OrinyxApiError(409, "conflict", "This sitting is already finished")
+            finished = True
+            return {"id": run_id, "status": "completed"}
+
+    async with _remote(_config(hop_secret=SECRET), client_class=RetryClient) as remote:
+        response = await remote.post("/mcp", json=_rpc("tools/list"), headers=_auth(SIGNED_IN))
+        listed = {item["name"]: item for item in response.json()["result"]["tools"]}
+        call = _rpc("tools/call", {"name": tool, "arguments": arguments})
+        for attempt in range(2):
+            response = await remote.post("/mcp", json=call, headers=_auth(SIGNED_IN))
+            result = response.json()["result"]
+            assert bool(result.get("isError")) == (tool == "finish_exam" and attempt == 1)
+            if tool == "submit_exam_answers" and attempt == 1:
+                assert "already been recorded unchanged" in result["content"][0]["text"]
+
+        assert len(RecordingClient.traces) == 2
+        rows = []
+        for run_id, calls in RecordingClient.traces:
+            assert run_id == "12" and len(calls) == 1
+            assert calls[0]["tool"] == tool
+            rows.extend(calls)
+        assert [row["outcome"] for row in rows] == [
+            "ok",
+            "refused" if tool == "finish_exam" else "ok",
+        ]
+        if tool == "finish_exam":
+            assert rows[1]["refusalCode"] == "conflict"
+        assert listed[tool]["annotations"]["idempotentHint"] is False
 
 
 async def test_an_unexpected_failure_is_traced_as_an_error_and_still_raised(caplog):

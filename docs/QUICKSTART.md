@@ -4,9 +4,10 @@ Connect an agent to Orinyx, run a first check, add it to CI, and sit an exam. Sy
 only throughout: never real patient records, names, dates or record numbers.
 
 For the hosted connector, the self-serve path, you need an Orinyx account and no key;
-[First run](#first-run) starts with signing up. Today the stdio server, the CLI and CI each
-need an Orinyx API URL and a key (`ork_live_...`) issued to you by Orinyx; a self-serve
-sign-up does not include a key.
+[First run](#first-run) starts with signing up. The stdio server, the CLI and CI each
+need an Orinyx API URL and a key (`ork_live_...`) issued by Orinyx through the
+[self-serve API](../README.md#get-an-api-key) or an operator. PyPI and `uvx` installation
+instructions are in the [README](../README.md#install-from-pypi).
 
 ## First run
 
@@ -215,6 +216,38 @@ For the local (stdio) server, with a key issued to you by Orinyx, edit
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json` or a project `.mcp.json`.
 
+### Cursor editor
+
+1. Sign in to Cursor and open your project. Add the
+   [hosted Orinyx connector to Cursor's `mcp.json`](../README.md#cursor).
+2. Open **Cursor Settings**, then **Customize → MCPs**. If `orinyx` is disabled,
+   select it and enable it for your project.
+3. Choose **Authenticate** next to `orinyx`. In your browser, sign in to Orinyx and
+   choose **Sign in and approve**. Return to Cursor and confirm that `orinyx` is
+   listed under **Connected** with its tools. The hosted connection needs no Orinyx API key.
+4. In Cursor Agent, ask it to call `start_a_test`. Then run the planted synthetic order
+   from [First run](#first-run) with `verify_order_text`. Ask the agent to put the order
+   in the `orders` array and compare the result with the [expected output](#expected-output).
+
+### Cursor CLI
+
+Add the [hosted Orinyx connector to Cursor's `mcp.json`](../README.md#cursor). From your
+project directory, run `agent mcp list`. If `orinyx` is disabled, run
+`agent mcp enable orinyx`. Then run:
+
+```bash
+agent mcp login orinyx
+agent mcp list
+```
+
+Sign in to Orinyx when your browser opens. The list should show `orinyx: ready`. The
+hosted connection needs no Orinyx API key.
+
+Sign in to Cursor with `agent login` if needed. Ask Cursor Agent to call `start_a_test`
+and approve the tool call when prompted. Then run the planted synthetic order from
+[First run](#first-run) with `verify_order_text` and compare it with the
+[expected output](#expected-output).
+
 ### Check the connection
 
 ```bash
@@ -299,8 +332,8 @@ orinyx export <run id> --format report --out report.pdf   # csv | pdf | report; 
 `orinyx verify` exits 0 clean, 2 flagged (a `contradicted` claim or an `unreadable` order),
 3 not verified (no flag, but an abstain), 1 error. Usage errors exit 1, never 2.
 
-CI needs an `ork_live_` key issued to you by Orinyx: hosted sign-in needs a browser, and a
-self-serve sign-up does not include a key. Have your test job write the agent's claims for a
+CI needs an `ork_live_` key issued by Orinyx through the [self-serve API](../README.md#get-an-api-key)
+or an operator: hosted connector OAuth is not a CLI credential. Have your test job write the agent's claims for a
 fixed set of synthetic inputs to a JSON file, then:
 
 ```yaml

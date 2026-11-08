@@ -80,6 +80,14 @@ def test_the_range_check_can_fail(version, inside):
 
 def test_the_project_table():
     project = PROJECT["project"]
+    assert project["name"] == "orinyx-mcp"
+    assert project["requires-python"] == ">=3.11"
+    assert project["readme"] == "README.md"
+    assert project["license-files"] == ["LICENSE"]
+    assert project["scripts"] == {
+        "orinyx": "orinyx_mcp.cli:main",
+        "orinyx-mcp": "orinyx_mcp.http:serve",
+    }
     assert project["authors"] == [{"name": "Lex Hamilton"}]
     assert project["keywords"] == [
         "mcp",
@@ -169,6 +177,10 @@ def relative(targets: list[str]) -> list[str]:
     return [t for t in targets if not t.startswith(("https://", "mailto:", "#"))]
 
 
+def test_the_first_pypi_upload_has_no_registry_marker_in_the_readme():
+    assert "mcp-name:" not in README
+
+
 def test_the_readme_has_no_relative_link_or_image():
     targets = link_targets(README)
     assert len(targets) > 30
@@ -203,7 +215,7 @@ def test_every_repository_link_in_the_readme_points_at_a_public_file_in_this_tre
         for prefix in (PAGE, IMAGE)
         if target.startswith(prefix)
     ]
-    assert len(paths) == 21 - len(HELD_RELATIVE)
+    assert len(paths) == 22 - len(HELD_RELATIVE)
     for path in paths:
         assert (ROOT / path).exists(), path
         assert not any(rule in path for rule in NOT_EXPORTED), path
