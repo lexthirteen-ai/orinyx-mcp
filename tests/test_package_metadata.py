@@ -178,6 +178,10 @@ def relative(targets: list[str]) -> list[str]:
     return [t for t in targets if not t.startswith(("https://", "mailto:", "#"))]
 
 
+def test_the_first_pypi_upload_has_no_registry_marker_in_the_readme():
+    assert "mcp-name:" not in README
+
+
 def test_the_readme_has_no_relative_link_or_image():
     targets = link_targets(README)
     assert len(targets) > 30

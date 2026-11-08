@@ -407,7 +407,8 @@ def build_app(
     verifier = verifier or IntrospectionVerifier(
         config.api_url, config.resource, http, extra_headers=lambda: caller_headers(config)
     )
-    client_for = client_for or client_factory(config)
+    if client_for is None:
+        client_for = client_factory(config)
     server = build_server(
         client_for,
         auth=AuthSettings(

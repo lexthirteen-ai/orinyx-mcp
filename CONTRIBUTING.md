@@ -98,7 +98,8 @@ package to PyPI. Before the November 9 announcement:
    `v<major>.<minor>.<patch>` tags publish to TestPyPI then PyPI; prerelease tags are refused.
    `scripts/lint_release_workflow.py` governs the workflow, and
    `scripts/check_dist.py` validates both archives against the version's exact
-   manifest in `release/manifests/`, the source tree and the Registry marker.
+   manifest in `release/manifests/` and the source tree. The first 0.1.5 upload
+   does not require the Registry marker.
    Update that manifest whenever packaged files change. Checksums and an exact
    file-list check are repeated in each publishing job before upload.
 5. Approve the `testpypi` environment deployment and check the upload at
@@ -116,6 +117,26 @@ account settings, and never creates a release tag itself. Account creation, 2FA,
 publisher registration, environment reviewer settings and the allowlist entry are Lex-only
 console actions. CHA-142 L5c's npm `orinyx` organization is also a Lex-only console action;
 this workflow publishes nothing to npm.
+
+### Registry marker sequencing
+
+Lex's ruling of 2026-11-07, reaffirmed on 2026-11-08 in
+[CHA-178](https://linear.app/charmthirteen/issue/CHA-178):
+
+> the marker lands on public `main` only after PyPI 0.1.5 is published under her account
+
+Keep the README marker-free until the post-upload checks in Part 11 of the
+[CHA-143 release sheet](https://linear.app/charmthirteen/issue/CHA-143) pass, including
+verification that Lex owns the project. Then, in one reviewed follow-up change, add the exact
+`mcp-name` HTML comment once on its own line within the README's first 20 lines, replace the
+absence test with exact-line, uniqueness and placement assertions, and enable `--require-marker`
+in the release workflow. Keep the checker's optional marker support and tests intact throughout.
+
+The 0.1.5 PyPI description is frozen at upload. Publish the marker-bearing subsequent release
+before adding the Registry `packages` entry in
+[CHA-144](https://linear.app/charmthirteen/issue/CHA-144). Record the dated ruling and publication
+evidence in the canonical RELEASE record; restoring the pre-upload state does not erase the
+marker's premature landing in [PR #12](https://github.com/lexthirteen-ai/orinyx-mcp/pull/12).
 
 ## License
 
