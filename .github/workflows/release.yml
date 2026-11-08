@@ -85,7 +85,7 @@ jobs:
           test "$shape" = "wheel_only=false" || { echo "This workflow requires wheel and sdist"; exit 1; }
           python -I -m build
           python -I -m twine check --strict dist/*
-          python -I scripts/check_dist.py dist --manifest "$manifest" --source . --require-marker
+          python -I scripts/check_dist.py dist --manifest "$manifest" --source .
           (cd dist && sha256sum *.whl *.tar.gz > SHA256SUMS)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

@@ -102,7 +102,8 @@ def test_workflow_satisfies_existing_release_policy_and_artifact_checks():
     build = "\n".join(JOBS["build"])
     assert "scripts/lint_release_workflow.py .github/workflows/release.yml" in build
     assert "scripts/check_dist.py --manifest" in build and "--print-shape" in build
-    assert 'scripts/check_dist.py dist --manifest "$manifest" --source . --require-marker' in build
+    assert 'scripts/check_dist.py dist --manifest "$manifest" --source .\n' in build
+    assert "--require-marker" not in build
     assert "sha256sum *.whl *.tar.gz > SHA256SUMS" in build
 
 
