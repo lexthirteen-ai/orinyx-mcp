@@ -52,7 +52,7 @@ jobs:
       # python -m build is only a comment
   testpypi:
     needs: build
-    if: ${{{{ needs.preflight.outputs.target == 'testpypi' }}}}
+    environment: testpypi
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -64,8 +64,8 @@ jobs:
           rm -f dist/SHA256SUMS
       - uses: pypa/gh-action-pypi-publish@{SHA} # v1.14.3
   pypi:
-    needs: build
-    if: ${{{{ needs.preflight.outputs.target == 'pypi' }}}}
+    needs: [build, testpypi]
+    environment: pypi
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -193,8 +193,21 @@ LATE = GOOD.replace(CHECK_STEP, "").replace(
         ),
         (mutated("release-${{ github.ref_name }}", "release"), "github.ref_name"),
         (mutated("TAG: ${{ github.ref_name }}", "TAG: ${{ inputs.tag }}"), "reads inputs."),
-        (mutated("target == 'pypi'", "target != 'testpypi'"), "only on target pypi"),
-        (mutated("target == 'testpypi'", "target != 'pypi'"), "only on target testpypi"),
+        (mutated("needs: [build, testpypi]", "needs: build"), "must depend on testpypi"),
+        (mutated("needs: [build, testpypi]", "needs: testpypi"), "must depend on build"),
+        (mutated("needs: build", "needs: preflight"), "must depend on build"),
+        (mutated("environment: pypi", "environment: production"), "environment pypi"),
+        (mutated("environment: testpypi", "environment: pypi"), "environment testpypi"),
+        (
+            mutated("environment: pypi", "environment: pypi\n    if: always()"),
+            "default success condition",
+        ),
+        (
+            mutated("environment: testpypi", "environment: testpypi\n    if: false"),
+            "default success condition",
+        ),
+        (mutated("  testpypi:", "  staging:"), "no testpypi publish job"),
+        (mutated("  pypi:", "  production:"), "no pypi publish job"),
         (mutated("--signer-workflow r/.github/workflows/release.yml", ""), "--signer-workflow"),
     ],
 )

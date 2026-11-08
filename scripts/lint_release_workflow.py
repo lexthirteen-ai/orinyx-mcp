@@ -22,7 +22,8 @@ It checks:
 * the `testpypi` and `pypi` jobs hold the `LISTING_CHECK` text below, before they delete
   `dist/SHA256SUMS` (the files in `dist/` are exactly the files the checksum list names);
 * the concurrency group names the tag (`github.ref_name`; the tag fixes the target);
-* the `testpypi` and `pypi` jobs each run only on the target preflight derived from the tag;
+* the `testpypi` and `pypi` jobs bind to their matching environments and run after a successful
+  build, with PyPI also requiring successful TestPyPI publication (no job-level conditions);
 * every `gh attestation verify` line also has `--signer-workflow`;
 * no token or password setting, no `secrets.` reference other than none, and no actions cache.
 """
@@ -185,13 +186,26 @@ def lint(text: str) -> list[str]:
     elif not checks or not builds or checks[0] > builds[0]:
         failures.append("the build job does not run check_build_inputs.py before the build")
     for name in PUBLISH_JOBS:
-        if name in all_jobs and not listing_check_before_rm(all_jobs[name]):
+        if name not in all_jobs:
+            failures.append(f"no {name} publish job")
+            continue
+        body = all_jobs[name]
+        if not listing_check_before_rm(body):
             failures.append(
                 f"job {name!r} lacks the dist listing check before rm -f dist/SHA256SUMS"
             )
-        gate = f"    if: ${{{{ needs.preflight.outputs.target == '{name}' }}}}"
-        if name in all_jobs and gate not in all_jobs[name]:
-            failures.append(f"job {name!r} does not run only on target {name}")
+        if f"    environment: {name}" not in body:
+            failures.append(f"job {name!r} does not bind to environment {name}")
+        if any(re.match(r"^    if:", line) for line in body):
+            failures.append(f"job {name!r} must use the default success condition")
+        needs = next(
+            (line.removeprefix("    needs:") for line in body if line.startswith("    needs:")),
+            "",
+        )
+        dependencies = set(re.findall(r"[A-Za-z0-9_-]+", needs))
+        for dependency in ("build", "testpypi") if name == "pypi" else ("build",):
+            if dependency not in dependencies:
+                failures.append(f"job {name!r} must depend on {dependency}")
     for name, body in all_jobs.items():
         block = "\n".join(body)
         if re.search(r"^\s+id-token:\s*write\b", block, re.M) and name not in ID_TOKEN_JOBS:

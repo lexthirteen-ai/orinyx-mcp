@@ -1,4 +1,9 @@
-name: Publish to PyPI
+name: Publish to TestPyPI and PyPI
+
+# Stable version tags follow the repository's release process. Build once without OIDC;
+# publish the same checked distributions to TestPyPI, then PyPI, with owner approval in each.
+# CHA-142 L5b: Lex must allowlist exactly this action reference (v1.14.3):
+# pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
 
 on:
   push:
@@ -16,10 +21,9 @@ jobs:
     timeout-minutes: 5
     permissions: {}
     outputs:
-      target: ${{ steps.release.outputs.target }}
       version: ${{ steps.release.outputs.version }}
     steps:
-      - name: Select the production publisher from the tag
+      - name: Validate the stable release tag
         id: release
         env:
           RELEASE_TAG: ${{ github.ref_name }}
@@ -32,7 +36,7 @@ jobs:
           if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", tag):
               raise SystemExit("Only stable v<major>.<minor>.<patch> tags publish to PyPI")
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
-              output.write(f"target=pypi\nversion={tag[1:]}\n")
+              output.write(f"version={tag[1:]}\n")
           PY
 
   build:
@@ -52,7 +56,7 @@ jobs:
           python-version: "3.12"
       - name: Check build inputs
         run: |
-          python -I scripts/lint_release_workflow.py .github/workflows/publish.yml
+          python -I scripts/lint_release_workflow.py .github/workflows/release.yml
           python -I scripts/check_build_inputs.py .
       - name: Require tag to match the package version
         env:
@@ -89,14 +93,11 @@ jobs:
           path: dist/
           if-no-files-found: error
 
-  pypi:
-    needs: [preflight, build]
-    if: ${{ needs.preflight.outputs.target == 'pypi' }}
+  testpypi:
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: pypi
-      url: https://pypi.org/p/orinyx-mcp
+    environment: testpypi
     permissions:
       id-token: write
     steps:
@@ -113,5 +114,31 @@ jobs:
             <(sed -E 's/^[0-9a-f]{64} [ *]//' dist/SHA256SUMS | LC_ALL=C sort) \
             || { echo "::error::the files in dist/ are not exactly the files SHA256SUMS lists"; exit 1; }
           rm -f dist/SHA256SUMS
-      - name: Publish with trusted publishing
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+      - name: Publish to TestPyPI with trusted publishing
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  pypi:
+    needs: [build, testpypi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: python-distributions
+          path: dist/
+      - name: Verify the exact distribution file set and checksums
+        shell: bash
+        run: |
+          (cd dist && sha256sum -c SHA256SUMS)
+          diff <(cd dist && find . -mindepth 1 -maxdepth 1 ! -name SHA256SUMS \
+              | sed 's|^\./||' | LC_ALL=C sort) \
+            <(sed -E 's/^[0-9a-f]{64} [ *]//' dist/SHA256SUMS | LC_ALL=C sort) \
+            || { echo "::error::the files in dist/ are not exactly the files SHA256SUMS lists"; exit 1; }
+          rm -f dist/SHA256SUMS
+      - name: Publish to PyPI with trusted publishing
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3

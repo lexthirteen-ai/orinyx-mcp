@@ -64,24 +64,30 @@ examples, issues, pull requests or logs you paste. Use synthetic data throughout
   request.
 - Add or update tests with a change in behaviour.
 
-## Publishing to PyPI (owner checklist)
+## Publishing to TestPyPI and PyPI (owner checklist)
 
 The repository is already public and has GitHub release tags; those do not upload a
 package to PyPI. Before the November 9 announcement:
 
 1. Merge the publishing workflow and deploy the engine's self-serve key endpoints
    before advertising that credential path.
-2. In [GitHub's `pypi` environment](https://github.com/lexthirteen-ai/orinyx-mcp/settings/environments),
-   retain the required owner review and add a **tag** deployment rule such as `v*`.
+2. In [GitHub's environments](https://github.com/lexthirteen-ai/orinyx-mcp/settings/environments),
+   create `testpypi` and `pypi`, retain the required owner review (Lex only), disable
+   administrator bypass, and add a **tag** deployment rule such as `v*` to both.
    A rule allowing only the `main` branch blocks the tag-triggered publishing job.
-3. At https://pypi.org/manage/account/publishing/, add a pending trusted publisher
-   (or add one to an existing project) with these exact values:
+3. With Lex's own 2FA-protected accounts (recovery codes kept offline), add pending trusted
+   publishers at https://test.pypi.org/manage/account/publishing/ and
+   https://pypi.org/manage/account/publishing/ (or add one to an existing project)
+   with these exact values:
    - PyPI project: `orinyx-mcp`
    - GitHub owner: `lexthirteen-ai`
    - Repository: `orinyx-mcp`
-   - Workflow filename: `publish.yml` (not a path or `release.yml`)
-   - Environment: `pypi`
-   No PyPI API token or GitHub repository secret is needed.
+   - Workflow filename: `release.yml` (not a path)
+   - Environment: `testpypi` on TestPyPI
+   - Environment: `pypi` on PyPI
+   No PyPI API token or GitHub repository secret is needed. For CHA-142 L5b, add exactly
+   one Actions allowlist entry, shared by both publishing jobs (v1.14.3):
+   `pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086`.
 4. This work targets **0.1.5**, alongside the other changes accumulating on `main`.
    Merge the engine API first, then the dashboard/MCP consumers; do not copy engine
    authorization into either client. The package version is set to `0.1.5`; review
@@ -89,14 +95,16 @@ package to PyPI. Before the November 9 announcement:
    the reviewed release commit, create and push the matching `v0.1.5` tag. The workflow refuses a
    tag/version mismatch, tests the package, then builds a wheel and sdist with
    `python -I -m build` and validates their metadata with Twine. Only stable
-   `v<major>.<minor>.<patch>` tags select PyPI; prerelease tags are refused.
+   `v<major>.<minor>.<patch>` tags publish to TestPyPI then PyPI; prerelease tags are refused.
    `scripts/lint_release_workflow.py` governs the workflow, and
    `scripts/check_dist.py` validates both archives against the version's exact
    manifest in `release/manifests/`, the source tree and the Registry marker.
    Update that manifest whenever packaged files change. Checksums and an exact
-   file-list check are repeated in the publishing job before upload.
-5. Approve the `pypi` environment deployment. Only the publishing job has
-   `id-token: write`; it downloads the build artifact and uses
+   file-list check are repeated in each publishing job before upload.
+5. Approve the `testpypi` environment deployment and check the upload at
+   https://test.pypi.org/project/orinyx-mcp/. The `pypi` job requires TestPyPI success;
+   approve its environment deployment next. Only these two publishing jobs have
+   `id-token: write`; both download the same build artifact and use
    `pypa/gh-action-pypi-publish` with OIDC, with no source checkout or build there.
 6. Verify https://pypi.org/project/orinyx-mcp/ and install the new version in a clean
    environment (`pip install orinyx-mcp`); check `orinyx --help`,
@@ -104,7 +112,10 @@ package to PyPI. Before the November 9 announcement:
 
 Do not announce PyPI availability until the upload and clean install succeed.
 The workflow does not change repository visibility, environment policies or PyPI
-account settings, and never creates a release tag itself.
+account settings, and never creates a release tag itself. Account creation, 2FA, pending
+publisher registration, environment reviewer settings and the allowlist entry are Lex-only
+console actions. CHA-142 L5c's npm `orinyx` organization is also a Lex-only console action;
+this workflow publishes nothing to npm.
 
 ## License
 
