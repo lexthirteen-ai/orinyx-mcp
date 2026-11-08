@@ -18,7 +18,7 @@ class FakeClient:
     def vendors(self):
         return {"data": [{"id": 9, "name": "Taken", "product": "P"}]}
 
-    def open_exam(self, vendor_id, case_set, version, *, entry_mode="hosted_mcp"):
+    def open_exam(self, vendor_id, case_set, version, *, entry_mode="vendor"):
         self.entry_mode = entry_mode
         return {"id": 12, "vendorId": vendor_id, "caseSetId": case_set, "caseSetVersion": version}
 
@@ -62,7 +62,7 @@ def test_setup_and_open_print_ids():
         ["open", "--vendor-id", "3", "--case-set", "ambient-core", "--version", "1.0.0"], client
     )
     assert "run 12 is open" in opened
-    assert client.entry_mode == "hosted_mcp"
+    assert client.entry_mode == "vendor"
 
 
 def test_operator_entry_is_an_explicit_separate_sitting():

@@ -475,12 +475,12 @@ class OrinyxClient:
         return self._json_object(self._request("GET", "/v1/vendors", params={"limit": 200}))
 
     def open_exam(
-        self, vendor_id: int, case_set_id: str, version: str, *, entry_mode: str = "hosted_mcp"
+        self, vendor_id: int, case_set_id: str, version: str, *, entry_mode: str = "vendor"
     ) -> dict[str, Any]:
         if isinstance(vendor_id, bool) or not str(vendor_id).isdigit():
             raise ValueError("vendor_id is the vendor's number")
-        if entry_mode not in {"hosted_mcp", "operator"}:
-            raise ValueError("entry_mode must be hosted_mcp or operator")
+        if entry_mode not in {"vendor", "operator"}:
+            raise ValueError("entry_mode must be vendor or operator")
         body = {"caseSetId": case_set_id, "caseSetVersion": version, "entryMode": entry_mode}
         path = f"/v1/vendors/{int(vendor_id)}/benchmark-runs"
         return self._json_object(self._request("POST", path, json=body))

@@ -56,7 +56,7 @@ def _setup(client: OrinyxClient, args) -> str:
 
 
 def _open(client: OrinyxClient, args) -> str:
-    mode = "operator" if args.operator_entry else "hosted_mcp"
+    mode = "operator" if args.operator_entry else "vendor"
     run = client.open_exam(args.vendor_id, args.case_set, args.version, entry_mode=mode)
     return (
         f"run {run['id']} is open for vendor {run.get('vendorId')} on {run.get('caseSetId')} "

@@ -369,13 +369,21 @@ Configuration is the environment only:
 | `ORINYX_API_URL` | the Orinyx API this service calls on the caller's behalf |
 | `ORINYX_ISSUER_URL` | the API's public origin, named in the resource metadata for sign-in (defaults to the `ORINYX_API_URL` origin) |
 | `ORINYX_HOP_SECRET` | required for hosted MCP, at least 32 ASCII characters, shared with the API; the backend must reach the API from an admitted private peer |
+
 | `ORINYX_API_ALLOW_HTTP` | `true` only on a private network trusted end to end |
 | `TRUST_PROXY_FORWARDED_FOR` | `true` behind exactly one proxy (the host's edge) |
 | `TRUSTED_CLIENT_IP_HEADER` | a header that proxy sets to the caller's address (Fly: `fly-client-ip`) |
 | `PORT` | listening port (default 8000) |
 
+Vendor exams support hosted MCP and authenticated dashboard sessions. New sittings default to
+`entryMode: "vendor"`; `evals/product_exam.py open --operator-entry` opens a separate
+`entryMode: "operator"` sitting for manual quality-lead/admin entry. An operator cannot answer a
+vendor sitting, and operator sittings cannot record MCP traces or be publicly certified. Dashboard
+answers are not fabricated as tool traces. Apply the engine's entry-mode migration/API first.
+
 ```bash
-MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example orinyx-mcp
+MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example \
+  ORINYX_HOP_SECRET="${ORINYX_HOP_SECRET:?configure the shared backend secret}" orinyx-mcp
 ```
 
 How the server handles the bearer an agent presents is in

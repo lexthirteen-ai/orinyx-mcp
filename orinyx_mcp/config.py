@@ -6,8 +6,8 @@
 | ORINYX_API_URL              | the Orinyx API this service calls on the caller's behalf     |
 | ORINYX_ISSUER_URL           | the Orinyx sign-in origin named in the resource metadata     |
 |                             | (defaults to ORINYX_API_URL when that is https)              |
-| ORINYX_HOP_SECRET           | optional; shared with the API so it can honour the caller's  |
-|                             | address this service forwards (at least 32 characters)       |
+| ORINYX_HOP_SECRET           | required for hosted MCP; shared with the API for private     |
+|                             | backend authentication (at least 32 ASCII characters)        |
 | ORINYX_API_ALLOW_HTTP       | `true` only for a private network trusted end to end         |
 | TRUST_PROXY_FORWARDED_FOR   | `true` behind exactly one proxy (the host's edge)            |
 | TRUSTED_CLIENT_IP_HEADER    | a header that proxy sets to the caller's address (Fly:       |

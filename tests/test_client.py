@@ -40,7 +40,7 @@ def _client(handler) -> OrinyxClient:
     )
 
 
-@pytest.mark.parametrize("mode", ["hosted_mcp", "operator"])
+@pytest.mark.parametrize("mode", ["vendor", "operator"])
 def test_operator_opens_an_explicit_entry_mode(mode):
     def handler(request):
         assert request.url.path == "/v1/vendors/3/benchmark-runs"
