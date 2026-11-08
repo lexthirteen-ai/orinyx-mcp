@@ -1,5 +1,5 @@
 {
- "_note": "What the orinyx CLI printed at commit 7fa8f7e, before value-free usage errors landed: one entry per case in tests/test_cli_output_unchanged.py, captured with that file's capture() on Python 3.14 and 3.12 (identical bytes). Synthetic data only; <work> is the case's temporary directory. Regenerate only for a deliberate, owner-approved output change.",
+ "_note": "What the orinyx CLI printed at commit 7fa8f7e, before value-free usage errors landed: one entry per case in tests/test_cli_output_unchanged.py, captured with that file's capture() on Python 3.14 and 3.12 (identical bytes). Synthetic data only; <work> is the case's temporary directory. Regenerate only for a deliberate, owner-approved output change. CHA-145 deliberately updates only top-level help/usage for login, logout and status; clinical command outputs are unchanged.",
  "cases": {
   "--file followed by a flag": {
    "err": "usage: orinyx verify [-h] --file FILE [--tool TOOL]\n                     [--tool-version TOOL_VERSION] [--check-interactions]\n                     [--json]\norinyx verify: error: argument --file: expected one argument\n",
@@ -14,17 +14,17 @@
   "--help": {
    "err": "",
    "exit": 0,
-   "out": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {verify,get,accuracy,export,observe}\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
+   "out": "usage: orinyx [-h]\n              {login,logout,status,verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {login,logout,status,verify,get,accuracy,export,observe}\n    login               sign in for verification and Arena\n    logout              revoke and remove the saved login (leaves API keys\n                        unchanged)\n    status              show the credential source without displaying secrets\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
   },
   "-h": {
    "err": "",
    "exit": 0,
-   "out": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {verify,get,accuracy,export,observe}\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
+   "out": "usage: orinyx [-h]\n              {login,logout,status,verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {login,logout,status,verify,get,accuracy,export,observe}\n    login               sign in for verification and Arena\n    logout              revoke and remove the saved login (leaves API keys\n                        unchanged)\n    status              show the credential source without displaying secrets\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
   },
   "-h glued to a value": {
    "err": "",
    "exit": 0,
-   "out": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {verify,get,accuracy,export,observe}\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
+   "out": "usage: orinyx [-h]\n              {login,logout,status,verify,get,accuracy,export,observe} ...\n\nVerify medication claims with Orinyx. Exit 0 clean, 2 flagged, 3 not verified\n(no flag, but at least one claim abstained), 1 error.\n\npositional arguments:\n  {login,logout,status,verify,get,accuracy,export,observe}\n    login               sign in for verification and Arena\n    logout              revoke and remove the saved login (leaves API keys\n                        unchanged)\n    status              show the credential source without displaying secrets\n    verify              verify claims from a JSON file\n    get                 read a saved run\n    accuracy            the physician-review tally for a run\n    export              download csv, pdf (full audit) or report (one page)\n    observe             check every order in an agent's saved output (one run\n                        per record)\n\noptions:\n  -h, --help            show this help message and exit\n"
   },
   "a missing --file": {
    "err": "orinyx: [Errno 2] No such file or directory: '<work>/missing.json'\n",
@@ -57,7 +57,7 @@
    "out": ""
   },
   "an unknown short option": {
-   "err": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: -x\n",
+   "err": "usage: orinyx [-h]\n              {login,logout,status,verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: -x\n",
    "exit": 1,
    "out": ""
   },
@@ -112,7 +112,7 @@
    "out": ""
   },
   "no command": {
-   "err": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\norinyx: error: the following arguments are required: command\n",
+   "err": "usage: orinyx [-h]\n              {login,logout,status,verify,get,accuracy,export,observe} ...\norinyx: error: the following arguments are required: command\n",
    "exit": 1,
    "out": ""
   },
@@ -162,12 +162,12 @@
    "out": ""
   },
   "one unknown option": {
-   "err": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: --bogus\n",
+   "err": "usage: orinyx [-h]\n              {login,logout,status,verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: --bogus\n",
    "exit": 1,
    "out": ""
   },
   "two unknown options": {
-   "err": "usage: orinyx [-h] {verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: --bogus --other\n",
+   "err": "usage: orinyx [-h]\n              {login,logout,status,verify,get,accuracy,export,observe} ...\norinyx: error: unrecognized arguments: --bogus --other\n",
    "exit": 1,
    "out": ""
   },

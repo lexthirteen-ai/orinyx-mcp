@@ -23,6 +23,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 dependencies = [
+    "keyring>=25.7,<26",
     "mcp>=2.3,<3",
     "httpx>=0.28,<1",
     # The MCP SDK's client transport takes an httpx2 client (orinyx_mcp/gateway.py).
