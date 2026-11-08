@@ -469,11 +469,11 @@ Optional: `tool_name` and `tool_version` (named in the report header) and `check
 **Returns:** Orinyx splits each order into its dose, route and frequency claims (rules, no
 model) and answers with one table row per claim. The order above is one of the two
 [first-run examples](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/examples/first-run/), with its dose error planted. The output below was
-captured on 2026-10-22 from Orinyx engine 0.3.1 running on a local machine. It was not written
-by hand. Run ids and times differ from run to run:
+captured on 2026-11-07 from the hosted Orinyx connector (`https://orinyx-mcp.fly.dev/mcp`,
+orinyx-mcp 0.1.3). It was not written by hand. Run ids and times differ from run to run:
 
 ```text
-Orinyx verification - run 926f7677
+Orinyx verification - run f57fc863
 Checked 3 claims: 1 flagged, 2 supported, 0 abstained.
 
 | # | Claim | Part | Result | Severity | Why | Citation |
@@ -496,9 +496,14 @@ SUPPORTED: consistent with the cited label text; not a judgment that the order s
 Orinyx flags; the clinician decides.
 
 Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
-Orinyx checking time: 8.7 ms
+Orinyx checking time: 29 ms
 
-Run id: 926f7677-c90e-4236-8f98-3f71f3f61f8a
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): rows 1, 2, 3 - 1 flagged, 2 supported
+Semantic Mapping (beta): no rows in this run
+Source Evidence (beta): no rows in this run
+
+Run id: f57fc863-a31b-4a0a-af73-440f5d1215b8
 ```
 
 An order Orinyx cannot read as written (`wafarin 5 mb`) comes back first, as
@@ -569,11 +574,11 @@ one.
   from the `Run id:` line.
 
 **Prompt example:**
-> "Read Orinyx run 926f7677-c90e-4236-8f98-3f71f3f61f8a again."
+> "Read Orinyx run f57fc863-a31b-4a0a-af73-440f5d1215b8 again."
 
 **Usage example:**
 ```json
-{"name": "get_verification", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a"}}
+{"name": "get_verification", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8"}}
 ```
 
 **Returns:** the run as the same table, with its accuracy block if the run has one, and the
@@ -591,11 +596,11 @@ estimate, with its sample size. With no review yet it says so and gives no accur
 - Passing the abbreviated id from the report header instead of the full run id.
 
 **Prompt example:**
-> "Show the false-flag rate for run 926f7677-c90e-4236-8f98-3f71f3f61f8a."
+> "Show the false-flag rate for run f57fc863-a31b-4a0a-af73-440f5d1215b8."
 
 **Usage example:**
 ```json
-{"name": "get_accuracy", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a"}}
+{"name": "get_accuracy", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8"}}
 ```
 
 **Returns:** the tally as text. With no review yet it says so, with the number of flags
@@ -614,11 +619,11 @@ PDF; `report.pdf` is accepted too). The default is `csv`.
   pdf or report".
 
 **Prompt example:**
-> "Export run 926f7677-c90e-4236-8f98-3f71f3f61f8a as the one-page committee report."
+> "Export run f57fc863-a31b-4a0a-af73-440f5d1215b8 as the one-page committee report."
 
 **Usage example:**
 ```json
-{"name": "export_verification", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a", "fmt": "report"}}
+{"name": "export_verification", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8", "fmt": "report"}}
 ```
 
 **Returns:** the file as an embedded resource (base64, with its MIME type) at

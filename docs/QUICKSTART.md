@@ -31,9 +31,9 @@ The two orders are also in [examples/first-run/](../examples/first-run/) (`clean
 
 ### Expected output
 
-The output below was captured on 2026-10-22 from Orinyx engine 0.3.1 running on a local
-machine. It was captured with this package's own MCP server, called by an MCP client in the
-same way an agent calls it. Your run should match on these points: the same rows, the same
+The output below was captured on 2026-11-07 from the hosted Orinyx connector
+(`https://orinyx-mcp.fly.dev/mcp`, orinyx-mcp 0.1.3). It was captured with this package's own
+MCP server, called by an MCP client in the same way an agent calls it. Your run should match on these points: the same rows, the same
 verdict and severity on each, and the same citations. These parts will be different:
 
 - the run id;
@@ -46,7 +46,7 @@ the tool's output exactly as returned.
 **Clean example:** three claims, all supported, each with a citation, and no flag.
 
 ```text
-Orinyx verification - run 10a4d403
+Orinyx verification - run c368f727
 Checked 3 claims: 0 flagged, 3 supported, 0 abstained.
 
 | # | Claim | Part | Result | Severity | Why | Citation |
@@ -66,9 +66,14 @@ SUPPORTED: consistent with the cited label text; not a judgment that the order s
 Orinyx flags; the clinician decides.
 
 Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
-Orinyx checking time: 6 ms
+Orinyx checking time: 42.2 ms
 
-Run id: 10a4d403-04e0-49e4-b2c1-d07a6ecf78da
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): rows 1, 2, 3 - 3 supported
+Semantic Mapping (beta): no rows in this run
+Source Evidence (beta): no rows in this run
+
+Run id: c368f727-c697-4f94-a16d-94642bdc6c17
 ```
 
 **Planted example:** the dose is flagged (Moderate), and route and frequency are supported. At
@@ -77,7 +82,7 @@ maximum of 4,000 mg in 24 hours. The error is planted so you can see a flag. It 
 example.
 
 ```text
-Orinyx verification - run 926f7677
+Orinyx verification - run f57fc863
 Checked 3 claims: 1 flagged, 2 supported, 0 abstained.
 
 | # | Claim | Part | Result | Severity | Why | Citation |
@@ -100,9 +105,14 @@ SUPPORTED: consistent with the cited label text; not a judgment that the order s
 Orinyx flags; the clinician decides.
 
 Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
-Orinyx checking time: 8.7 ms
+Orinyx checking time: 29 ms
 
-Run id: 926f7677-c90e-4236-8f98-3f71f3f61f8a
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): rows 1, 2, 3 - 1 flagged, 2 supported
+Semantic Mapping (beta): no rows in this run
+Source Evidence (beta): no rows in this run
+
+Run id: f57fc863-a31b-4a0a-af73-440f5d1215b8
 ```
 
 If you get a different verdict for either order, the API you reached holds different reference
