@@ -4,9 +4,10 @@ Connect an agent to Orinyx, run a first check, add it to CI, and sit an exam. Sy
 only throughout: never real patient records, names, dates or record numbers.
 
 For the hosted connector, the self-serve path, you need an Orinyx account and no key;
-[First run](#first-run) starts with signing up. Today the stdio server, the CLI and CI each
-need an Orinyx API URL and a key (`ork_live_...`) issued to you by Orinyx; a self-serve
-sign-up does not include a key.
+[First run](#first-run) starts with signing up. The stdio server, the CLI and CI each
+need an Orinyx API URL and a key (`ork_live_...`) issued by Orinyx through the
+[self-serve API](../README.md#get-an-api-key) or an operator. PyPI and `uvx` installation
+instructions are in the [README](../README.md#install-from-pypi).
 
 ## First run
 
@@ -318,8 +319,8 @@ orinyx export <run id> --format report --out report.pdf   # csv | pdf | report; 
 `orinyx verify` exits 0 clean, 2 flagged (a `contradicted` claim or an `unreadable` order),
 3 not verified (no flag, but an abstain), 1 error. Usage errors exit 1, never 2.
 
-CI needs an `ork_live_` key issued to you by Orinyx: hosted sign-in needs a browser, and a
-self-serve sign-up does not include a key. Have your test job write the agent's claims for a
+CI needs an `ork_live_` key issued by Orinyx through the [self-serve API](../README.md#get-an-api-key)
+or an operator: hosted connector OAuth is not a CLI credential. Have your test job write the agent's claims for a
 fixed set of synthetic inputs to a JSON file, then:
 
 ```yaml

@@ -80,6 +80,14 @@ def test_the_range_check_can_fail(version, inside):
 
 def test_the_project_table():
     project = PROJECT["project"]
+    assert project["name"] == "orinyx-mcp"
+    assert project["requires-python"] == ">=3.11"
+    assert project["readme"] == "README.md"
+    assert project["license-files"] == ["LICENSE"]
+    assert project["scripts"] == {
+        "orinyx": "orinyx_mcp.cli:main",
+        "orinyx-mcp": "orinyx_mcp.http:serve",
+    }
     assert project["authors"] == [{"name": "Lex Hamilton"}]
     assert project["keywords"] == [
         "mcp",

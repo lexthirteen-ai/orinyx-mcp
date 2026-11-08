@@ -1,12 +1,4 @@
-"""The install docs. A self-serve developer has only the hosted connector, so the README's
-Installation section opens with it; every stdio, CLI and CI path says it needs a key issued by
-Orinyx; no doc gives a PyPI install command, a CLI login, a singular developer-page link or a
-real-looking key; every section that shows a config or command holding `ORINYX_API_KEY` warns
-never to commit a config file that holds a key; the official-package line (pre-release form) is
-in the README and SECURITY.md; and the troubleshooting page and the Supported environments
-section are linked from Installation, the latter with no support-window or support-policy
-statement. Each check reads the docs as committed, so a later edit that drops or reverses one of
-these fails here."""
+"""Hosted OAuth and PyPI/source installs keep credential and safety guidance visible."""
 
 import re
 from pathlib import Path
@@ -29,7 +21,8 @@ PACKAGE_LINE = (
 )
 README_ACCESS_LINE = (
     "Sign up at [orinyx.io/developers](https://orinyx.io/developers) to use the hosted connector "
-    "with your Orinyx account; a key for the stdio server, the CLI or CI is issued by Orinyx."
+    "with your Orinyx account, or mint a personal key for stdio, the CLI or CI through the "
+    "[self-serve API](#get-an-api-key)."
 )
 HOSTED_URL = "https://orinyx-mcp.fly.dev/mcp"
 CLAUDE_CODE_HOSTED = f"claude mcp add --transport http orinyx {HOSTED_URL}"
@@ -276,10 +269,40 @@ def test_the_official_package_line_is_stated_once(rel):
     assert PACKAGE_LINE in _collapse(where)
 
 
-@pytest.mark.parametrize("rel", CHANGED)
-def test_no_changed_file_gives_a_pypi_install_command(rel):
+@pytest.mark.parametrize("rel", [rel for rel in CHANGED if rel != "README.md"])
+def test_other_docs_link_to_the_canonical_install_instructions(rel):
     hits = [line for line in _read(rel).splitlines() if PYPI_INSTALL.search(line)]
     assert not hits
+
+
+def test_pypi_stdio_cli_and_self_serve_key_instructions():
+    readme = _read("README.md")
+    install = _section(readme, "### Install from PyPI")
+    for command in (
+        "pip install orinyx-mcp",
+        "orinyx-mcp stdio",
+        "uvx orinyx-mcp stdio",
+        "uvx --from orinyx-mcp orinyx --help",
+        "orinyx verify --file claims.json",
+    ):
+        assert command in install
+    assert "Once the first PyPI release is published" in install
+    assert "HTTP server, not stdio" in _collapse(install)
+    keys = _section(readme, "### Get an API key")
+    for endpoint in (
+        "POST /v1/auth/login",
+        "POST /v1/auth/api-keys/self",
+        "GET /v1/auth/api-keys/self",
+        "DELETE /v1/auth/api-keys/self/{key_id}",
+    ):
+        assert endpoint in keys
+    assert "Authorization: Bearer <session token>" in keys
+    assert '"scopes":["verify:read","verify:write"]' in keys
+    assert "shown only once" in keys and "1–90 days" in keys
+    for rel in ("README.md", "docs/QUICKSTART.md", "docs/TROUBLESHOOTING.md"):
+        text = _collapse(_read(rel))
+        assert "self-serve sign-up does not include" not in text
+        assert "A self-serve account has no key" not in text
 
 
 def test_the_from_source_install_stays():
@@ -334,16 +357,13 @@ def test_troubleshooting_exists_and_is_linked_from_installation():
     ):
         assert symptom in row.split(" | ")[0], (symptom, row)
     unauthorized = body[3]
-    assert "mint" not in unauthorized.lower()
-    assert "Ask whoever issued the key (Orinyx)" in unauthorized
-    assert "A self-serve account has no key" in unauthorized
+    assert "Mint a replacement through the [self-serve API]" in unauthorized
+    assert "or ask your operator" in unauthorized
     assert "`python -m orinyx_mcp`" in body[1]
 
 
 def test_troubleshooting_never_repairs_a_uvx_or_pipx_launch():
-    # No official path launches through uvx or pipx, so a row that helps a reader fix one would
-    # help them run a package that is not ours. The ENOENT fix names only the from-source
-    # virtualenv's interpreter, never a PATH lookup for whatever command failed.
+    # The from-source ENOENT fix must still name the installed executable explicitly.
     text = _read("docs/TROUBLESHOOTING.md")
     assert not re.search(r"\b(?:uvx|pipx)\b", text, re.I)
     enoent = [line for line in text.splitlines() if line.startswith("| ") and "ENOENT" in line]
