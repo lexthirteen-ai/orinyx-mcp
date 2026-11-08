@@ -275,9 +275,10 @@ def render_run_table(run: Mapping, accuracy: Mapping | None = None) -> str:
         )
     for row in abstained:
         number += 1
+        citation = cite(row) if row.get("verdict") == "abstain" and row.get("citation") else "-"
         rows.append(
             f"| {number} {claim(row)}| NOT VERIFIED (abstain) | - "
-            f"| {_cell(_not_verified_reason(row))} | - |"
+            f"| {_cell(_not_verified_reason(row))} | {citation} |"
         )
     if number:
         lines += rows
@@ -487,6 +488,8 @@ def render_run_text(run: Mapping, accuracy: Mapping | None = None) -> str:
             reason = _not_verified_reason(row)
             lines.append(f"{index}. {row.get('rawText', '')} ({_part(row)})")
             lines.append(f"   Why not: {reason}")
+            if row.get("verdict") == "abstain" and row.get("citation"):
+                lines.append(f"   Citation: {_citation_line(row['citation'])}")
     else:
         lines.append("ABSTAINED (0)")
     accuracy_lines = render_accuracy_lines(accuracy)
