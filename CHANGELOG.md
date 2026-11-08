@@ -39,6 +39,13 @@ Planned release: **0.1.5**.
   identifier screen against the API's, in the background, when the API serves those lists. A
   difference is logged. The API does not serve them yet, so for now the local copies are used.
 
+### Fixed
+
+- The HTTP app keeps an explicitly supplied client pool even when it is empty. Previously,
+  an empty pool was treated as missing and replaced by the default, discarding its custom
+  transport and idle-client limit. Omitting the pool or passing `None` still selects the
+  default; the selected pool is closed when the app shuts down.
+
 ## [0.1.4] - 2026-11-05
 
 ### Changed

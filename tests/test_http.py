@@ -197,6 +197,63 @@ async def test_a_sign_in_token_for_this_endpoint_is_admitted():
         assert response.status_code == 200
 
 
+@pytest.mark.parametrize("factory_mode", ["empty_pool", "omitted", "none"])
+async def test_build_app_preserves_the_selected_pool_and_closes_it(monkeypatch, factory_mode):
+    from orinyx_mcp import contract
+
+    config = _config()
+    seen = []
+
+    def handler(request):
+        seen.append(request.headers["Authorization"])
+        if request.url.path.endswith("/accuracy"):
+            return httpx.Response(
+                404, json={"error": {"code": "not_found", "message": "no review"}}
+            )
+        assert request.url.path == f"/v1/verifications/{RUN['runId']}"
+        return httpx.Response(200, json=RUN)
+
+    pool = mcp_http.ClientPool(config, max_idle=1, transport=httpx.MockTransport(handler))
+    assert len(pool) == 0
+    default_calls = []
+
+    def default_factory(selected_config):
+        default_calls.append(selected_config)
+        return pool
+
+    monkeypatch.setattr(mcp_http, "client_factory", default_factory)
+    monkeypatch.setattr(contract, "check_in_background", lambda client: None)
+    kwargs = {"client_for": pool} if factory_mode == "empty_pool" else {}
+    if factory_mode == "none":
+        kwargs["client_for"] = None
+
+    api = FakeApi()
+    async with httpx.AsyncClient(transport=httpx.MockTransport(api.handler)) as fake_http:
+        wrapped, app = mcp_http.build_app(config, http=fake_http, **kwargs)
+        assert default_calls == ([] if factory_mode == "empty_pool" else [config])
+        connections = []
+        async with app.router.lifespan_context(app):
+            transport = httpx.ASGITransport(app=wrapped)
+            async with httpx.AsyncClient(transport=transport, base_url=PUBLIC) as remote:
+                call = _rpc(
+                    "tools/call",
+                    {"name": "get_verification", "arguments": {"run_id": RUN["runId"]}},
+                )
+                for token in (GOOD, SIGNED_IN):
+                    response = await remote.post("/mcp", json=call, headers=_auth(token))
+                    assert response.status_code == 200
+                    result = response.json()["result"]
+                    assert not result.get("isError")
+                    assert f"Run id: {RUN['runId']}" in result["content"][0]["text"]
+                    assert len(pool) == 1
+                    connections.append(next(iter(pool._clients.values()))[0]._http)
+            assert connections[0] is not connections[1]
+            assert connections[0].is_closed and not connections[1].is_closed
+        assert len(pool) == 0
+        assert all(connection.is_closed for connection in connections)
+    assert seen == [f"Bearer {token}" for token in (GOOD, SIGNED_IN) for _ in range(2)]
+
+
 async def test_a_tool_call_reaches_the_api_with_the_callers_own_credential_and_address():
     config = _config(hop_secret=SECRET, trust_proxy_forwarded_for=True)
     async with _remote(config) as remote:
