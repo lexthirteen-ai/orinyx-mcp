@@ -5,6 +5,15 @@ All notable changes to this project are recorded here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- Every tool now has a human-readable title and MCP behaviour hints in `tools/list`
+  (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), set from what each
+  call does on the Orinyx API. The reads and lookups are read-only. `finish_exam` is marked
+  destructive, since it closes a sitting for good. The verifications and exports are
+  additive and not idempotent, since each adds a run or an audit-chain entry. Tool names,
+  input schemas and descriptions are unchanged.
+
 ### Changed
 
 - Packaging for PyPI: the package metadata is complete (authors, keywords, classifiers and

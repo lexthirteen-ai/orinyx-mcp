@@ -260,6 +260,8 @@ def _guard_tool_descriptions(server: Any) -> None:
     later `register_*` function, with or without an explicit description. An explicit
     description that already opens with the statement is kept as given (gate B15).
     """
+    from orinyx_mcp.annotations import TOOL_METADATA
+
     add_tool = server.add_tool
 
     @functools.wraps(add_tool)
@@ -267,6 +269,14 @@ def _guard_tool_descriptions(server: Any) -> None:
         text = description if description is not None else (fn.__doc__ or "")
         if not text.startswith(NOT_FOR_CLINICAL_USE):
             text = f"{NOT_FOR_CLINICAL_USE} {text}".strip()
+        # The same path gives each tool its title and behaviour hints (annotations.py). The
+        # decorator passes title=None and annotations=None explicitly, so None means unset.
+        known = TOOL_METADATA.get(kw.get("name") or fn.__name__)
+        if known is not None:
+            if kw.get("title") is None:
+                kw["title"] = known[0]
+            if kw.get("annotations") is None:
+                kw["annotations"] = known[1]
         return add_tool(fn, *args, description=text, **kw)
 
     server.add_tool = guarded
