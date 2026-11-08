@@ -75,7 +75,8 @@ or want a clinical decision. Orinyx does not do any of these: see
 ## Installation
 
 Use the hosted connector with OAuth, or install the Python package for stdio, the CLI
-and CI. Local use needs an API URL and a [personal API key](#get-an-api-key).
+and CI. Local use supports [browser login](#cli-login) or an API URL and a
+[personal API key](#get-an-api-key). CI remains key-based.
 
 | Path | For | What you need |
 |---|---|---|
@@ -166,6 +167,43 @@ starts Codex. In the `codex` terminal UI, `/mcp` lists the servers Codex has con
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json`, `.codex/config.toml` or a project `.mcp.json`.
 
+### CLI login
+
+Requires the L9 engine update before use; this is not yet a published package release.
+On macOS or desktop Linux with an unlocked OS keychain:
+
+```bash
+orinyx login
+orinyx status --json
+orinyx-mcp stdio
+orinyx logout
+```
+
+Login opens your external browser and receives the result on a one-time IPv4 loopback
+listener. `orinyx login --no-browser` prints the authorization URL instead; open it on
+the **same device** within three minutes. It is not a device-code or SSH login flow.
+No password, code, or token is entered in the terminal.
+
+The default API is `https://orinyx-api.fly.dev`; set `ORINYX_API_URL` to select another
+HTTPS API origin (HTTP is accepted only on loopback). The issuer and OAuth endpoints
+must belong to that origin. Each origin has its own saved login and public-client
+registration. Re-run commands with the same origin; credentials are never sent to a new target.
+
+Login grants verification and Arena scopes permitted by your account, **never exam scopes**.
+Arena still needs operator enablement, tester eligibility, and `ORINYX_ARENA_ENABLED=true`
+in the local MCP environment; sign-in does not bypass any of those gates.
+Use the existing hosted connector for exam workflows pending the exam-integrity ruling.
+
+Credentials, including rotating refresh tokens, live only in macOS Keychain or Linux
+Secret Service. There is no plaintext config-file fallback. Headless CI uses environment
+keys. The explicit `ORINYX_API_KEY` always wins, even if invalid; unset it to use a login.
+`logout` revokes the saved grant and removes the local record, not environment API keys.
+Offline logout reports that server revocation was not confirmed; end account sessions
+to invalidate a remaining server-side grant. Expired/revoked logins require login again;
+commands never launch a browser implicitly. Long-running stdio refreshes before API calls,
+not during startup, and does not retry writes after authentication failures.
+
+
 ### Get an API key
 
 Beta developers can mint their own keys after signing up and setting a password:
@@ -205,7 +243,8 @@ orinyx --help
 orinyx verify --file claims.json --tool my-agent
 ```
 
-Set the API URL and key in the process environment first; see [Get an API key](#get-an-api-key).
+Use [CLI login](#cli-login), or set the API URL and key in the process environment first;
+see [Get an API key](#get-an-api-key).
 For an isolated run without installing into your current Python environment, use
 [uv](https://docs.astral.sh/uv/):
 
@@ -221,8 +260,9 @@ install below; a GitHub release alone does not publish the package to PyPI.
 
 ### Local stdio (from source)
 
-The stdio server, the CLI and CI each need an Orinyx API URL and a key (`ork_live_...`)
-issued by Orinyx through the [self-serve API](#get-an-api-key) or an operator. To develop
+The stdio server and CLI support [CLI login](#cli-login). For CI or explicit key-based use,
+provide an Orinyx API URL and a key (`ork_live_...`) issued through the
+[self-serve API](#get-an-api-key) or an operator. To develop
 from a checkout instead of using PyPI:
 
 ```bash
@@ -358,7 +398,8 @@ The hosted connector reports its version at `https://orinyx-mcp.fly.dev/health`.
 | `ORINYX_API_URL` | the Orinyx API (https; plain http only for localhost) |
 | `ORINYX_API_KEY` | an `ork_live_` key issued to you by Orinyx |
 
-Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. The `DOWNSTREAM_MCP_*`
+An explicit `ORINYX_API_KEY` takes precedence; otherwise local CLI/stdio use the secure
+[saved login](#cli-login) for the selected API origin. No API key is read from disk. The `DOWNSTREAM_MCP_*`
 variables under [Gateway](#gateway-another-mcp-server) work over stdio too.
 
 ### Network server

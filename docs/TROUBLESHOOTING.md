@@ -1,11 +1,32 @@
 # Troubleshooting
 
+## Local CLI login
+
+`orinyx login` requires the L9 engine update and a native macOS Keychain or Linux
+Secret Service session. A locked or unavailable keychain fails closed; unlock it in
+your desktop session and retry. There is no plaintext fallback. On headless Linux/CI,
+use an API key in `ORINYX_API_KEY` with `ORINYX_API_URL` instead. API keys always win
+over saved login; unset the key to select your login. Do not paste keys into command flags.
+
+For `--no-browser`, open the displayed authorization URL on the same computer as the
+CLI, within three minutes. SSH forwarding/device codes are not supported. Declined or
+timed-out consent can be retried; commands never open a browser implicitly. After a
+revoked, uncertain, or expired refresh, run `orinyx logout` then `orinyx login` again.
+An offline logout removes local credentials but warns that server revocation is unconfirmed;
+invalidate remaining grants by ending your account sessions. Use the same API origin as
+login for status/logout; a different origin is intentionally a separate credential.
+
+Arena also needs server enablement, tester eligibility, and `ORINYX_ARENA_ENABLED=true`
+locally. Login does not grant exams or bypass Arena gates. `orinyx status --json` shows
+credential source and scopes, never bearer tokens. Never attach keychain exports to an issue.
+
 Each row is a symptom you may see, its usual cause and the fix. Setup steps are in the
 README's [Installation](../README.md#installation) section and in
 [QUICKSTART.md](QUICKSTART.md). Synthetic data only throughout.
 
 The hosted connector `https://orinyx-mcp.fly.dev/mcp` is the self-serve path: you sign in with
-your Orinyx account and need no key. The stdio server, the CLI and CI need an `ork_live_` key
+your Orinyx account and need no key. Local CLI/stdio support login after the L9 engine update;
+CI and explicit key-based use need an `ork_live_` key
 issued by Orinyx through the [self-serve API](../README.md#get-an-api-key) or an operator.
 
 | Symptom | Cause | Fix |

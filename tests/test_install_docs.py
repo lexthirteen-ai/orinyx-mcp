@@ -327,9 +327,21 @@ def test_no_changed_file_shows_a_key_shaped_value(rel):
     assert not KEY_SHAPED.search(_read(rel))
 
 
-@pytest.mark.parametrize("rel", _doc_files())
-def test_no_doc_names_a_cli_login(rel):
-    assert not CLI_LOGIN.search(_read(rel))
+def test_cli_login_docs_explain_secure_storage_scope_and_release_dependency():
+    readme = _read("README.md")
+    login = _section(readme, "### CLI login")
+    assert CLI_LOGIN.search(login)
+    for requirement in (
+        "L9 engine update",
+        "Keychain",
+        "Secret Service",
+        "never exam scopes",
+        "ORINYX_API_KEY",
+        "always wins",
+        "no-browser",
+        "same device",
+    ):
+        assert requirement in login
 
 
 def test_troubleshooting_exists_and_is_linked_from_installation():
