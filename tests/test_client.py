@@ -33,6 +33,53 @@ RUN_JSON = {
     ],
 }
 
+CONTEXT_JSON = {
+    "note": "Synthetic patient context was not evaluated.",
+    "fields": ["order 1"],
+    "count": 1,
+}
+MALFORMED_CONTEXTS = (
+    [
+        pytest.param(value, id=f"disclosure-{name}")
+        for name, value in [
+            ("integer", 5),
+            ("zero", 0),
+            ("boolean", False),
+            ("string", ""),
+            ("list", []),
+        ]
+    ]
+    + [
+        pytest.param({**CONTEXT_JSON, "fields": value}, id=f"fields-{name}")
+        for name, value in [
+            ("integer", 5),
+            ("zero", 0),
+            ("boolean", False),
+            ("string", "order 1"),
+            ("empty-string", ""),
+            ("object", {"path": "order 1"}),
+            ("null", None),
+            ("integer-item", [1]),
+            ("boolean-item", [True]),
+            ("null-item", [None]),
+            ("object-item", [{}]),
+            ("list-item", [[]]),
+        ]
+    ]
+    + [
+        pytest.param({k: v for k, v in CONTEXT_JSON.items() if k != field}, id=f"missing-{field}")
+        for field in CONTEXT_JSON
+    ]
+    + [
+        pytest.param({**CONTEXT_JSON, "note": value}, id=f"note-{name}")
+        for name, value in [("integer", 5), ("boolean", False), ("null", None), ("object", {})]
+    ]
+    + [
+        pytest.param({**CONTEXT_JSON, "count": value}, id=f"count-{name}")
+        for name, value in [("string", "1"), ("float", 1.0), ("boolean", True), ("null", None)]
+    ]
+)
+
 
 def _client(handler) -> OrinyxClient:
     return OrinyxClient(
@@ -183,6 +230,46 @@ def test_unexpected_response_shape_is_refused():
     with pytest.raises(OrinyxApiError) as excinfo:
         _client(handler).get_run(RUN_JSON["runId"])
     assert excinfo.value.code == "invalid_response"
+
+
+@pytest.mark.parametrize("method", ["verify", "verify_orders", "get_run"])
+@pytest.mark.parametrize("context", MALFORMED_CONTEXTS)
+def test_malformed_context_is_refused_before_rendering(method, context):
+    data = {**RUN_JSON, "contextNotEvaluated": context}
+    with _client(lambda request: httpx.Response(200, json=data)) as client:
+        argument = RUN_JSON["runId"] if method == "get_run" else []
+        with pytest.raises(OrinyxApiError) as caught:
+            getattr(client, method)(argument)
+    assert caught.value.code == "invalid_response"
+    assert caught.value.message == "unexpected run shape (fields: contextNotEvaluated)"
+    assert CONTEXT_JSON["note"] not in str(caught.value)
+
+
+@pytest.mark.parametrize("method", ["verify", "verify_orders", "get_run"])
+@pytest.mark.parametrize(
+    "extra",
+    [
+        {},
+        {"contextNotEvaluated": None},
+        {"contextNotEvaluated": CONTEXT_JSON},
+        {"contextNotEvaluated": {**CONTEXT_JSON, "fields": [], "count": 0}},
+        {"contextNotEvaluated": {**CONTEXT_JSON, "count": 3}},
+        {"contextNotEvaluated": {**CONTEXT_JSON, "futureField": {"value": 1}}},
+    ],
+)
+def test_valid_context_preserves_the_raw_response(method, extra):
+    data = {**RUN_JSON, **extra, "futureRunField": "kept"}
+    with _client(lambda request: httpx.Response(200, json=data)) as client:
+        argument = RUN_JSON["runId"] if method == "get_run" else []
+        result = getattr(client, method)(argument)
+    assert result.raw == data
+    context = extra.get("contextNotEvaluated")
+    if context is None:
+        assert result.context_not_evaluated is None
+    else:
+        assert result.context_not_evaluated.note == context["note"]
+        assert result.context_not_evaluated.fields == context["fields"]
+        assert result.context_not_evaluated.count == context["count"]
 
 
 def test_nothing_in_the_package_imports_the_engine():
