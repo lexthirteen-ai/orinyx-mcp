@@ -108,11 +108,17 @@ as a new fix.
 
 ## Runtime configuration
 
-`ORINYX_HOP_SECRET` is optional. Without it the API sees every relayed call as coming from
-this Machine's address, so all agents share one rate-limit bucket and the API's access log
-records the Machine, not the agent. With it (the same value on both apps, at least 32
-ASCII characters, generated with `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`)
-the API charges and logs the agent's own address.
+`ORINYX_HOP_SECRET` is required: hosted MCP refuses startup without it, with no public REST
+fallback. Use the same value on both apps (at least 32 ASCII characters; generate it with
+`python3 -c "import secrets; print(secrets.token_urlsafe(48))"`). The API requires both the
+secret and an admitted private peer for MCP-audience OAuth and vendor machine exam calls.
+It also charges and logs the agent's forwarded address only over that recognized hop.
+Dashboard vendor sessions remain supported without the MCP secret; CLI exams stay disabled.
+
+Apply engine migration 0034 and deploy its API before this client. Verify actual ASGI peer
+handling after the proxy, authenticated introspection, a tool call and trace recording over
+the private path; also test wrong/missing secrets and public peers. `/health` alone proves
+none of those boundaries. Keep peer CIDRs narrow; coordinate secret rotation on both services.
 
 To offer another MCP server's tools through this endpoint
 ([GATEWAY_TESTING.md](GATEWAY_TESTING.md#how-the-gateway-works)), set its address, the tools

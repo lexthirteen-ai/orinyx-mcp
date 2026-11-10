@@ -121,7 +121,13 @@ class RecordingClient:
 
 
 def _config(**overrides) -> Config:
+    overrides.setdefault("hop_secret", SECRET)
     return Config(public_url=PUBLIC, api_url=API, issuer_url=ISSUER, **overrides)
+
+
+def test_hosted_mcp_refuses_to_start_without_hop_authentication():
+    with pytest.raises(ValueError, match="requires ORINYX_HOP_SECRET"):
+        mcp_http.build_app(_config(hop_secret=None))
 
 
 def _rpc(method: str, params: dict | None = None) -> dict:
@@ -276,14 +282,15 @@ async def test_a_tool_call_reaches_the_api_with_the_callers_own_credential_and_a
         assert RecordingClient.closed == 1  # one client per call, closed after it
 
 
-async def test_the_hop_secret_and_the_address_are_sent_only_when_configured():
+async def test_the_hop_carries_its_peer_but_does_not_trust_forwarded_addresses_by_default():
     async with _remote(_config()) as remote:
         call = _rpc(
             "tools/call", {"name": "get_verification", "arguments": {"run_id": RUN["runId"]}}
         )
         await remote.post("/mcp", json=call, headers=_auth(GOOD))
         (_, sent), *_ = RecordingClient.built
-        assert mcp_http.LOOPBACK_HEADER not in sent and mcp_http.CLIENT_IP_HEADER not in sent
+        assert sent[mcp_http.LOOPBACK_HEADER] == SECRET
+        assert sent[mcp_http.CLIENT_IP_HEADER] == "127.0.0.1"
         assert sent[mcp_http.REQUEST_ID_HEADER]  # generated when the agent sent none
 
 
