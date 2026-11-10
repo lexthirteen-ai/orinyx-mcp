@@ -4,9 +4,12 @@ verified, 0 clean, 1 error, so a LangChain / CrewAI / AutoGen tool can branch on
 
 import json
 
+import httpx
 import pytest
 from orinyx_mcp import cli
+from orinyx_mcp.client import OrinyxClient
 
+from tests.test_client import CONTEXT_JSON, MALFORMED_CONTEXTS
 from tests.test_text import RUN
 from tests.test_tools import FakeClient
 
@@ -48,6 +51,66 @@ def test_verify_json_output(env, tmp_path, capsys):
     )
     body = json.loads(capsys.readouterr().out)
     assert code == 2 and body["runId"] == RUN["runId"]
+
+
+@pytest.mark.parametrize("command", ["verify", "get", "observe"])
+@pytest.mark.parametrize("as_json", [False, True])
+@pytest.mark.parametrize("context", MALFORMED_CONTEXTS)
+def test_malformed_context_exits_1_in_every_mode(env, tmp_path, capsys, command, as_json, context):
+    path = tmp_path / "synthetic.json"
+    path.write_text(json.dumps(CLAIMS if command == "verify" else {"orders": ["warfarin 5 mg"]}))
+    args = {
+        "verify": ["verify", "--file", str(path)],
+        "get": ["get", RUN["runId"]],
+        "observe": ["observe", str(path)],
+    }[command]
+    if as_json:
+        args.append("--json")
+    data = {**CLEAN, "contextNotEvaluated": context}
+
+    def factory(url, key):
+        return OrinyxClient(
+            url, key, transport=httpx.MockTransport(lambda request: httpx.Response(200, json=data))
+        )
+
+    assert cli.main(args, client_factory=factory) == cli.EXIT_ERROR
+    captured = capsys.readouterr()
+    assert "unexpected run shape (fields: contextNotEvaluated)" in captured.err
+    assert CONTEXT_JSON["note"] not in captured.err
+    assert "Traceback" not in captured.err
+    if command == "observe" and as_json:
+        assert json.loads(captured.out)["runs"] == []
+    else:
+        assert captured.out == ""
+
+
+@pytest.mark.parametrize("as_json", [False, True])
+def test_observe_preserves_earlier_runs_when_context_is_malformed(env, tmp_path, capsys, as_json):
+    path = tmp_path / "synthetic.json"
+    path.write_text(json.dumps([{"orders": ["warfarin 5 mg"]}] * 2))
+    responses = iter([CLEAN, {**CLEAN, "contextNotEvaluated": {**CONTEXT_JSON, "fields": 5}}])
+
+    def handler(request):
+        if request.method == "POST":
+            return httpx.Response(200, json=next(responses))
+        return httpx.Response(404)
+
+    def factory(url, key):
+        return OrinyxClient(
+            url,
+            key,
+            transport=httpx.MockTransport(handler),
+        )
+
+    args = ["observe", str(path)] + (["--json"] if as_json else [])
+    assert cli.main(args, client_factory=factory) == cli.EXIT_ERROR
+    captured = capsys.readouterr()
+    assert "unexpected run shape (fields: contextNotEvaluated)" in captured.err
+    if as_json:
+        assert [run["raw"] for run in json.loads(captured.out)["runs"]] == [CLEAN]
+    else:
+        assert "Observed 1 record" in captured.out
+        assert "#0" in captured.out and "#1" not in captured.out
 
 
 def test_clean_run_exits_0(env, tmp_path, capsys):

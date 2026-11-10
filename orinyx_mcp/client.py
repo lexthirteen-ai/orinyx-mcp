@@ -124,6 +124,14 @@ class Aggregate(_Wire):
     unreadable: int = 0
 
 
+class ContextNotEvaluated(_Wire):
+    model_config = ConfigDict(strict=True)
+
+    note: str
+    fields: list[str]
+    count: int
+
+
 class VerificationResult(_Wire):
     run_id: str
     verdicts: list[Verdict]
@@ -131,6 +139,7 @@ class VerificationResult(_Wire):
     tool_name: str | None = None
     tool_version: str | None = None
     created_at: str | None = None
+    context_not_evaluated: ContextNotEvaluated | None = None
     # The JSON exactly as the API returned it (for rendering and --json output).
     raw: dict = Field(default_factory=dict, exclude=True)
 
