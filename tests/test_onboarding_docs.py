@@ -22,9 +22,22 @@ def test_hosted_steps_set_the_password_before_connecting(path):
     assert "set your password" in steps
     assert "link can be used once" in steps
     assert "3. **Add the connector**" in steps
+    assert "in your client" in steps
     assert steps.index("set your password") < steps.index("3. **Add the connector**")
     assert "Sign in with your email and the password you set" in steps
     assert "10 minutes" in steps and "mailto:hello@orinyx.io" in steps
+
+
+def test_key_renewal_uses_the_same_self_serve_setup_as_the_readme():
+    text = _read("docs/TROUBLESHOOTING.md")
+    row = next(line for line in text.splitlines() if line.startswith("| 401 "))
+    assert "Mint a replacement through the [self-serve API](../README.md#get-an-api-key)" in row
+    assert "or ask your operator" in row
+    assert "update the client's `env`" in row
+    assert "Alternatively use the hosted connector and sign in" in row
+    assert "A self-serve account has no key" not in text
+    setup = _read("README.md").split("### Get an API key\n", 1)[1].split("\n### ", 1)[0]
+    assert "POST /v1/auth/api-keys/self" in setup
 
 
 def test_troubleshooting_distinguishes_developer_and_product_access():
