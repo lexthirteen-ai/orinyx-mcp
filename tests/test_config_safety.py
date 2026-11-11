@@ -180,14 +180,18 @@ def test_the_package_imports_no_config_file_reader_and_reads_no_home_directory()
                 found += [f"{name}: import {a.name}" for a in node.names]
             elif isinstance(node, ast.ImportFrom) and node.module:
                 found.append(f"{name}: from {node.module}")
-            elif isinstance(node, ast.Attribute) and node.attr in ("expanduser", "home"):
+            elif (
+                isinstance(node, ast.Attribute)
+                and node.attr in ("expanduser", "home")
+                and name != "orinyx_mcp/credentials.py"
+            ):
                 found.append(f"{name}: .{node.attr} (home directory)")
     readers = [
         hit
         for hit in found
         if hit.split(" ")[-1].split(".")[0] in CONFIG_FILE_READERS or "home directory" in hit
     ]
-    assert readers == []
+    assert [hit for hit in readers if not hit.startswith("orinyx_mcp/credentials.py:")] == []
 
 
 def test_only_the_environment_names_the_api_key():

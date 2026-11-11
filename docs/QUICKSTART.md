@@ -4,9 +4,12 @@ Connect an agent to Orinyx, run a first check, add it to CI, and sit an exam. Sy
 only throughout: never real patient records, names, dates or record numbers.
 
 For the hosted connector, the self-serve path, you need an Orinyx account and no key;
-[First run](#first-run) starts with signing up. Today the stdio server, the CLI and CI each
-need an Orinyx API URL and a key (`ork_live_...`) issued to you by Orinyx; a self-serve
-sign-up does not include a key.
+[First run](#first-run) starts with signing up. Local CLI and stdio also support
+[`orinyx login`](../README.md#cli-login) after the L9 engine update: browser sign-in,
+secure OS storage, verification and Arena access according to account permissions, no exams.
+CI and explicit key-based use need an Orinyx API URL and a key (`ork_live_...`) issued through the
+[self-serve API](../README.md#get-an-api-key) or an operator. PyPI and `uvx` installation
+instructions are in the [README](../README.md#install-from-pypi).
 
 ## First run
 
@@ -15,7 +18,7 @@ Nothing to install: this uses the hosted connector.
 1. **Sign up** at [orinyx.io/developers](https://orinyx.io/developers).
 2. **Open the welcome email** and follow its link to set your password. The link can be used
    once.
-3. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` in Claude (steps for each client
+3. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` in your client (steps for each client
    are under [Connect your client](#connect-your-client)). The client sends you to the
    Orinyx sign-in page. Sign in with your email and the password you set.
 4. **Type "start a test".** The agent calls `start_a_test`, which lists what your account can
@@ -31,9 +34,9 @@ The two orders are also in [examples/first-run/](../examples/first-run/) (`clean
 
 ### Expected output
 
-The output below was captured on 2026-10-22 from Orinyx engine 0.3.1 running on a local
-machine. It was captured with this package's own MCP server, called by an MCP client in the
-same way an agent calls it. Your run should match on these points: the same rows, the same
+The output below was captured on 2026-11-07 from the hosted Orinyx connector
+(`https://orinyx-mcp.fly.dev/mcp`, orinyx-mcp 0.1.3). It was captured with this package's own
+MCP server, called by an MCP client in the same way an agent calls it. Your run should match on these points: the same rows, the same
 verdict and severity on each, and the same citations. These parts will be different:
 
 - the run id;
@@ -46,7 +49,7 @@ the tool's output exactly as returned.
 **Clean example:** three claims, all supported, each with a citation, and no flag.
 
 ```text
-Orinyx verification - run 10a4d403
+Orinyx verification - run c368f727
 Checked 3 claims: 0 flagged, 3 supported, 0 abstained.
 
 | # | Claim | Part | Result | Severity | Why | Citation |
@@ -66,9 +69,14 @@ SUPPORTED: consistent with the cited label text; not a judgment that the order s
 Orinyx flags; the clinician decides.
 
 Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
-Orinyx checking time: 6 ms
+Orinyx checking time: 42.2 ms
 
-Run id: 10a4d403-04e0-49e4-b2c1-d07a6ecf78da
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): rows 1, 2, 3 - 3 supported
+Semantic Mapping (beta): no rows in this run
+Source Evidence (beta): no rows in this run
+
+Run id: c368f727-c697-4f94-a16d-94642bdc6c17
 ```
 
 **Planted example:** the dose is flagged (Moderate), and route and frequency are supported. At
@@ -77,7 +85,7 @@ maximum of 4,000 mg in 24 hours. The error is planted so you can see a flag. It 
 example.
 
 ```text
-Orinyx verification - run 926f7677
+Orinyx verification - run f57fc863
 Checked 3 claims: 1 flagged, 2 supported, 0 abstained.
 
 | # | Claim | Part | Result | Severity | Why | Citation |
@@ -100,9 +108,14 @@ SUPPORTED: consistent with the cited label text; not a judgment that the order s
 Orinyx flags; the clinician decides.
 
 Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
-Orinyx checking time: 8.7 ms
+Orinyx checking time: 29 ms
 
-Run id: 926f7677-c90e-4236-8f98-3f71f3f61f8a
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): rows 1, 2, 3 - 1 flagged, 2 supported
+Semantic Mapping (beta): no rows in this run
+Source Evidence (beta): no rows in this run
+
+Run id: f57fc863-a31b-4a0a-af73-440f5d1215b8
 ```
 
 If you get a different verdict for either order, the API you reached holds different reference
@@ -205,6 +218,38 @@ For the local (stdio) server, with a key issued to you by Orinyx, edit
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json` or a project `.mcp.json`.
 
+### Cursor editor
+
+1. Sign in to Cursor and open your project. Add the
+   [hosted Orinyx connector to Cursor's `mcp.json`](../README.md#cursor).
+2. Open **Cursor Settings**, then **Customize → MCPs**. If `orinyx` is disabled,
+   select it and enable it for your project.
+3. Choose **Authenticate** next to `orinyx`. In your browser, sign in to Orinyx and
+   choose **Sign in and approve**. Return to Cursor and confirm that `orinyx` is
+   listed under **Connected** with its tools. The hosted connection needs no Orinyx API key.
+4. In Cursor Agent, ask it to call `start_a_test`. Then run the planted synthetic order
+   from [First run](#first-run) with `verify_order_text`. Ask the agent to put the order
+   in the `orders` array and compare the result with the [expected output](#expected-output).
+
+### Cursor CLI
+
+Add the [hosted Orinyx connector to Cursor's `mcp.json`](../README.md#cursor). From your
+project directory, run `agent mcp list`. If `orinyx` is disabled, run
+`agent mcp enable orinyx`. Then run:
+
+```bash
+agent mcp login orinyx
+agent mcp list
+```
+
+Sign in to Orinyx when your browser opens. The list should show `orinyx: ready`. The
+hosted connection needs no Orinyx API key.
+
+Sign in to Cursor with `agent login` if needed. Ask Cursor Agent to call `start_a_test`
+and approve the tool call when prompted. Then run the planted synthetic order from
+[First run](#first-run) with `verify_order_text` and compare it with the
+[expected output](#expected-output).
+
 ### Check the connection
 
 ```bash
@@ -289,8 +334,8 @@ orinyx export <run id> --format report --out report.pdf   # csv | pdf | report; 
 `orinyx verify` exits 0 clean, 2 flagged (a `contradicted` claim or an `unreadable` order),
 3 not verified (no flag, but an abstain), 1 error. Usage errors exit 1, never 2.
 
-CI needs an `ork_live_` key issued to you by Orinyx: hosted sign-in needs a browser, and a
-self-serve sign-up does not include a key. Have your test job write the agent's claims for a
+CI needs an `ork_live_` key issued by Orinyx through the [self-serve API](../README.md#get-an-api-key)
+or an operator: hosted connector OAuth is not a CLI credential. Have your test job write the agent's claims for a
 fixed set of synthetic inputs to a JSON file, then:
 
 ```yaml

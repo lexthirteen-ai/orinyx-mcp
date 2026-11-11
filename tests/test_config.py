@@ -51,6 +51,11 @@ def test_both_urls_are_required():
         Config.from_env({"MCP_PUBLIC_URL": "https://mcp.example"})
 
 
+def test_hop_secret_must_be_ascii():
+    with pytest.raises(ValueError, match="ASCII"):
+        Config.from_env(BASE | {"ORINYX_HOP_SECRET": "\u00e9" * 32})
+
+
 def test_the_trusted_client_ip_header_is_a_header_name():
     with pytest.raises(ValueError, match="TRUSTED_CLIENT_IP_HEADER"):
         Config.from_env(BASE | {"TRUSTED_CLIENT_IP_HEADER": "not a header"})

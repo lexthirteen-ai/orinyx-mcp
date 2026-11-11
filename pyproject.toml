@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27,<2"]
 build-backend = "hatchling.build"
 
 [project]
@@ -10,14 +10,27 @@ readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
+authors = [{ name = "Lex Hamilton" }]
+keywords = ["mcp", "model-context-protocol", "healthcare-ai", "evaluation", "fda-labels"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Topic :: Software Development :: Testing",
+]
 dependencies = [
-    "mcp>=2.3",
-    "httpx>=0.27",
+    "keyring>=25.7,<26",
+    "mcp>=2.3,<3",
+    "httpx>=0.28,<1",
     # The MCP SDK's client transport takes an httpx2 client (orinyx_mcp/gateway.py).
-    "httpx2>=2.13",
-    "pydantic>=2.11",
-    "starlette>=0.40",
-    "uvicorn>=0.29",
+    "httpx2>=2.13,<3",
+    "pydantic>=2.12,<3",
+    "starlette>=1.3.1,<2",
+    "uvicorn>=0.31.1,<1",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +39,14 @@ dev = [
     "pytest-asyncio>=0.23",
     "ruff>=0.4",
 ]
+
+[project.urls]
+Homepage = "https://orinyx.io/developers"
+Documentation = "https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md"
+Source = "https://github.com/lexthirteen-ai/orinyx-mcp"
+Issues = "https://github.com/lexthirteen-ai/orinyx-mcp/issues"
+Changelog = "https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/CHANGELOG.md"
+Security = "https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/SECURITY.md"
 
 [project.scripts]
 # `orinyx verify --file claims.json`: the CLI wrapper for frameworks that do not speak MCP.
@@ -42,6 +63,13 @@ packages = ["orinyx_mcp"]
 # every file under a listed package; `artifacts` keeps the icon in even if an ignore rule
 # ever matched it.
 artifacts = ["orinyx_mcp/assets/*.svg", "orinyx_mcp/assets/*.png"]
+
+[tool.hatch.build.targets.sdist]
+include = ["orinyx_mcp/", "tests/", "README.md", "LICENSE", "CHANGELOG.md", "pyproject.toml"]
+# Hatchling reads each `include` entry like a .gitignore line, so it also matches at any depth
+# (examples/first-run/README.md, or a worktree's whole package). Only these two directories
+# are entered.
+exclude = ["/*/", "!/orinyx_mcp/", "!/tests/"]
 
 [tool.ruff]
 line-length = 100

@@ -5,6 +5,52 @@ All notable changes to this project are recorded here. The format is based on
 
 ## [Unreleased]
 
+Planned release: **0.1.5**.
+
+### Added
+
+- `orinyx login`, `logout`, and `status`: browser OAuth with native keychain storage,
+  rotating refresh, and CLI/stdio credential resolution. Verification and Arena are included
+  according to account permissions; exams remain excluded. Explicit environment keys win.
+  Requires the companion L9 engine policy update before use; not yet deployed or published.
+
+- Tag-driven PyPI publishing through GitHub OIDC and the protected `pypi` environment.
+  The workflow tests and builds the package, requires a matching version tag, and publishes
+  only the resulting wheel and source distribution without a long-lived PyPI token.
+- [Local package/stdio setup and CLI examples](README.md#install), alongside the engine's
+  session-only self-serve key flow. The engine must be deployed first;
+  developer keys carry only `verify:read` and `verify:write` and expire within 90 days.
+
+- Every tool now has a human-readable title and MCP behaviour hints in `tools/list`
+  (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), set from what each
+  call does on the Orinyx API. The reads and lookups are read-only. `finish_exam` is marked
+  destructive, since it closes a sitting for good. The verifications and exports are
+  additive and not idempotent, since each adds a run or an audit-chain entry. Tool names,
+  input schemas and descriptions are unchanged.
+
+### Changed
+
+- Packaging for PyPI: the package metadata is complete (authors, keywords, classifiers and
+  project URLs), dependency ranges stop before the next major version, the build backend has
+  a bounded range, the source distribution holds a reviewed list of files, and the README's
+  links and logo are absolute so they work on the PyPI page. The lowest allowed versions rise
+  to `httpx` 0.28, `pydantic` 2.12, `starlette` 1.3.1 and `uvicorn` 0.31.1.
+- Before it sends orders, `orinyx observe` asks the Orinyx API for the current identifier
+  screen. If the API serves a different list, `observe` screens with that list. If the API
+  says its screen differs but does not send it, `observe` refuses rather than screen with a
+  stale list. If the API does not serve the list or cannot answer, the local copy is used; a
+  failed request is logged.
+- On the first tool call, the MCP server checks its copies of the label sections and the
+  identifier screen against the API's, in the background, when the API serves those lists. A
+  difference is logged. The API does not serve them yet, so for now the local copies are used.
+
+### Fixed
+
+- The HTTP app keeps an explicitly supplied client pool even when it is empty. Previously,
+  an empty pool was treated as missing and replaced by the default, discarding its custom
+  transport and idle-client limit. Omitting the pool or passing `None` still selects the
+  default; the selected pool is closed when the app shuts down.
+
 ## [0.1.4] - 2026-11-05
 
 ### Changed

@@ -1,0 +1,20 @@
+{
+  "_note": "A test set's stated blind spots, shown with every report on it. Keyed by caseSetId and version and kept OUTSIDE the hashed case-set file: the file is the instrument, this is how its result is read. A knownLimits value the API returns with the report takes precedence; this file is the fallback until the API serves it. A new case-set version needs an entry here, not a code change.",
+  "limits": [
+    {
+      "caseSetId": "advice-core",
+      "version": "1.0.0",
+      "text": "This version checks wording against signed phrase lists: a correct warning worded outside the signed phrase list reads as unhandled; a negated or dismissive warning ('no need to call 911') reads as present unless the signed forbidden list names it; a reply that warns correctly but is otherwise wrong is not detected; an empty reply is an abstain, not yet scored as unhandled (an advisor decision pending); only the planted trigger types are tested."
+    },
+    {
+      "caseSetId": "ambient-core",
+      "version": "1.0.0",
+      "text": "This version does not detect a misheard drug carried with a plausible dose, a frequency slip, a dropped route, a mcg/mg slip under any ceiling, or a medication the note leaves out."
+    },
+    {
+      "caseSetId": "icd10cm-outpatient-core",
+      "version": "1.0.0",
+      "text": "Until a credentialed coder signs this version's answer key, every result on it is a rehearsal. It covers outpatient encounters only, under the outpatient guidelines, and ICD-10-CM diagnosis codes only: no CPT or HCPCS code is asked for or scored. Excludes1 pairs (two codes that must not be reported together) and the order of the codes (which diagnosis is listed first) are not scored. A code deleted before fiscal year 2026 reads as not a code rather than as a deleted code."
+    }
+  ]
+}

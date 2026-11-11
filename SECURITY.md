@@ -42,8 +42,17 @@ This repository is a **client** of the [Orinyx](https://orinyx.io) API: it holds
 reference data and no verdict logic, and every tool call is an ordinary REST request carrying
 the caller's own credential.
 
-- The stdio server and the CLI read your API URL and key from the environment only; no flag
-  takes the key.
+- The stdio server and CLI read API keys only from the environment; no flag takes a key.
+  Alternatively, `orinyx login` uses browser OAuth with S256 PKCE and a state-checked
+  loopback callback. CLI grants cover verification and Arena according to account role,
+  never exams. The engine enforces scopes and retains every existing Arena gate.
+- Local OAuth credentials are stored only in native macOS Keychain or Linux Secret Service,
+  bound to the API origin. No plaintext fallback, dotenv, CWD or credentials-file reader
+  exists. A private, owner-only cache directory contains refresh locks, not credentials.
+  Refresh is serialized across processes; uncertain exchanges require sign-in again rather
+  than replaying a spent refresh token. Explicit environment keys always take precedence.
+- `orinyx logout` attempts server revocation and removes local credentials. A network failure
+  is reported, not treated as confirmed revocation. Environment API keys are not changed.
 - The network server holds no database, no key of its own and no service credential. The
   bearer an agent presents is handed to the API, which describes or refuses it; the tool call
   then becomes a REST request carrying that same bearer.

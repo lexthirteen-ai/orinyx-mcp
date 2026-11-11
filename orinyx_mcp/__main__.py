@@ -1,9 +1,9 @@
 """`python -m orinyx_mcp` (or `orinyx-mcp stdio`): serve Orinyx tools over stdio to a local
 MCP client. `python -m orinyx_mcp serve` (or the `orinyx-mcp` command): the network server.
 
-Configuration is the environment only: ORINYX_API_URL (the running API) and
-ORINYX_API_KEY (an ork_live_* key, minted per agent so each one has its own rate-limit
-bucket and access-log identity). The DOWNSTREAM_MCP_* variables connect another MCP
+Configuration uses ORINYX_API_URL and an explicit ORINYX_API_KEY, or the saved OAuth login
+for that API origin. The network server never reads local logins.
+The DOWNSTREAM_MCP_* variables connect another MCP
 server's tools (`orinyx_mcp/gateway.py`)."""
 
 import os
@@ -21,7 +21,18 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     url = os.environ.get("ORINYX_API_URL")
     key = os.environ.get("ORINYX_API_KEY")
-    if not url or not key:
+    from orinyx_mcp.credentials import DEFAULT_API_URL, AuthError, saved_login
+
+    provider = None
+    if not key:
+        try:
+            provider = saved_login(url or DEFAULT_API_URL)
+        except AuthError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        if provider:
+            url = url or DEFAULT_API_URL
+    if not url or (not key and provider is None):
         print("Set ORINYX_API_URL and ORINYX_API_KEY in the environment.", file=sys.stderr)
         return 1
     try:
@@ -47,7 +58,11 @@ def main(argv: list[str] | None = None) -> int:
     gateway = Gateway(downstream) if downstream else None
     # stderr only: stdout is the MCP protocol stream.
     try:
-        client = OrinyxClient(url, key)
+        client = (
+            OrinyxClient(url, key or "", token_provider=provider)
+            if provider
+            else OrinyxClient(url, key or "")
+        )
     except (InsecureUrlError, ConfigError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
@@ -56,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     with client:
         try:
-            server = build_server(shared(client), gateway=gateway)
+            server = build_server(shared(client, check_contract=True), gateway=gateway)
         except ConfigError as exc:
             print(str(exc), file=sys.stderr)
             return 1

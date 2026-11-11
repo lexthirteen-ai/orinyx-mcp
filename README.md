@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="orinyx_mcp/assets/orinyx-star-96.png" alt="Orinyx star logo" width="96" height="96">
+  <img src="https://raw.githubusercontent.com/lexthirteen-ai/orinyx-mcp/main/orinyx_mcp/assets/orinyx-star-96.png" alt="Orinyx star logo" width="96" height="96">
 </p>
 
 <h1 align="center">Orinyx MCP Server</h1>
@@ -9,9 +9,9 @@ no LLM in the verdict.
 
 > **Not for clinical use. Orinyx is a testing and evaluation tool that checks medication claims against cited FDA label text. It does not give medical advice, and its results must not be used for diagnosis, treatment or prescribing decisions. A "supported" result means one claim matches the cited label text, not that an order is safe or appropriate. Submit synthetic test data only, never real patient information.**
 
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/LICENSE)
 [![CI](https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/lexthirteen-ai/orinyx-mcp/actions/workflows/ci.yml)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/pyproject.toml)
 
 > **Synthetic data only:** never send real patient records, names, dates or record numbers (claim
 > text is stored in the API's audit record).
@@ -21,8 +21,8 @@ rules, no reference data and no verdict logic, and every tool call is an ordinar
 carrying your own credential. The one check it runs itself is a pre-flight refusal: `orinyx
 observe` screens what it reads for identifier-shaped text (the engine's own pattern list)
 before sending anything. Sign up at [orinyx.io/developers](https://orinyx.io/developers) to use
-the hosted connector with your Orinyx account; a key for the stdio server, the CLI or CI is
-issued by Orinyx.
+the hosted connector with your Orinyx account, or mint a personal key for stdio, the CLI
+or CI through the [self-serve API](#get-an-api-key).
 
 ## Features
 
@@ -36,11 +36,11 @@ issued by Orinyx.
   set ID, version and source address, for developer accounts. Reference text, not a verdict.
 - **Scored exams for AI products.** A product account sits an exam on a fixed, synthetic test
   set held on the server; every report adds speed. Families and their limits are in
-  [docs/EXAMS.md](docs/EXAMS.md).
+  [docs/EXAMS.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/EXAMS.md).
 - **A CLI for CI.** `orinyx verify` and `orinyx observe` exit 0 clean, 2 flagged, 3 not
   verified and 1 on error, so a pipeline can fail on a flag.
-- **Hosted or local.** A hosted connector with nothing to install, or a stdio server from a
-  checkout, plus a REST client for your own Python code.
+- **Hosted or local.** A hosted connector with nothing to install, or a stdio server from
+  PyPI or a checkout, plus a REST client for your own Python code.
 - **No model in the verdict.** No language model decides a verdict, a severity or a score.
 
 What is in the box:
@@ -72,18 +72,19 @@ or want a clinical decision. Orinyx does not do any of these: see
 
 ## Installation
 
-Today a self-serve sign-up gives you the hosted connector only. The stdio server, the CLI and
-CI need a key issued by Orinyx.
+Use the hosted connector with OAuth, or install the Python package for stdio, the CLI
+and CI. Local use supports [browser login](#cli-login) or an API URL and a
+[personal API key](#get-an-api-key). CI remains key-based.
 
 | Path | For | What you need |
 |---|---|---|
 | [Hosted connector](#hosted-connector-the-self-serve-path) | the self-serve path | an Orinyx account from [orinyx.io/developers](https://orinyx.io/developers); no install and no key |
-| [Local stdio](#local-stdio-from-source), the [CLI](#cli-in-ci) and CI | a key holder | an Orinyx API URL and an `ork_live_` key issued to you by Orinyx |
+| [Local stdio](#install-from-pypi), the [CLI](#cli-in-ci) and CI | a key holder | an Orinyx API URL and an `ork_live_` key from the self-serve API or an operator |
 
 The only official package is `orinyx-mcp`, published only from
 `github.com/lexthirteen-ai/orinyx-mcp`. Anything else named orinyx isn't Orinyx's.
 
-If a step fails, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). What is tested is
+If a step fails, see [docs/TROUBLESHOOTING.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/TROUBLESHOOTING.md). What is tested is
 under [Supported environments](#supported-environments).
 
 ### Hosted connector (the self-serve path)
@@ -98,11 +99,10 @@ Orinyx account.
    account can run and the next step for each.
 
 The client sends you to the Orinyx sign-in page (OAuth 2.1; the API is the authorization
-server) and you sign in with your Orinyx account. A self-serve account signs in this way and
-has no key.
+server) and you sign in with your Orinyx account. No API key is needed for this path.
 
-Per-client setup, a CI recipe and exam steps are in [docs/QUICKSTART.md](docs/QUICKSTART.md).
-Its [first run](docs/QUICKSTART.md#first-run) checks two bundled synthetic orders, one clean
+Per-client setup, a CI recipe and exam steps are in [docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md).
+Its [first run](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#first-run) checks two bundled synthetic orders, one clean
 and one with a planted error, and shows the output to expect.
 
 #### Claude Code
@@ -126,13 +126,20 @@ which is for local servers.
 
 #### Cursor
 
-Add the connector to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
+For the Cursor editor or CLI, add the connector to `~/.cursor/mcp.json` (or
+`.cursor/mcp.json` in a project):
 
 ```json
 {"mcpServers": {"orinyx": {"url": "https://orinyx-mcp.fly.dev/mcp"}}}
 ```
 
-then sign in with your Orinyx account.
+- **Editor:** In Cursor Settings, open **Customize → MCPs**, enable `orinyx`, and choose
+  **Authenticate**. Sign in with your Orinyx account in the browser.
+- **CLI:** From your project directory, run `agent mcp login orinyx` and sign in with your
+  Orinyx account.
+
+See the [Cursor quickstart](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#cursor-editor)
+to check the connection and run a synthetic test.
 
 #### Codex
 
@@ -158,11 +165,103 @@ starts Codex. In the `codex` terminal UI, `/mcp` lists the servers Codex has con
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json`, `.codex/config.toml` or a project `.mcp.json`.
 
+### CLI login
+
+Requires the L9 engine update before use; this is not yet a published package release.
+On macOS or desktop Linux with an unlocked OS keychain:
+
+```bash
+orinyx login
+orinyx status --json
+orinyx-mcp stdio
+orinyx logout
+```
+
+Login opens your external browser and receives the result on a one-time IPv4 loopback
+listener. `orinyx login --no-browser` prints the authorization URL instead; open it on
+the **same device** within three minutes. It is not a device-code or SSH login flow.
+No password, code, or token is entered in the terminal.
+
+The default API is `https://orinyx-api.fly.dev`; set `ORINYX_API_URL` to select another
+HTTPS API origin (HTTP is accepted only on loopback). The issuer and OAuth endpoints
+must belong to that origin. Each origin has its own saved login and public-client
+registration. Re-run commands with the same origin; credentials are never sent to a new target.
+
+Login grants verification and Arena scopes permitted by your account, **never exam scopes**.
+Arena still needs operator enablement, tester eligibility, and `ORINYX_ARENA_ENABLED=true`
+in the local MCP environment; sign-in does not bypass any of those gates.
+Use the existing hosted connector for exam workflows pending the exam-integrity ruling.
+
+Credentials, including rotating refresh tokens, live only in macOS Keychain or Linux
+Secret Service. There is no plaintext config-file fallback. Headless CI uses environment
+keys. The explicit `ORINYX_API_KEY` always wins, even if invalid; unset it to use a login.
+`logout` revokes the saved grant and removes the local record, not environment API keys.
+Offline logout reports that server revocation was not confirmed; end account sessions
+to invalidate a remaining server-side grant. Expired/revoked logins require login again;
+commands never launch a browser implicitly. Long-running stdio refreshes before API calls,
+not during startup, and does not retry writes after authentication failures.
+
+
+### Get an API key
+
+Beta developers can mint their own keys after signing up and setting a password:
+
+1. Send `POST /v1/auth/login` to your API host with `{"email":"<your email>",
+   "password":"<your password>"}` and keep the returned session `token` private.
+2. Send `POST /v1/auth/api-keys/self` with `Authorization: Bearer <session token>` and
+   `Content-Type: application/json`:
+
+   ```json
+   {"name":"beta-laptop","scopes":["verify:read","verify:write"],"expiresDays":30}
+   ```
+
+3. Save the response's `key` in your secret store; the raw key is shown only once.
+   The `apiKey` object contains its id and metadata. Set `ORINYX_API_URL` to your API
+   host (hosted: `https://orinyx-api.fly.dev`) and `ORINYX_API_KEY` to that key in the
+   environment of your client process.
+
+Only `verify:read` and `verify:write` are accepted, with at least one required.
+Expiry is 1–90 days (default 30). Do not send `email` or `fullAccess`: the key belongs
+to your signed-in user only. The session-only `GET /v1/auth/api-keys/self` lists your
+keys (`data` and `pagination`; `includeRevoked=true` includes revoked entries), and
+`DELETE /v1/auth/api-keys/self/{key_id}` revokes one. API keys and connector OAuth
+tokens cannot mint or manage keys. If your API deployment has not enabled these
+endpoints yet, use the hosted connector's OAuth sign-in or ask an operator for a key.
+
+Never paste passwords or session tokens into an agent prompt or commit them.
+
+### Install from PyPI
+
+Python 3.11 or later. Once the first PyPI release is published:
+
+```bash
+pip install orinyx-mcp
+orinyx-mcp stdio
+orinyx --help
+orinyx verify --file claims.json --tool my-agent
+```
+
+Use [CLI login](#cli-login), or set the API URL and key in the process environment first;
+see [Get an API key](#get-an-api-key).
+For an isolated run without installing into your current Python environment, use
+[uv](https://docs.astral.sh/uv/):
+
+```bash
+uvx orinyx-mcp stdio
+uvx --from orinyx-mcp orinyx --help
+```
+
+The `stdio` argument is required: bare `orinyx-mcp` (or `uvx orinyx-mcp`) starts the
+HTTP server, not stdio. Agent hosts can launch `uvx` with `args: ["orinyx-mcp", "stdio"]`
+and the same API environment variables. Before the first PyPI upload, use the source
+install below; a GitHub release alone does not publish the package to PyPI.
+
 ### Local stdio (from source)
 
-Today the stdio server, the CLI and CI each need an Orinyx API URL and a key (`ork_live_...`)
-issued to you by Orinyx; a self-serve sign-up does not include a key. Install it from a
-checkout.
+The stdio server and CLI support [CLI login](#cli-login). For CI or explicit key-based use,
+provide an Orinyx API URL and a key (`ork_live_...`) issued through the
+[self-serve API](#get-an-api-key) or an operator. To develop
+from a checkout instead of using PyPI:
 
 ```bash
 git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
@@ -272,7 +371,7 @@ docker run --rm -p 8000:8000 \
 ```
 
 `MCP_PUBLIC_URL` must be an https URL (plain http only for localhost). The Fly.io layout is in
-[docs/DEPLOY.md](docs/DEPLOY.md).
+[docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md).
 
 ### Supported environments
 
@@ -283,6 +382,8 @@ docker run --rm -p 8000:8000 \
 | macOS | used in development; not tested in CI |
 | Windows | untested |
 | Transports | stdio (local) and Streamable HTTP (hosted) |
+| Cursor CLI on macOS | hosted OAuth and synthetic verification smoke tested |
+| Cursor editor on macOS | hosted OAuth and synthetic verification smoke tested |
 
 The hosted connector reports its version at `https://orinyx-mcp.fly.dev/health`.
 
@@ -295,7 +396,8 @@ The hosted connector reports its version at `https://orinyx-mcp.fly.dev/health`.
 | `ORINYX_API_URL` | the Orinyx API (https; plain http only for localhost) |
 | `ORINYX_API_KEY` | an `ork_live_` key issued to you by Orinyx |
 
-Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. The `DOWNSTREAM_MCP_*`
+An explicit `ORINYX_API_KEY` takes precedence; otherwise local CLI/stdio use the secure
+[saved login](#cli-login) for the selected API origin. No API key is read from disk. The `DOWNSTREAM_MCP_*`
 variables under [Gateway](#gateway-another-mcp-server) work over stdio too.
 
 ### Network server
@@ -307,19 +409,27 @@ Configuration is the environment only:
 | `MCP_PUBLIC_URL` | the https origin agents connect to; `/mcp` is served there (the `Host` check is built from it) |
 | `ORINYX_API_URL` | the Orinyx API this service calls on the caller's behalf |
 | `ORINYX_ISSUER_URL` | the API's public origin, named in the resource metadata for sign-in (defaults to the `ORINYX_API_URL` origin) |
-| `ORINYX_HOP_SECRET` | optional, at least 32 characters, shared with the API so each agent keeps its own rate-limit bucket |
+| `ORINYX_HOP_SECRET` | required for hosted MCP, at least 32 ASCII characters, shared with the API; the backend must reach the API from an admitted private peer |
+
 | `ORINYX_API_ALLOW_HTTP` | `true` only on a private network trusted end to end |
 | `TRUST_PROXY_FORWARDED_FOR` | `true` behind exactly one proxy (the host's edge) |
 | `TRUSTED_CLIENT_IP_HEADER` | a header that proxy sets to the caller's address (Fly: `fly-client-ip`) |
 | `PORT` | listening port (default 8000) |
 
+Vendor exams support hosted MCP and authenticated dashboard sessions. New sittings default to
+`entryMode: "vendor"`; `evals/product_exam.py open --operator-entry` opens a separate
+`entryMode: "operator"` sitting for manual quality-lead/admin entry. An operator cannot answer a
+vendor sitting, and operator sittings cannot record MCP traces or be publicly certified. Dashboard
+answers are not fabricated as tool traces. Apply the engine's entry-mode migration/API first.
+
 ```bash
-MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example orinyx-mcp
+MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example \
+  ORINYX_HOP_SECRET="${ORINYX_HOP_SECRET:?configure the shared backend secret}" orinyx-mcp
 ```
 
 How the server handles the bearer an agent presents is in
-[docs/DEPLOY.md](docs/DEPLOY.md#how-the-network-server-works).
-[docs/DEPLOY.md](docs/DEPLOY.md) has the Fly.io layout.
+[docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md#how-the-network-server-works).
+[docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md) has the Fly.io layout.
 
 ### Gateway (another MCP server)
 
@@ -335,8 +445,8 @@ carries both. It is off unless `DOWNSTREAM_MCP_URL` is set:
 | `DOWNSTREAM_MCP_NAME` | how agents are told where those tools come from (default: its host name) |
 
 What is relayed, and what is never sent there, is in
-[docs/GATEWAY_TESTING.md](docs/GATEWAY_TESTING.md#how-the-gateway-works). Partners follow
-[docs/GATEWAY_TESTING.md](docs/GATEWAY_TESTING.md), starting with
+[docs/GATEWAY_TESTING.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/GATEWAY_TESTING.md#how-the-gateway-works). Partners follow
+[docs/GATEWAY_TESTING.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/GATEWAY_TESTING.md), starting with
 `python evals/gateway_check.py`.
 
 ## How to choose a tool
@@ -383,7 +493,7 @@ What a credential can reach is fixed by its account type, enforced by the API:
 
 A developer account runs quick checks and the FDA reference lookups: the exam tools are
 refused for a developer account
-([release notes](docs/RELEASE_NOTES_2026-11-02.md#what-is-not-in-this-release)).
+([release notes](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/RELEASE_NOTES_2026-11-02.md#what-is-not-in-this-release)).
 
 ## Available tools
 
@@ -468,12 +578,12 @@ Optional: `tool_name` and `tool_version` (named in the report header) and `check
 
 **Returns:** Orinyx splits each order into its dose, route and frequency claims (rules, no
 model) and answers with one table row per claim. The order above is one of the two
-[first-run examples](examples/first-run/), with its dose error planted. The output below was
-captured on 2026-10-22 from Orinyx engine 0.3.1 running on a local machine. It was not written
-by hand. Run ids and times differ from run to run:
+[first-run examples](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/examples/first-run/), with its dose error planted. The output below was
+captured on 2026-11-07 from the hosted Orinyx connector (`https://orinyx-mcp.fly.dev/mcp`,
+orinyx-mcp 0.1.3). It was not written by hand. Run ids and times differ from run to run:
 
 ```text
-Orinyx verification - run 926f7677
+Orinyx verification - run f57fc863
 Checked 3 claims: 1 flagged, 2 supported, 0 abstained.
 
 | # | Claim | Part | Result | Severity | Why | Citation |
@@ -496,9 +606,14 @@ SUPPORTED: consistent with the cited label text; not a judgment that the order s
 Orinyx flags; the clinician decides.
 
 Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
-Orinyx checking time: 8.7 ms
+Orinyx checking time: 29 ms
 
-Run id: 926f7677-c90e-4236-8f98-3f71f3f61f8a
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): rows 1, 2, 3 - 1 flagged, 2 supported
+Semantic Mapping (beta): no rows in this run
+Source Evidence (beta): no rows in this run
+
+Run id: f57fc863-a31b-4a0a-af73-440f5d1215b8
 ```
 
 An order Orinyx cannot read as written (`wafarin 5 mb`) comes back first, as
@@ -569,11 +684,11 @@ one.
   from the `Run id:` line.
 
 **Prompt example:**
-> "Read Orinyx run 926f7677-c90e-4236-8f98-3f71f3f61f8a again."
+> "Read Orinyx run f57fc863-a31b-4a0a-af73-440f5d1215b8 again."
 
 **Usage example:**
 ```json
-{"name": "get_verification", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a"}}
+{"name": "get_verification", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8"}}
 ```
 
 **Returns:** the run as the same table, with its accuracy block if the run has one, and the
@@ -591,11 +706,11 @@ estimate, with its sample size. With no review yet it says so and gives no accur
 - Passing the abbreviated id from the report header instead of the full run id.
 
 **Prompt example:**
-> "Show the false-flag rate for run 926f7677-c90e-4236-8f98-3f71f3f61f8a."
+> "Show the false-flag rate for run f57fc863-a31b-4a0a-af73-440f5d1215b8."
 
 **Usage example:**
 ```json
-{"name": "get_accuracy", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a"}}
+{"name": "get_accuracy", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8"}}
 ```
 
 **Returns:** the tally as text. With no review yet it says so, with the number of flags
@@ -614,11 +729,11 @@ PDF; `report.pdf` is accepted too). The default is `csv`.
   pdf or report".
 
 **Prompt example:**
-> "Export run 926f7677-c90e-4236-8f98-3f71f3f61f8a as the one-page committee report."
+> "Export run f57fc863-a31b-4a0a-af73-440f5d1215b8 as the one-page committee report."
 
 **Usage example:**
 ```json
-{"name": "export_verification", "arguments": {"run_id": "926f7677-c90e-4236-8f98-3f71f3f61f8a", "fmt": "report"}}
+{"name": "export_verification", "arguments": {"run_id": "f57fc863-a31b-4a0a-af73-440f5d1215b8", "fmt": "report"}}
 ```
 
 **Returns:** the file as an embedded resource (base64, with its MIME type) at
@@ -855,7 +970,7 @@ per case.
 ```
 
 **Returns:** the scored report. What each exam family measures is in
-[docs/EXAMS.md](docs/EXAMS.md).
+[docs/EXAMS.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/EXAMS.md).
 
 While a product account sits an exam over the network server, the service posts one trace row
 per exam tool call to the API with the caller's own credential; a failed trace post is logged
@@ -887,7 +1002,8 @@ orinyx observe <path>... [--field DOTTED.PATH] [--tool NAME] [--tool-version V] 
 `claims.json` is a JSON list of claims, or a full request body with an `assertions` list
 (its `toolName`, `toolVersion` and `checkInteractions` are used when the flags are absent).
 Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. Today the CLI, and so CI,
-needs an `ork_live_` key issued to you by Orinyx; a self-serve sign-up does not include one.
+needs an `ork_live_` key issued by Orinyx through the [self-serve API](#get-an-api-key)
+or an operator; hosted connector OAuth is not a CLI credential.
 
 `verify` takes structured claims. For orders as written, use `orinyx observe` or the
 `verify_order_text` tool. `observe` checks every order in an agent's saved output, one run per
@@ -895,7 +1011,7 @@ record: a `.txt` file is one record with one order per line; in `.jsonl` or `.js
 (default `orders`) is the dotted path to each record's orders; a directory reads its `.txt`,
 `.jsonl` and `.json` files. Before anything is sent, a record that looks like it holds a
 patient identifier refuses the whole run. Setup and output are in
-[docs/QUICKSTART.md](docs/QUICKSTART.md#observe-a-test-run).
+[docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#observe-a-test-run).
 
 Exit codes from `verify` and `get`:
 
@@ -911,7 +1027,7 @@ and `export` exit 0 on success and 1 on error. Usage errors exit 1, never 2, so 
 typo cannot read as "flagged".
 
 A GitHub Actions step that fails the job on a flag (full recipe in
-[docs/QUICKSTART.md](docs/QUICKSTART.md#ci-recipe)):
+[docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#ci-recipe)):
 
 ```yaml
 - name: Check the agent's medication claims with Orinyx
@@ -942,7 +1058,8 @@ Gaps in the CLI today:
 
 ## REST client
 
-The REST client needs an Orinyx API URL and an `ork_live_` key issued to you by Orinyx.
+The REST client needs an Orinyx API URL and an `ork_live_` key from the
+[self-serve API](#get-an-api-key) or an operator.
 
 ```python
 from orinyx_mcp.client import OrinyxApiError, OrinyxClient
@@ -978,7 +1095,7 @@ Every non-2xx answer, malformed answer or transport failure raises `OrinyxApiErr
 - **No "safe by default".** `abstain` means unchecked, never safe.
 - **No model in the verdict.** No language model decides a verdict, a severity or a score.
 
-The release notes list this release's [known limits](docs/RELEASE_NOTES_2026-11-02.md#known-limits):
+The release notes list this release's [known limits](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/RELEASE_NOTES_2026-11-02.md#known-limits):
 gaps in the knowledge base and the checks. Most show up as a NOT VERIFIED row, a refused
 order or a daily total that was not checked, so a missing flag is never evidence that an order
 is safe.
@@ -1004,11 +1121,11 @@ Scripted checks:
 ## Contributing
 
 Contributions are welcome. Setup, the rules a change must keep and how licensing works are in
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/CONTRIBUTING.md).
 
 ## Security
 
-Report a vulnerability privately, never in a public issue: see [SECURITY.md](SECURITY.md).
+Report a vulnerability privately, never in a public issue: see [SECURITY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/SECURITY.md).
 
 ## Acknowledgements
 
@@ -1026,4 +1143,4 @@ dataset by NVIDIA Corporation, licensed under CC BY 4.0
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+Apache-2.0. See [LICENSE](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/LICENSE).

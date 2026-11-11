@@ -1,0 +1,23 @@
+{
+  "tools": [
+    "export_verification",
+    "find_fda_label",
+    "find_otc_monographs",
+    "finish_exam",
+    "get_accuracy",
+    "get_exam_cases",
+    "get_exam_report",
+    "get_next_exam_case",
+    "get_otc_monograph",
+    "get_verification",
+    "read_fda_label_section",
+    "read_otc_monograph_section",
+    "start_a_test",
+    "submit_exam_answers",
+    "verify_medications",
+    "verify_order_text"
+  ],
+  "prompts": [
+    "choose_a_test"
+  ]
+}

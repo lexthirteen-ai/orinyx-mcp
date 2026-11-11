@@ -42,6 +42,7 @@ PASSWORD = "PWqaGuardSECRET7"
 USAGE = b"usage: orinyx-mcp | orinyx-mcp stdio | orinyx-mcp --version\n"
 NETWORK_MISSING = "Set MCP_PUBLIC_URL and ORINYX_API_URL\n"
 BOUND = 97  # the exit code the guard uses when the process tried to bind a socket
+HOP_SECRET = "synthetic-hop-" * 4
 
 # Stops the process at the first bind, connect or name lookup, after writing which one to
 # the report file. At exit it records whether uvicorn (the network server) was imported.
@@ -107,6 +108,7 @@ runpy.run_module("orinyx_mcp", run_name="__main__", alter_sys=True)
 
 # Every setting either server needs to start: a slip-through would reach the guard.
 EVERY_SETTING = {
+    "ORINYX_HOP_SECRET": HOP_SECRET,
     "MCP_PUBLIC_URL": "https://mcp.example",
     "ORINYX_API_URL": API_URL,
     "ORINYX_API_KEY": SENTINEL_KEY,
@@ -224,7 +226,10 @@ NOT_STARTED_VALIDATION = (
     "URL is the usual cause: check MCP_PUBLIC_URL, ORINYX_API_URL, ORINYX_ISSUER_URL, "
     "DOWNSTREAM_MCP_URL and ORINYX_ARENA_URL.\n"
 )
-PUBLIC = {"MCP_PUBLIC_URL": "https://mcp.example"}
+PUBLIC = {
+    "MCP_PUBLIC_URL": "https://mcp.example",
+    "ORINYX_HOP_SECRET": HOP_SECRET,
+}
 UNUSABLE_0_1_2 = {
     "no settings": ({}, NETWORK_MISSING),
     "the api url and key only": (
@@ -279,6 +284,7 @@ def test_the_network_server_serves_the_0_1_2_routes(monkeypatch):
     from orinyx_mcp.http import build_app
 
     monkeypatch.setenv("MCP_PUBLIC_URL", "https://mcp.example")
+    monkeypatch.setenv("ORINYX_HOP_SECRET", HOP_SECRET)
     monkeypatch.setenv("ORINYX_API_URL", API_URL)
     _, app = build_app(Config.from_env())
     routes = [

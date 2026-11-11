@@ -4,10 +4,12 @@ these tests run without it, and the server factory test skips when it is absent.
 
 import base64
 
+import httpx
 import pytest
 from orinyx_mcp import tools
 from orinyx_mcp.client import ExportFile, VerificationResult
 
+from tests.test_client import CONTEXT_JSON
 from tests.test_text import ACCURACY, RUN
 
 
@@ -121,6 +123,35 @@ def test_an_api_refusal_reaches_the_agent_with_its_reason_not_as_a_crash():
     with pytest.raises(Exception) as caught:  # noqa: PT011
         asyncio.run(server.call_tool("export_verification", {"run_id": RUN["runId"], "fmt": "x"}))
     assert type(caught.value).__name__ == "ToolError" and "unknown format" in str(caught.value)
+
+
+@pytest.mark.parametrize(
+    "tool,arguments",
+    [
+        ("verify_medications", {"claims": []}),
+        ("verify_order_text", {"orders": ["warfarin 5 mg"]}),
+        ("get_verification", {"run_id": RUN["runId"]}),
+    ],
+)
+async def test_malformed_context_reaches_the_agent_as_a_sanitized_tool_error(tool, arguments):
+    pytest.importorskip("mcp")
+    from orinyx_mcp.client import OrinyxClient
+    from orinyx_mcp.server import build_server, shared
+
+    data = {**RUN, "contextNotEvaluated": {**CONTEXT_JSON, "fields": 5}}
+    with OrinyxClient(
+        "https://orinyx.example",
+        "synthetic",
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, json=data)),
+    ) as client:
+        server = build_server(shared(client))
+        with pytest.raises(Exception) as caught:  # noqa: PT011 - the SDK's ToolError moved in 2.x
+            await server.call_tool(tool, arguments)
+    assert type(caught.value).__name__ == "ToolError"
+    assert "invalid_response (200): unexpected run shape (fields: contextNotEvaluated)" in str(
+        caught.value
+    )
+    assert CONTEXT_JSON["note"] not in str(caught.value)
 
 
 def test_verify_order_text_passes_the_orders_through_unchanged():
