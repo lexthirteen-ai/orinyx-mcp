@@ -93,9 +93,11 @@ Nothing to install and no key: this uses the hosted connector, and you sign in w
 Orinyx account.
 
 1. **Sign up** at [orinyx.io/developers](https://orinyx.io/developers).
-2. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` (Streamable HTTP) in your client.
-   The steps for each client are below.
-3. **Start a test.** Then ask your agent to call `start_a_test`. It lists what your
+2. **Open the welcome email** and follow its link to set your password. The link can be used
+   once. If the email has not arrived after 10 minutes, contact [hello@orinyx.io](mailto:hello@orinyx.io).
+3. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` (Streamable HTTP) in your client.
+   Sign in with your email and the password you set. The steps for each client are below.
+4. **Start a test.** Then ask your agent to call `start_a_test`. It lists what your
    account can run and the next step for each.
 
 The client sends you to the Orinyx sign-in page (OAuth 2.1; the API is the authorization
@@ -385,7 +387,11 @@ docker run --rm -p 8000:8000 \
 | Cursor CLI on macOS | hosted OAuth and synthetic verification smoke tested |
 | Cursor editor on macOS | hosted OAuth and synthetic verification smoke tested |
 
-The hosted connector reports its version at `https://orinyx-mcp.fly.dev/health`.
+The hosted connector reports its running build at `https://orinyx-mcp.fly.dev/health`.
+This can differ from the [latest repository release](https://github.com/lexthirteen-ai/orinyx-mcp/releases/latest):
+v0.1.4 is a documentation release for developer lookup access enabled by the Orinyx API,
+not a requirement that the hosted connector report v0.1.4. See the
+[0.1.4 release notes](https://github.com/lexthirteen-ai/orinyx-mcp/blob/v0.1.4/docs/RELEASE_NOTES_2026-11-05-0.1.4.md).
 
 ## Configuration
 

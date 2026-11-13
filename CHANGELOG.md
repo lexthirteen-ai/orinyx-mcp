@@ -30,6 +30,10 @@ Planned release: **0.1.5**.
 
 ### Changed
 
+- Onboarding docs: the README includes the welcome-email password step before connecting,
+  the README and Quickstart include help for a missing email, and troubleshooting correctly
+  permits developer FDA reference lookups. The README distinguishes a repository documentation
+  release from the hosted connector's running build.
 - Packaging for PyPI: the package metadata is complete (authors, keywords, classifiers and
   project URLs), dependency ranges stop before the next major version, the build backend has
   a bounded range, the source distribution holds a reviewed list of files, and the README's

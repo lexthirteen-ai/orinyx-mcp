@@ -78,6 +78,7 @@
     "tests/test_lookup_offer.py",
     "tests/test_monograph_tools.py",
     "tests/test_not_for_clinical_use.py",
+    "tests/test_onboarding_docs.py",
     "tests/test_package_metadata.py",
     "tests/test_product_exam_script.py",
     "tests/test_publish_workflow.py",
