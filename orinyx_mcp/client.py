@@ -340,8 +340,8 @@ class OrinyxClient:
         tool_version: str | None = None,
         check_interactions: bool = False,
     ) -> VerificationResult:
-        """Free-text orders; the API splits each into its dose, route and frequency claims
-        (deterministically, no model) and verifies them as one run."""
+        """Free-text orders with separate medication identity, dose, route and frequency
+        claims, verified deterministically as one run."""
         body: dict[str, Any] = {"orders": orders, "checkInteractions": check_interactions}
         if tool_name:
             body["toolName"] = tool_name

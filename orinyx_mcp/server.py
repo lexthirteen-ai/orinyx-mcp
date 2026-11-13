@@ -351,8 +351,8 @@ def build_server(
     ) -> str:
         """Verify medication orders exactly as written, e.g. "warfarin 5 mg by mouth
         daily" (one drug per order, at most 50 orders of 500 characters). Orinyx splits
-        each order into its dose, route and frequency claims itself, with no model, and
-        checks each on its own, so a part it cannot read never hides one it can. Pass the
+        each order into medication identity, dose, route and frequency claims, with no model,
+        and checks each on its own, so a part it cannot read never hides one it can. Pass the
         text unchanged: never correct, complete or re-spell an order first. Each row names
         the check that produced it (beta). Orders must be synthetic test data, never real
         patient records or identifiers: the text is stored in the audit record."""

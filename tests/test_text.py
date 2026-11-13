@@ -3,6 +3,7 @@ and citation, the counts, and the clinician-decides footer. The CLI prints plain
 markdown), so it reads the same in a terminal; an agent over MCP gets one table row per
 claim, with the same order and the same warnings."""
 
+import pytest
 from orinyx_mcp.text import (
     INCOMPLETE_CITATION,
     SUGGESTIONS_HEADING,
@@ -74,6 +75,51 @@ ACCURACY = {
         "catchRateUnavailable": "miss review incomplete",
     },
 }
+
+
+@pytest.mark.parametrize("render", [render_run_table, render_run_text])
+def test_identity_shows_match_path_and_label_version(render):
+    set_id = "aa5d68e7-c2b9-41eb-ade4-2cd57edc1533"
+    explanation = "Matched lisinopril via RxNorm. Reference label: Lisinopril Tablets."
+    url = f"https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid={set_id}"
+    run = {
+        "runId": RUN["runId"],
+        "aggregate": {"total": 3, "supported": 1, "contradicted": 0, "abstain": 1, "unreadable": 1},
+        "verdicts": [
+            {
+                "rawText": "RxCUI 29046 20 mg PO daily",
+                "claimType": "identity",
+                "verdict": "supported",
+                "explanation": explanation,
+                "citation": {
+                    "source": "openFDA",
+                    "section": "openFDA product metadata",
+                    "sourceId": set_id,
+                    "citation": f"Lisinopril Tablets, SPL set ID {set_id}, effective 2026-09-10",
+                    "url": url,
+                },
+            },
+            {
+                "rawText": "Lisinopril 20 mg IV",
+                "claimType": "identity",
+                "verdict": "abstain",
+                "explanation": "The current reference label does not cover the route.",
+            },
+            {
+                "rawText": "Lisinoplr 20 mg PO",
+                "claimType": "identity",
+                "verdict": "unreadable",
+                "unreadableFacets": [{"facet": "drug", "reason": "Drug name is not recognized."}],
+            },
+        ],
+    }
+    rendered = render(run)
+    assert rendered.count("Medication identity") == 3
+    assert explanation in rendered
+    assert f"SPL set ID {set_id}, effective 2026-09-10" in rendered
+    assert rendered.count(url) == 1
+    assert "The current reference label does not cover the route." in rendered
+    assert "Drug name is not recognized." in rendered
 
 
 def test_render_names_what_was_checked_and_each_flag():
