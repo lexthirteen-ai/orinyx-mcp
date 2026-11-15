@@ -32,6 +32,7 @@ from orinyx_mcp.config import ConfigError
 
 from tests.test_clean_errors import SENTINEL_BODY, SENTINEL_KEY, assert_no_traceback
 from tests.test_usage_errors import (
+    CHILD_PYTHONPATH,
     COLOUR_SWITCHES,
     HOSTILE,
     HOSTILE_BODY,
@@ -196,7 +197,7 @@ def _clean_env(settings: dict[str, str]) -> dict[str, str]:
         if not name.startswith(("ORINYX_", "DOWNSTREAM_MCP_", "MCP_", "PYTHON"))
         and name not in COLOUR_SWITCHES
     }
-    clean["PYTHONPATH"] = str(ROOT)  # this checkout's package, not an installed copy
+    clean["PYTHONPATH"] = CHILD_PYTHONPATH
     clean.update(PLAIN_TERMINAL)
     return {**clean, **settings}
 

@@ -23,6 +23,8 @@ from urllib.parse import urlsplit
 
 ROUTE_LABEL = "/mcp"
 MIN_SECRET_CHARS = 32
+# What one HTTP header value can carry. The hop secret travels to the API as one.
+_HEADER_VALUE = re.compile(r"[^\x00 \t\n\r\f\v]+(?:[ \t]+[^\x00 \t\n\r\f\v]+)*")
 _TRUE = ("1", "true", "yes", "on")
 
 
@@ -80,6 +82,8 @@ class Config:
         split_config_url(self.issuer_url, "ORINYX_ISSUER_URL")
         if not _https_or_local(self.public_url):
             raise ConfigError("MCP_PUBLIC_URL must be an https URL (plain http only for localhost)")
+        # Published in the protected-resource document and in the challenge of every 401.
+        split_config_url(self.public_url, "MCP_PUBLIC_URL")
         api_local = _https_or_local(self.api_url)
         if not api_local and not (self.api_allow_http and urlsplit(self.api_url).hostname):
             raise ConfigError(
@@ -92,6 +96,11 @@ class Config:
             raise ConfigError(f"ORINYX_HOP_SECRET must be at least {MIN_SECRET_CHARS} characters")
         if self.hop_secret is not None and not self.hop_secret.isascii():
             raise ConfigError("ORINYX_HOP_SECRET must contain only ASCII characters")
+        if self.hop_secret is not None and not _HEADER_VALUE.fullmatch(self.hop_secret):
+            raise ConfigError(
+                "ORINYX_HOP_SECRET must not contain a line break or a NUL, or begin or end "
+                "with a space or tab"
+            )
         if not 0 < self.port < 65536:
             raise ConfigError("PORT must be a port number")
         if self.trusted_client_ip_header is not None and not re.fullmatch(

@@ -28,6 +28,10 @@ from orinyx_mcp import cli
 from tests.test_clean_errors import RUN_ID, SENTINEL_BODY, SENTINEL_KEY, assert_no_traceback
 
 ROOT = Path(__file__).resolve().parent.parent
+# PYTHONPATH for every child process. tests/no_keychain comes first, so the child cannot
+# import keyring and cannot open the OS keychain. Then this checkout's package, not an
+# installed copy.
+CHILD_PYTHONPATH = os.pathsep.join([str(ROOT / "tests" / "no_keychain"), str(ROOT)])
 # A value with every character a repr, a split or an escape could mangle: quotes, a space,
 # `=`, a backslash, a non-ASCII letter. Its body never appears in an output.
 HOSTILE_BODY = "H0ST'IL\"E q7=x\\zé"
@@ -404,7 +408,7 @@ def _run_module(module: str, args: list[str], env: dict[str, str]) -> subprocess
         if not name.startswith(("ORINYX_", "DOWNSTREAM_MCP_", "MCP_", "PYTHON"))
         and name not in COLOUR_SWITCHES
     }
-    clean["PYTHONPATH"] = str(ROOT)  # this checkout's package, not an installed copy
+    clean["PYTHONPATH"] = CHILD_PYTHONPATH
     clean.update(PLAIN_TERMINAL)
     return subprocess.run(
         [sys.executable, "-m", module, *args],

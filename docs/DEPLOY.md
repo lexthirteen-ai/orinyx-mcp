@@ -143,5 +143,7 @@ The variables it reads are in the README under
 The bearer an agent presents is handed to the API's `GET /v1/auth/credential`, which
 describes or refuses it (a positive answer is cached for 30 seconds by token hash; a refusal
 is never cached); the tool call then becomes a REST request carrying that same bearer. The
-process holds no database, no key of its own and no service credential. It serves `/mcp`,
+network server holds no database and no API key of its own. It holds one service secret,
+`ORINYX_HOP_SECRET`, shared with the API, which marks its requests as coming from the hosted
+connector. That secret never stands in for a caller's credential. It serves `/mcp`,
 `/health` and the RFC 9728 protected-resource document.
