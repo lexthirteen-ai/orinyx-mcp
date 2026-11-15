@@ -66,8 +66,7 @@ examples, issues, pull requests or logs you paste. Use synthetic data throughout
 
 ## Publishing to TestPyPI and PyPI (owner checklist)
 
-The repository is already public and has GitHub release tags; those do not upload a
-package to PyPI. Before the first PyPI upload:
+GitHub release tags alone do not upload a package to PyPI. For each PyPI release:
 
 1. Merge the publishing workflow and deploy the engine's self-serve key endpoints
    before advertising that credential path.
@@ -88,7 +87,8 @@ package to PyPI. Before the first PyPI upload:
    No PyPI API token or GitHub repository secret is needed. For CHA-142 L5b, add exactly
    one Actions allowlist entry, shared by both publishing jobs (v1.14.3):
    `pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086`.
-4. This work targets **0.1.5**, alongside the other changes accumulating on `main`.
+4. Each release targets the version set in `orinyx_mcp/__init__.py`, alongside the other
+   changes accumulating on `main`.
    Merge the engine API first, then the dashboard/MCP consumers; do not copy engine
    authorization into either client. The package version is set to `0.1.5`; review
    the combined release notes before tagging. Existing tags must not be moved. From

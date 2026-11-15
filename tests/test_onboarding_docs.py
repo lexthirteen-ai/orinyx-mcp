@@ -67,3 +67,13 @@ def test_repository_release_is_not_presented_as_the_hosted_build():
     assert "reports its running build at `https://orinyx-mcp.fly.dev/health`" in text
     assert "releases/latest" in text
     assert "v0.1.4 is a documentation release" not in text
+
+
+def test_the_first_verification_is_on_the_first_screen():
+    readme = _read("README.md")
+    head = readme.split("\n## ", 1)[0]
+    assert len(head.splitlines()) <= 45
+    assert "**Your first verification**" in head
+    assert "`verify_order_text`" in head
+    assert "docs/QUICKSTART.md#first-run" in head
+    assert "releases/tag/v0.1.5" in head
