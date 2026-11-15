@@ -19,7 +19,7 @@ at the first socket bind, connect or name lookup and records which one it was:
 6. Two launch shapes outside the supported launch channels, pinned as they behave today
    (documented behaviour), so a change to either is seen.
 
-Every child process is given PYTHONPATH=<this checkout>, and every guarded child records the
+Every child process is given this checkout on PYTHONPATH, and every guarded child records the
 package file it imported; each test asserts that file is inside this checkout, so a child
 that picked up an installed copy of another branch fails rather than testing the wrong code.
 All keys and URLs are synthetic. No socket is ever bound: the guard exits first.
@@ -34,7 +34,7 @@ import pytest
 from orinyx_mcp import __version__
 
 from tests.test_clean_errors import SENTINEL_KEY, assert_no_traceback
-from tests.test_usage_errors import COLOUR_SWITCHES, PLAIN_TERMINAL
+from tests.test_usage_errors import CHILD_PYTHONPATH, COLOUR_SWITCHES, PLAIN_TERMINAL
 
 ROOT = Path(__file__).resolve().parent.parent
 API_URL = "https://api.orinyx.example"
@@ -136,7 +136,7 @@ def _env(settings: dict[str, str], report: Path) -> dict[str, str]:
         if not name.startswith(("ORINYX_", "DOWNSTREAM_MCP_", "MCP_", "PYTHON"))
         and name not in COLOUR_SWITCHES
     }
-    clean["PYTHONPATH"] = str(ROOT)  # this checkout's package, not an installed copy
+    clean["PYTHONPATH"] = CHILD_PYTHONPATH
     clean["QA_GUARD_REPORT"] = str(report)
     clean.update(PLAIN_TERMINAL)
     return {**clean, **settings}

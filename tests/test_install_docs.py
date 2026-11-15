@@ -332,7 +332,7 @@ def test_cli_login_docs_explain_secure_storage_scope_and_release_dependency():
     login = _section(readme, "### CLI login")
     assert CLI_LOGIN.search(login)
     for requirement in (
-        "L9 engine update",
+        "New in 0.1.5",
         "Keychain",
         "Secret Service",
         "never exam scopes",

@@ -2,7 +2,7 @@
 
 ## Local CLI login
 
-`orinyx login` requires the L9 engine update and a native macOS Keychain or Linux
+`orinyx login` requires a native macOS Keychain or Linux
 Secret Service session. A locked or unavailable keychain fails closed; unlock it in
 your desktop session and retry. There is no plaintext fallback. On headless Linux/CI,
 use an API key in `ORINYX_API_KEY` with `ORINYX_API_URL` instead. API keys always win
@@ -25,7 +25,7 @@ README's [Installation](../README.md#installation) section and in
 [QUICKSTART.md](QUICKSTART.md). Synthetic data only throughout.
 
 The hosted connector `https://orinyx-mcp.fly.dev/mcp` is the self-serve path: you sign in with
-your Orinyx account and need no key. Local CLI/stdio support login after the L9 engine update;
+your Orinyx account and need no key. Local CLI/stdio support login;
 CI and explicit key-based use need an `ork_live_` key
 issued by Orinyx through the [self-serve API](../README.md#get-an-api-key) or an operator.
 

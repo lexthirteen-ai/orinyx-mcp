@@ -67,7 +67,7 @@ examples, issues, pull requests or logs you paste. Use synthetic data throughout
 ## Publishing to TestPyPI and PyPI (owner checklist)
 
 The repository is already public and has GitHub release tags; those do not upload a
-package to PyPI. Before the November 9 announcement:
+package to PyPI. Before the first PyPI upload:
 
 1. Merge the publishing workflow and deploy the engine's self-serve key endpoints
    before advertising that credential path.

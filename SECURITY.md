@@ -53,8 +53,10 @@ the caller's own credential.
   than replaying a spent refresh token. Explicit environment keys always take precedence.
 - `orinyx logout` attempts server revocation and removes local credentials. A network failure
   is reported, not treated as confirmed revocation. Environment API keys are not changed.
-- The network server holds no database, no key of its own and no service credential. The
-  bearer an agent presents is handed to the API, which describes or refuses it; the tool call
-  then becomes a REST request carrying that same bearer.
+- The network server holds no database and no API key of its own. It holds one service
+  secret, `ORINYX_HOP_SECRET`, shared with the API, which marks its requests as coming from
+  the hosted connector. That secret never stands in for a caller's credential. The bearer an
+  agent presents is handed to the API, which describes or refuses it; the tool call then
+  becomes a REST request carrying that same bearer.
 
 How the network server is deployed is in [docs/DEPLOY.md](docs/DEPLOY.md#how-the-network-server-works).

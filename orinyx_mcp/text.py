@@ -23,6 +23,21 @@ def _pct(rate) -> str:
     return "n/a" if rate is None else f"{float(rate) * 100:.1f}%"
 
 
+def _one_line(value) -> str:
+    """Text from the API as one printable line: shown, never obeyed.
+
+    A run of white space (a line break or a tab included) becomes one space. Any other
+    character that is not printable (a control or format character, a bidirectional
+    override, a private-use or unassigned code point, a lone surrogate) is written as
+    its backslash escape. Display only: the exact text is in the API response."""
+    text = " ".join(str(value).split())
+    if text.isprintable():
+        return text
+    return "".join(
+        ch if ch.isprintable() else ch.encode("unicode_escape").decode("ascii") for ch in text
+    )
+
+
 INCOMPLETE_CITATION = "INCOMPLETE - do not rely on this verdict"
 _CITATION_FIELDS = ("source", "section", "sourceId", "url")
 
@@ -39,7 +54,7 @@ def _citation_line(citation: Mapping | None) -> str:
         citation.get("citation"),
         citation["url"],
     ]
-    return " - ".join(part for part in parts if part)
+    return " - ".join(_one_line(part) for part in parts if part)
 
 
 def render_accuracy_lines(accuracy: Mapping | None) -> list[str]:
@@ -47,33 +62,34 @@ def render_accuracy_lines(accuracy: Mapping | None) -> list[str]:
     if not accuracy or not accuracy.get("reviewed") or not accuracy.get("accuracy"):
         return []
     acc = accuracy["accuracy"]
-    total_flags = accuracy.get("totalFlags", 0)
+    total_flags = _one_line(accuracy.get("totalFlags", 0))
     lines = [
         "ACCURACY (physician review)",
         f"  False-flag rate {_pct(acc.get('falseFlagRate'))} "
-        f"({acc.get('falseFlags', 0)} of {total_flags} flags; "
-        f"{acc.get('flagsOverridden', 0)} of {total_flags} carry a physician override, "
+        f"({_one_line(acc.get('falseFlags', 0))} of {total_flags} flags; "
+        f"{_one_line(acc.get('flagsOverridden', 0))} of {total_flags} carry a physician override, "
         "the rest stand)",
-        f"  Severity corrections {acc.get('severityCorrections', 0)} / "
-        f"Other overrides {acc.get('other', 0)}",
+        f"  Severity corrections {_one_line(acc.get('severityCorrections', 0))} / "
+        f"Other overrides {_one_line(acc.get('other', 0))}",
     ]
     if accuracy.get("synthesizedFlags"):
         lines.append(
-            f"  Co-prescription flags raised by Orinyx itself: {accuracy['synthesizedFlags']} "
+            f"  Co-prescription flags raised by Orinyx itself: "
+            f"{_one_line(accuracy['synthesizedFlags'])} "
             "(counted apart; not in these rates)"
         )
     catch = acc.get("catchRate")
     if catch:
         if catch.get("isEstimate"):
             basis = (
-                f"estimate from a sample of {catch.get('sampleSize')} of "
-                f"{catch.get('unflaggedTotal')} unflagged claims"
+                f"estimate from a sample of {_one_line(catch.get('sampleSize'))} of "
+                f"{_one_line(catch.get('unflaggedTotal'))} unflagged claims"
             )
         else:
             basis = "every unflagged claim was reviewed"
         lines.append(f"  Catch rate {_pct(catch.get('value'))} ({basis})")
     else:
-        why = acc.get("catchRateUnavailable") or "no measurable denominator"
+        why = _one_line(acc.get("catchRateUnavailable") or "no measurable denominator")
         lines.append(f"  Catch rate not estimated ({why})")
     return lines
 
@@ -121,15 +137,17 @@ def _unreadable(row: Mapping) -> bool:
 
 def _part(row: Mapping) -> str:
     claim_type = row.get("claimType")
-    return _PARTS.get(str(claim_type), str(claim_type)) if claim_type else "-"
+    return _PARTS.get(str(claim_type), _one_line(claim_type)) if claim_type else "-"
 
 
 def _unreadable_why(row: Mapping) -> str:
     """Every facet that could not be read, in the engine's words; else its explanation."""
-    facets = [str(f.get("reason")) for f in row.get("unreadableFacets") or [] if f.get("reason")]
+    facets = [
+        _one_line(f.get("reason")) for f in row.get("unreadableFacets") or [] if f.get("reason")
+    ]
     if facets:
         return "; ".join(facets)
-    return str(row.get("explanation") or "no reason recorded")
+    return _one_line(row.get("explanation") or "no reason recorded")
 
 
 def _suggestion_lines(numbered: list[tuple[str, Mapping]]) -> list[str]:
@@ -138,10 +156,11 @@ def _suggestion_lines(numbered: list[tuple[str, Mapping]]) -> list[str]:
     lines: list[str] = []
     for label, row in numbered:
         for suggestion in row.get("suggestions") or []:
-            candidates = " or ".join(str(c) for c in suggestion.get("candidates") or [])
+            candidates = " or ".join(_one_line(c) for c in suggestion.get("candidates") or [])
             if candidates:
                 lines.append(
-                    f"{label}, {suggestion.get('facet')} '{suggestion.get('value')}': {candidates}"
+                    f"{label}, {_one_line(suggestion.get('facet'))} "
+                    f"'{_one_line(suggestion.get('value'))}': {candidates}"
                 )
     return [SUGGESTIONS_HEADING, *lines] if lines else []
 
@@ -163,9 +182,9 @@ def _sorted(run: Mapping) -> tuple[list[str], list, list, list, list]:
     run_id = str(run.get("runId", ""))
     tool = " ".join(bit for bit in (run.get("toolName"), run.get("toolVersion")) if bit)
     stamp_bits = [bit for bit in (tool, run.get("createdAt")) if bit]
-    header = f"Orinyx verification - run {run_id[:8]}"
+    header = f"Orinyx verification - run {_one_line(run_id[:8])}"
     if stamp_bits:
-        header += f" ({', '.join(str(b) for b in stamp_bits)})"
+        header += f" ({', '.join(_one_line(b) for b in stamp_bits)})"
     agg = run.get("aggregate") or {}
     verdicts = list(run.get("verdicts") or [])
     flags = [v for v in verdicts if v.get("verdict") == "contradicted"]
@@ -202,7 +221,7 @@ def _sorted(run: Mapping) -> tuple[list[str], list, list, list, list]:
 
 
 def _not_verified_reason(row: Mapping) -> str:
-    reason = str(row.get("explanation") or "no reason recorded")
+    reason = _one_line(row.get("explanation") or "no reason recorded")
     if row.get("verdict") not in KNOWN_VERDICTS:
         return f"Unknown verdict {row.get('verdict')!r}; NOT VERIFIED. {reason}"
     return reason
@@ -224,8 +243,7 @@ def _context_lines(run: Mapping) -> list[str]:
 
 def _cell(value) -> str:
     """One markdown table cell: a pipe or a line break in claim text must not break the row."""
-    text = " ".join(str(value or "").split())
-    return text.replace("|", "\\|") or "-"
+    return _one_line(value or "").replace("|", "\\|") or "-"
 
 
 def render_run_table(run: Mapping, accuracy: Mapping | None = None) -> str:
@@ -260,9 +278,9 @@ def render_run_table(run: Mapping, accuracy: Mapping | None = None) -> str:
         )
     for row in flags:
         number += 1
-        severity = str(row.get("severity", "")).upper()
+        severity = _one_line(str(row.get("severity", "")).upper())
         if row.get("severityReason"):
-            severities.append(f"Row {number} ({severity}): {row['severityReason']}")
+            severities.append(f"Row {number} ({severity}): {_one_line(row['severityReason'])}")
         rows.append(
             f"| {number} {claim(row)}| FLAGGED | {_cell(severity)} "
             f"| {_cell(row.get('explanation'))} | {cite(row)} |"
@@ -442,7 +460,7 @@ def render_run_text(run: Mapping, accuracy: Mapping | None = None) -> str:
         numbered: list[tuple[str, Mapping]] = []
         for index, row in enumerate(unreadable, start=1):
             numbered.append((f"Unreadable {index}", row))
-            lines.append(f"{index}. {row.get('rawText', '')} ({_part(row)})")
+            lines.append(f"{index}. {_one_line(row.get('rawText', ''))} ({_part(row)})")
             lines.append(f"   Why: {_unreadable_why(row)}")
         suggestions = _suggestion_lines(numbered)
         if suggestions:
@@ -452,12 +470,14 @@ def render_run_text(run: Mapping, accuracy: Mapping | None = None) -> str:
     if flags:
         lines.append(f"FLAGS ({len(flags)})")
         for index, flag in enumerate(flags, start=1):
-            severity = str(flag.get("severity", "")).upper()
-            lines.append(f"{index}. [{severity}] {flag.get('rawText', '')} ({_part(flag)})")
+            severity = _one_line(str(flag.get("severity", "")).upper())
+            lines.append(
+                f"{index}. [{severity}] {_one_line(flag.get('rawText', ''))} ({_part(flag)})"
+            )
             if flag.get("explanation"):
-                lines.append(f"   Why: {flag['explanation']}")
+                lines.append(f"   Why: {_one_line(flag['explanation'])}")
             if flag.get("severityReason"):
-                lines.append(f"   Severity: {flag['severityReason']}")
+                lines.append(f"   Severity: {_one_line(flag['severityReason'])}")
             lines.append(f"   Citation: {_citation_line(flag.get('citation'))}")
     elif abstained or unreadable:
         lines.append(f"FLAGS (0) - {NOT_VERIFIED_LEAD}")
@@ -473,7 +493,7 @@ def render_run_text(run: Mapping, accuracy: Mapping | None = None) -> str:
             "judgment that the order suits a patient:"
         )
         for index, row in enumerate(supported, start=1):
-            lines.append(f"{index}. {row.get('rawText', '')} ({_part(row)})")
+            lines.append(f"{index}. {_one_line(row.get('rawText', ''))} ({_part(row)})")
             lines.append(f"   Citation: {_citation_line(row.get('citation'))}")
     else:
         lines.append("SUPPORTED (0)")
@@ -485,7 +505,7 @@ def render_run_text(run: Mapping, accuracy: Mapping | None = None) -> str:
         )
         for index, row in enumerate(abstained, start=1):
             reason = _not_verified_reason(row)
-            lines.append(f"{index}. {row.get('rawText', '')} ({_part(row)})")
+            lines.append(f"{index}. {_one_line(row.get('rawText', ''))} ({_part(row)})")
             lines.append(f"   Why not: {reason}")
     else:
         lines.append("ABSTAINED (0)")

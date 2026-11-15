@@ -5,7 +5,7 @@ only throughout: never real patient records, names, dates or record numbers.
 
 For the hosted connector, the self-serve path, you need an Orinyx account and no key;
 [First run](#first-run) starts with signing up. Local CLI and stdio also support
-[`orinyx login`](../README.md#cli-login) after the L9 engine update: browser sign-in,
+[`orinyx login`](../README.md#cli-login): browser sign-in,
 secure OS storage, verification and Arena access according to account permissions, no exams.
 CI and explicit key-based use need an Orinyx API URL and a key (`ork_live_...`) issued through the
 [self-serve API](../README.md#get-an-api-key) or an operator. PyPI and `uvx` installation

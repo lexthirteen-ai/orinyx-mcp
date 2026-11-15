@@ -167,7 +167,7 @@ starts Codex. In the `codex` terminal UI, `/mcp` lists the servers Codex has con
 
 ### CLI login
 
-Requires the L9 engine update before use; this is not yet a published package release.
+New in 0.1.5.
 On macOS or desktop Linux with an unlocked OS keychain:
 
 ```bash
@@ -367,8 +367,12 @@ docker build -t orinyx-mcp .
 docker run --rm -p 8000:8000 \
   -e MCP_PUBLIC_URL=https://mcp.example \
   -e ORINYX_API_URL=https://api.example \
+  -e ORINYX_HOP_SECRET \
   orinyx-mcp
 ```
+
+`ORINYX_HOP_SECRET` is required, and the server refuses to start without it;
+`-e ORINYX_HOP_SECRET` passes the value from your shell, so it stays out of the command.
 
 `MCP_PUBLIC_URL` must be an https URL (plain http only for localhost). The Fly.io layout is in
 [docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md).
@@ -410,7 +414,6 @@ Configuration is the environment only:
 | `ORINYX_API_URL` | the Orinyx API this service calls on the caller's behalf |
 | `ORINYX_ISSUER_URL` | the API's public origin, named in the resource metadata for sign-in (defaults to the `ORINYX_API_URL` origin) |
 | `ORINYX_HOP_SECRET` | required for hosted MCP, at least 32 ASCII characters, shared with the API; the backend must reach the API from an admitted private peer |
-
 | `ORINYX_API_ALLOW_HTTP` | `true` only on a private network trusted end to end |
 | `TRUST_PROXY_FORWARDED_FOR` | `true` behind exactly one proxy (the host's edge) |
 | `TRUSTED_CLIENT_IP_HEADER` | a header that proxy sets to the caller's address (Fly: `fly-client-ip`) |
@@ -1105,7 +1108,7 @@ is safe.
 ```bash
 pip install -e ".[dev]"
 pytest          # no database, no engine: fakes stand in for the API
-ruff check . && ruff format .
+ruff check . && ruff format --check .
 ```
 
 `tests/test_client.py::test_nothing_in_the_package_imports_the_engine` keeps this a client:
