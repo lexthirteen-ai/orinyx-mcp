@@ -89,6 +89,7 @@
     "tests/test_manifest_matches_tracked_files.py",
     "tests/test_monograph_tools.py",
     "tests/test_not_for_clinical_use.py",
+    "tests/test_onboarding_docs.py",
     "tests/test_package_metadata.py",
     "tests/test_packaged_files_hold_no_internal_ids.py",
     "tests/test_product_exam_script.py",
