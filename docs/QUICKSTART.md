@@ -266,8 +266,9 @@ orinyx export <run id> --format report --out report.pdf   # csv | pdf | report; 
 `orinyx verify` exits 0 clean, 2 flagged (a `contradicted` claim or an `unreadable` order),
 3 not verified (no flag, but an abstain), 1 error. Usage errors exit 1, never 2.
 
-CI needs an `ork_live_` key issued by Orinyx through the [self-serve API](../README.md#get-an-api-key)
-or an operator: hosted connector OAuth is not a CLI credential. Have your test job write the agent's claims for a
+CI has no browser or keychain for `orinyx login`, so it needs an `ork_live_` key issued by
+Orinyx through the [self-serve API](../README.md#get-an-api-key) or an operator. Signing in to
+the hosted connector from your agent does not sign in the CLI. Have your test job write the agent's claims for a
 fixed set of synthetic inputs to a JSON file, then:
 
 ```yaml
