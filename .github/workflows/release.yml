@@ -72,18 +72,23 @@ jobs:
           if os.environ["RELEASE_TAG"] != f"v{version}":
               raise SystemExit("Release tag must match orinyx_mcp.__version__")
           PY
-      - name: Install test and build tools
+      - name: Install test tools
         run: |
           python -I -m pip install -r requirements.lock
-          python -I -m pip install ".[dev]" build twine
+          python -I -m pip install ".[dev]"
       - name: Test
         run: python -I -m pytest -q
+      - name: Install the pinned build tools in their own environment
+        run: |
+          python -I -m venv --clear "$RUNNER_TEMP/build-tools"
+          "$RUNNER_TEMP/build-tools/bin/python" -I -m pip install --require-hashes -r requirements-release.lock
       - name: Build and validate wheel and sdist
         run: |
           manifest="release/manifests/${PACKAGE_VERSION}.json"
           shape="$(python -I scripts/check_dist.py --manifest "$manifest" --print-shape)"
           test "$shape" = "wheel_only=false" || { echo "This workflow requires wheel and sdist"; exit 1; }
-          python -I -m build
+          . "$RUNNER_TEMP/build-tools/bin/activate"
+          python -I -m build --no-isolation
           python -I -m twine check --strict dist/*
           python -I scripts/check_dist.py dist --manifest "$manifest" --source .
           (cd dist && sha256sum *.whl *.tar.gz > SHA256SUMS)

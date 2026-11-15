@@ -94,7 +94,9 @@ package to PyPI. Before the first PyPI upload:
    the combined release notes before tagging. Existing tags must not be moved. From
    the reviewed release commit, create and push the matching `v0.1.5` tag. The workflow refuses a
    tag/version mismatch, tests the package, then builds a wheel and sdist with
-   `python -I -m build` and validates their metadata with Twine. Only stable
+   `python -I -m build --no-isolation` and validates their metadata with Twine. The build
+   tools come from `requirements-release.lock`, installed with their hashes in an
+   environment of their own. Only stable
    `v<major>.<minor>.<patch>` tags publish to TestPyPI then PyPI; prerelease tags are refused.
    `scripts/lint_release_workflow.py` governs the workflow, and
    `scripts/check_dist.py` validates both archives against the version's exact
