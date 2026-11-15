@@ -1,10 +1,10 @@
 """No file the source distribution ships holds a short internal id.
 
 The archive on PyPI is kept for good. A short internal id, a capital L and a number with an
-optional letter, means nothing to a reader of the package and stays in every copy of the
-release once it is uploaded. This test reads every UTF-8 file the release manifest lists for the
-source distribution and names each such id by file and line. A test that needs one as an example
-builds it from pieces, as this file does.
+optional letter, or a tracker key and a number, means nothing to a reader of the package and
+stays in every copy of the release once it is uploaded. This test reads every UTF-8 file the
+release manifest lists for the source distribution and names each such id by file and line. A
+test that needs one as an example builds it from pieces, as this file does.
 """
 
 import json
@@ -16,7 +16,7 @@ from orinyx_mcp import __version__
 from tests.test_install_docs import ROOT
 
 MANIFEST = ROOT / "release" / "manifests" / f"{__version__}.json"
-INTERNAL_ID = re.compile(r"\bL[0-9]+[a-z]?\b")
+INTERNAL_ID = re.compile(r"\bL[0-9]+[a-z]?\b|\bCHA-[0-9]+\b")
 
 
 def packaged_text_files() -> list[str]:

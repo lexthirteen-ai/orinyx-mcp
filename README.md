@@ -192,7 +192,7 @@ registration. Re-run commands with the same origin; credentials are never sent t
 Login grants verification and Arena scopes permitted by your account, **never exam scopes**.
 Arena still needs operator enablement, tester eligibility, and `ORINYX_ARENA_ENABLED=true`
 in the local MCP environment; sign-in does not bypass any of those gates.
-Use the existing hosted connector for exam workflows pending the exam-integrity ruling.
+Use the hosted connector for exam workflows.
 
 Credentials, including rotating refresh tokens, live only in macOS Keychain or Linux
 Secret Service. There is no plaintext config-file fallback. Headless CI uses environment
@@ -234,7 +234,7 @@ Never paste passwords or session tokens into an agent prompt or commit them.
 
 ### Install from PyPI
 
-Python 3.11 or later. Once the first PyPI release is published:
+Python 3.11 or later:
 
 ```bash
 pip install orinyx-mcp
@@ -255,8 +255,7 @@ uvx --from orinyx-mcp orinyx --help
 
 The `stdio` argument is required: bare `orinyx-mcp` (or `uvx orinyx-mcp`) starts the
 HTTP server, not stdio. Agent hosts can launch `uvx` with `args: ["orinyx-mcp", "stdio"]`
-and the same API environment variables. Before the first PyPI upload, use the source
-install below; a GitHub release alone does not publish the package to PyPI.
+and the same API environment variables.
 
 ### Local stdio (from source)
 
@@ -1101,7 +1100,7 @@ Every non-2xx answer, malformed answer or transport failure raises `OrinyxApiErr
 - **No "safe by default".** `abstain` means unchecked, never safe.
 - **No model in the verdict.** No language model decides a verdict, a severity or a score.
 
-The release notes list this release's [known limits](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/RELEASE_NOTES_2026-11-02.md#known-limits):
+The 0.1.1 release notes list the [known limits](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/RELEASE_NOTES_2026-11-02.md#known-limits):
 gaps in the knowledge base and the checks. Most show up as a NOT VERIFIED row, a refused
 order or a daily total that was not checked, so a missing flag is never evidence that an order
 is safe.
