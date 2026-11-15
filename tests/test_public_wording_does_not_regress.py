@@ -138,3 +138,30 @@ def test_the_methodology_page_makes_no_performance_or_certification_claim():
     assert "Nothing in this section is" in text
     for internal in ("app/", "orinyx-engine", "CHA-", "rule-"):
         assert internal not in text, internal
+
+
+CLINICAL_SUITE_DOCS = sorted((ROOT / "docs" / "clinical-suite").rglob("*.*"))
+PRIVATE_DETAIL = [
+    r"localhost:\d+",
+    r"\bbuild/\d{4}-",
+    r"`app/",
+    r"\bdata/[a-z_]+\.json",
+    r"ingest_quarantine",
+    r"dose_ceiling_held",
+    r"\bLex\b",
+    r"owner decision",
+    r"CLAUDE\.md",
+    r"development database",
+]
+
+
+def test_the_clinical_suite_docs_are_found():
+    names = {p.name for p in CLINICAL_SUITE_DOCS}
+    assert {"CAPABILITY_MAP.md", "README.md", "results.md", "results.json"} <= names
+
+
+@pytest.mark.parametrize("path", CLINICAL_SUITE_DOCS, ids=lambda p: p.name)
+def test_the_clinical_suite_docs_hold_no_private_engine_detail_or_ruling_names(path):
+    text = path.read_text(encoding="utf-8")
+    found = [p for p in PRIVATE_DETAIL if re.search(p, text)]
+    assert found == []
