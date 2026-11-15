@@ -126,3 +126,15 @@ def test_the_gate_id_pattern_finds_either_spelling(text):
 )
 def test_the_gate_id_pattern_leaves_ordinary_text_alone(text):
     assert not GATE_ID.search(text)
+
+
+def test_the_methodology_page_makes_no_performance_or_certification_claim():
+    text = _read("docs/METHODOLOGY.md")
+    lowered = text.lower()
+    for word in ("certified", "validated", "physician-reviewed", "clinically proven"):
+        assert word not in lowered, word
+    assert not re.search(r"\d+(\.\d+)?\s*%", text)
+    assert "## 7. Proposed, not built" in text
+    assert "Nothing in this section is" in text
+    for internal in ("app/", "orinyx-engine", "CHA-", "rule-"):
+        assert internal not in text, internal

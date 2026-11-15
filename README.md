@@ -1102,6 +1102,9 @@ Every non-2xx answer, malformed answer or transport failure raises `OrinyxApiErr
 
 ## Safety and limits
 
+How Orinyx reaches and tests its verdicts is set out in the
+[evaluation methodology](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/METHODOLOGY.md).
+
 ### What Orinyx does not do
 
 - **No EHR connection.** The MCP server talks only to the Orinyx API. There is no FHIR, no
