@@ -404,3 +404,44 @@ def test_supported_environments_is_linked_and_states_facts_only():
 def test_the_ci_python_versions_match_the_supported_environments_row():
     workflow = _read(".github/workflows/ci.yml")
     assert 'python-version: ["3.11", "3.12", "3.13"]' in workflow
+
+
+FIRST_RUN = ROOT / "examples" / "first-run"
+FIRST_RUN_ORDERS = ["clean", "planted", "abstain", "known-limit"]
+
+
+@pytest.mark.parametrize("name", FIRST_RUN_ORDERS)
+def test_each_first_run_order_passes_the_identifier_screen(name):
+    from orinyx_mcp.screen import screen_orders
+
+    orders = (FIRST_RUN / f"{name}.txt").read_text(encoding="utf-8").splitlines()
+    assert orders and screen_orders(orders) is None
+
+
+@pytest.mark.parametrize("name", [*FIRST_RUN_ORDERS, "claims"])
+def test_each_expected_output_names_its_capture_date_and_versions(name):
+    text = (FIRST_RUN / "expected" / f"{name}.txt").read_text(encoding="utf-8")
+    head = text.split("\n\n", 1)[0]
+    assert "Captured 2026-" in head
+    assert "Orinyx API 0.4.0" in head and "kg-2026.11.6" in head
+    assert "orinyx-mcp 0.1.5" in head
+    assert "Verdict fields" in text and "| Part | Verdict | Severity |" in text
+    assert not re.search(r"Run id: [0-9a-f]{8}-", text)
+
+
+def test_the_first_run_claims_file_has_the_documented_claim_shape():
+    from orinyx_mcp.cli import _load_claims
+
+    claims, _ = _load_claims(FIRST_RUN / "claims.json")
+    assert claims
+    for claim in claims:
+        assert set(claim) == {"rawText", "drug", "claimType", "structuredValue"}
+        assert claim["claimType"] in {"dose_range", "route", "frequency"}
+        assert isinstance(claim["structuredValue"], dict)
+
+
+def test_the_first_run_reference_names_the_abstain_and_known_limit():
+    text = (FIRST_RUN / "README.md").read_text(encoding="utf-8")
+    assert "### The abstain" in text and "### The known limit" in text
+    assert "RELEASE_NOTES_2026-11-02.md#known-limits" in text
+    assert "not evidence of accuracy" in text

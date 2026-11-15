@@ -599,7 +599,9 @@ Optional: `tool_name` and `tool_version` (named in the report header) and `check
 model) and answers with one table row per claim. The order above is one of the two
 [first-run examples](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/examples/first-run/), with its dose error planted. The output below was
 captured on 2026-11-07 from the hosted Orinyx connector (`https://orinyx-mcp.fly.dev/mcp`,
-orinyx-mcp 0.1.3). It was not written by hand. Run ids and times differ from run to run:
+orinyx-mcp 0.1.3). It was not written by hand. Run ids and times differ from run to run.
+Output captured on Orinyx API 0.4.0, with its provenance, is in the
+[first-run reference example](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/examples/first-run/README.md#expected-results):
 
 ```text
 Orinyx verification - run f57fc863
