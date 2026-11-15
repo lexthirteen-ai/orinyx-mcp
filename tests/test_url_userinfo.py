@@ -12,7 +12,12 @@ from orinyx_mcp.arena import _spectator_origin
 from orinyx_mcp.client import OrinyxClient
 from orinyx_mcp.config import Config, ConfigError
 
-BASE = {"MCP_PUBLIC_URL": "https://mcp.example", "ORINYX_API_URL": "https://api.example/v1"}
+HOP_SECRET = "synthetic-hop-" * 4
+BASE = {
+    "MCP_PUBLIC_URL": "https://mcp.example",
+    "ORINYX_API_URL": "https://api.example/v1",
+    "ORINYX_HOP_SECRET": HOP_SECRET,
+}
 PASSWORD = "synthetic_password_userinfo"
 USERINFO = ["user", f"user:{PASSWORD}", f":{PASSWORD}", "", ":", "user:", "us%65r:p%61ss"]
 

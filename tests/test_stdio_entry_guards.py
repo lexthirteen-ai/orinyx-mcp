@@ -19,7 +19,7 @@ at the first socket bind, connect or name lookup and records which one it was:
 6. Two launch shapes outside the supported launch channels, pinned as they behave today
    (documented behaviour), so a change to either is seen.
 
-Every child process is given PYTHONPATH=<this checkout>, and every guarded child records the
+Every child process is given this checkout on PYTHONPATH, and every guarded child records the
 package file it imported; each test asserts that file is inside this checkout, so a child
 that picked up an installed copy of another branch fails rather than testing the wrong code.
 All keys and URLs are synthetic. No socket is ever bound: the guard exits first.
@@ -34,7 +34,7 @@ import pytest
 from orinyx_mcp import __version__
 
 from tests.test_clean_errors import SENTINEL_KEY, assert_no_traceback
-from tests.test_usage_errors import COLOUR_SWITCHES, PLAIN_TERMINAL
+from tests.test_usage_errors import CHILD_PYTHONPATH, COLOUR_SWITCHES, PLAIN_TERMINAL
 
 ROOT = Path(__file__).resolve().parent.parent
 API_URL = "https://api.orinyx.example"
@@ -42,6 +42,7 @@ PASSWORD = "PWqaGuardSECRET7"
 USAGE = b"usage: orinyx-mcp | orinyx-mcp stdio | orinyx-mcp --version\n"
 NETWORK_MISSING = "Set MCP_PUBLIC_URL and ORINYX_API_URL\n"
 BOUND = 97  # the exit code the guard uses when the process tried to bind a socket
+HOP_SECRET = "synthetic-hop-" * 4
 
 # Stops the process at the first bind, connect or name lookup, after writing which one to
 # the report file. At exit it records whether uvicorn (the network server) was imported.
@@ -107,6 +108,7 @@ runpy.run_module("orinyx_mcp", run_name="__main__", alter_sys=True)
 
 # Every setting either server needs to start: a slip-through would reach the guard.
 EVERY_SETTING = {
+    "ORINYX_HOP_SECRET": HOP_SECRET,
     "MCP_PUBLIC_URL": "https://mcp.example",
     "ORINYX_API_URL": API_URL,
     "ORINYX_API_KEY": SENTINEL_KEY,
@@ -134,7 +136,7 @@ def _env(settings: dict[str, str], report: Path) -> dict[str, str]:
         if not name.startswith(("ORINYX_", "DOWNSTREAM_MCP_", "MCP_", "PYTHON"))
         and name not in COLOUR_SWITCHES
     }
-    clean["PYTHONPATH"] = str(ROOT)  # this checkout's package, not an installed copy
+    clean["PYTHONPATH"] = CHILD_PYTHONPATH
     clean["QA_GUARD_REPORT"] = str(report)
     clean.update(PLAIN_TERMINAL)
     return {**clean, **settings}
@@ -224,7 +226,10 @@ NOT_STARTED_VALIDATION = (
     "URL is the usual cause: check MCP_PUBLIC_URL, ORINYX_API_URL, ORINYX_ISSUER_URL, "
     "DOWNSTREAM_MCP_URL and ORINYX_ARENA_URL.\n"
 )
-PUBLIC = {"MCP_PUBLIC_URL": "https://mcp.example"}
+PUBLIC = {
+    "MCP_PUBLIC_URL": "https://mcp.example",
+    "ORINYX_HOP_SECRET": HOP_SECRET,
+}
 UNUSABLE_0_1_2 = {
     "no settings": ({}, NETWORK_MISSING),
     "the api url and key only": (
@@ -279,6 +284,7 @@ def test_the_network_server_serves_the_0_1_2_routes(monkeypatch):
     from orinyx_mcp.http import build_app
 
     monkeypatch.setenv("MCP_PUBLIC_URL", "https://mcp.example")
+    monkeypatch.setenv("ORINYX_HOP_SECRET", HOP_SECRET)
     monkeypatch.setenv("ORINYX_API_URL", API_URL)
     _, app = build_app(Config.from_env())
     routes = [

@@ -1,4 +1,4 @@
-"""Gate B15: the not-for-clinical-use statement, worded by the owner on 2026-10-31,
+"""The not-for-clinical-use statement, worded by the owner on 2026-10-31,
 opens the server INSTRUCTIONS and every tool description, sits on the README's first screen and
 in the release notes. Each is pinned to the exact text, so a later edit cannot drop or soften it."""
 

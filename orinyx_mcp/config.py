@@ -6,8 +6,8 @@
 | ORINYX_API_URL              | the Orinyx API this service calls on the caller's behalf     |
 | ORINYX_ISSUER_URL           | the Orinyx sign-in origin named in the resource metadata     |
 |                             | (defaults to ORINYX_API_URL when that is https)              |
-| ORINYX_HOP_SECRET           | optional; shared with the API so it can honour the caller's  |
-|                             | address this service forwards (at least 32 characters)       |
+| ORINYX_HOP_SECRET           | required for hosted MCP; shared with the API for private     |
+|                             | backend authentication (at least 32 ASCII characters)        |
 | ORINYX_API_ALLOW_HTTP       | `true` only for a private network trusted end to end         |
 | TRUST_PROXY_FORWARDED_FOR   | `true` behind exactly one proxy (the host's edge)            |
 | TRUSTED_CLIENT_IP_HEADER    | a header that proxy sets to the caller's address (Fly:       |
@@ -23,6 +23,8 @@ from urllib.parse import urlsplit
 
 ROUTE_LABEL = "/mcp"
 MIN_SECRET_CHARS = 32
+# What one HTTP header value can carry. The hop secret travels to the API as one.
+_HEADER_VALUE = re.compile(r"[^\x00 \t\n\r\f\v]+(?:[ \t]+[^\x00 \t\n\r\f\v]+)*")
 _TRUE = ("1", "true", "yes", "on")
 
 
@@ -80,6 +82,8 @@ class Config:
         split_config_url(self.issuer_url, "ORINYX_ISSUER_URL")
         if not _https_or_local(self.public_url):
             raise ConfigError("MCP_PUBLIC_URL must be an https URL (plain http only for localhost)")
+        # Published in the protected-resource document and in the challenge of every 401.
+        split_config_url(self.public_url, "MCP_PUBLIC_URL")
         api_local = _https_or_local(self.api_url)
         if not api_local and not (self.api_allow_http and urlsplit(self.api_url).hostname):
             raise ConfigError(
@@ -90,6 +94,13 @@ class Config:
             raise ConfigError("ORINYX_ISSUER_URL must be an https origin")
         if self.hop_secret is not None and len(self.hop_secret) < MIN_SECRET_CHARS:
             raise ConfigError(f"ORINYX_HOP_SECRET must be at least {MIN_SECRET_CHARS} characters")
+        if self.hop_secret is not None and not self.hop_secret.isascii():
+            raise ConfigError("ORINYX_HOP_SECRET must contain only ASCII characters")
+        if self.hop_secret is not None and not _HEADER_VALUE.fullmatch(self.hop_secret):
+            raise ConfigError(
+                "ORINYX_HOP_SECRET must not contain a line break or a NUL, or begin or end "
+                "with a space or tab"
+            )
         if not 0 < self.port < 65536:
             raise ConfigError("PORT must be a port number")
         if self.trusted_client_ip_header is not None and not re.fullmatch(

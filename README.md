@@ -73,7 +73,8 @@ or want a clinical decision. Orinyx does not do any of these: see
 ## Installation
 
 Use the hosted connector with OAuth, or install the Python package for stdio, the CLI
-and CI. Local use needs an API URL and a [personal API key](#get-an-api-key).
+and CI. Local use supports [browser login](#cli-login) or an API URL and a
+[personal API key](#get-an-api-key). CI remains key-based.
 
 | Path | For | What you need |
 |---|---|---|
@@ -166,6 +167,43 @@ starts Codex. In the `codex` terminal UI, `/mcp` lists the servers Codex has con
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json`, `.codex/config.toml` or a project `.mcp.json`.
 
+### CLI login
+
+New in 0.1.5.
+On macOS or desktop Linux with an unlocked OS keychain:
+
+```bash
+orinyx login
+orinyx status --json
+orinyx-mcp stdio
+orinyx logout
+```
+
+Login opens your external browser and receives the result on a one-time IPv4 loopback
+listener. `orinyx login --no-browser` prints the authorization URL instead; open it on
+the **same device** within three minutes. It is not a device-code or SSH login flow.
+No password, code, or token is entered in the terminal.
+
+The default API is `https://orinyx-api.fly.dev`; set `ORINYX_API_URL` to select another
+HTTPS API origin (HTTP is accepted only on loopback). The issuer and OAuth endpoints
+must belong to that origin. Each origin has its own saved login and public-client
+registration. Re-run commands with the same origin; credentials are never sent to a new target.
+
+Login grants verification and Arena scopes permitted by your account, **never exam scopes**.
+Arena still needs operator enablement, tester eligibility, and `ORINYX_ARENA_ENABLED=true`
+in the local MCP environment; sign-in does not bypass any of those gates.
+Use the existing hosted connector for exam workflows pending the exam-integrity ruling.
+
+Credentials, including rotating refresh tokens, live only in macOS Keychain or Linux
+Secret Service. There is no plaintext config-file fallback. Headless CI uses environment
+keys. The explicit `ORINYX_API_KEY` always wins, even if invalid; unset it to use a login.
+`logout` revokes the saved grant and removes the local record, not environment API keys.
+Offline logout reports that server revocation was not confirmed; end account sessions
+to invalidate a remaining server-side grant. Expired/revoked logins require login again;
+commands never launch a browser implicitly. Long-running stdio refreshes before API calls,
+not during startup, and does not retry writes after authentication failures.
+
+
 ### Get an API key
 
 Beta developers can mint their own keys after signing up and setting a password:
@@ -205,7 +243,8 @@ orinyx --help
 orinyx verify --file claims.json --tool my-agent
 ```
 
-Set the API URL and key in the process environment first; see [Get an API key](#get-an-api-key).
+Use [CLI login](#cli-login), or set the API URL and key in the process environment first;
+see [Get an API key](#get-an-api-key).
 For an isolated run without installing into your current Python environment, use
 [uv](https://docs.astral.sh/uv/):
 
@@ -221,8 +260,9 @@ install below; a GitHub release alone does not publish the package to PyPI.
 
 ### Local stdio (from source)
 
-The stdio server, the CLI and CI each need an Orinyx API URL and a key (`ork_live_...`)
-issued by Orinyx through the [self-serve API](#get-an-api-key) or an operator. To develop
+The stdio server and CLI support [CLI login](#cli-login). For CI or explicit key-based use,
+provide an Orinyx API URL and a key (`ork_live_...`) issued through the
+[self-serve API](#get-an-api-key) or an operator. To develop
 from a checkout instead of using PyPI:
 
 ```bash
@@ -329,8 +369,12 @@ docker build -t orinyx-mcp .
 docker run --rm -p 8000:8000 \
   -e MCP_PUBLIC_URL=https://mcp.example \
   -e ORINYX_API_URL=https://api.example \
+  -e ORINYX_HOP_SECRET \
   orinyx-mcp
 ```
+
+`ORINYX_HOP_SECRET` is required, and the server refuses to start without it;
+`-e ORINYX_HOP_SECRET` passes the value from your shell, so it stays out of the command.
 
 `MCP_PUBLIC_URL` must be an https URL (plain http only for localhost). The Fly.io layout is in
 [docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md).
@@ -359,7 +403,8 @@ This can differ from the [latest repository release](https://github.com/lexthirt
 | `ORINYX_API_URL` | the Orinyx API (https; plain http only for localhost) |
 | `ORINYX_API_KEY` | an `ork_live_` key issued to you by Orinyx |
 
-Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. The `DOWNSTREAM_MCP_*`
+An explicit `ORINYX_API_KEY` takes precedence; otherwise local CLI/stdio use the secure
+[saved login](#cli-login) for the selected API origin. No API key is read from disk. The `DOWNSTREAM_MCP_*`
 variables under [Gateway](#gateway-another-mcp-server) work over stdio too.
 
 ### Network server
@@ -371,14 +416,21 @@ Configuration is the environment only:
 | `MCP_PUBLIC_URL` | the https origin agents connect to; `/mcp` is served there (the `Host` check is built from it) |
 | `ORINYX_API_URL` | the Orinyx API this service calls on the caller's behalf |
 | `ORINYX_ISSUER_URL` | the API's public origin, named in the resource metadata for sign-in (defaults to the `ORINYX_API_URL` origin) |
-| `ORINYX_HOP_SECRET` | optional, at least 32 characters, shared with the API so each agent keeps its own rate-limit bucket |
+| `ORINYX_HOP_SECRET` | required for hosted MCP, at least 32 ASCII characters, shared with the API; the backend must reach the API from an admitted private peer |
 | `ORINYX_API_ALLOW_HTTP` | `true` only on a private network trusted end to end |
 | `TRUST_PROXY_FORWARDED_FOR` | `true` behind exactly one proxy (the host's edge) |
 | `TRUSTED_CLIENT_IP_HEADER` | a header that proxy sets to the caller's address (Fly: `fly-client-ip`) |
 | `PORT` | listening port (default 8000) |
 
+Vendor exams support hosted MCP and authenticated dashboard sessions. New sittings default to
+`entryMode: "vendor"`; `evals/product_exam.py open --operator-entry` opens a separate
+`entryMode: "operator"` sitting for manual quality-lead/admin entry. An operator cannot answer a
+vendor sitting, and operator sittings cannot record MCP traces or be publicly certified. Dashboard
+answers are not fabricated as tool traces. Apply the engine's entry-mode migration/API first.
+
 ```bash
-MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example orinyx-mcp
+MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example \
+  ORINYX_HOP_SECRET="${ORINYX_HOP_SECRET:?configure the shared backend secret}" orinyx-mcp
 ```
 
 How the server handles the bearer an agent presents is in
@@ -1059,7 +1111,7 @@ is safe.
 ```bash
 pip install -e ".[dev]"
 pytest          # no database, no engine: fakes stand in for the API
-ruff check . && ruff format .
+ruff check . && ruff format --check .
 ```
 
 `tests/test_client.py::test_nothing_in_the_package_imports_the_engine` keeps this a client:

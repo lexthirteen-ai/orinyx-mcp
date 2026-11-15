@@ -499,6 +499,20 @@ def test_without_the_key_nothing_changes():
     assert "PATIENT CONTEXT" not in render_run_text(bare)
 
 
+def test_context_validation_leaves_both_rendered_forms_unchanged():
+    from orinyx_mcp.client import VerificationResult
+
+    for context in (
+        None,
+        {"note": CONTEXT_NOTE, "fields": [], "count": 0},
+        {"note": CONTEXT_NOTE, "fields": ["patientHistory"], "count": 3},
+    ):
+        run = {**AMOXICILLIN_RUN, "contextNotEvaluated": context}
+        result = VerificationResult.from_json(run)
+        for render in (render_run_table, render_run_text):
+            assert render(result.raw) == render(run)
+
+
 def test_the_supported_note_follows_the_footer_in_the_table_form_only():
     text = render_run_table(AMOXICILLIN_RUN)
     assert text.endswith(f"Note: {SUPPORTED_NOTE}")

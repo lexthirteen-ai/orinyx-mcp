@@ -43,6 +43,7 @@ PASSWORD = "p4ss-SYNTHETIC-" + "pa55w0rd" * 2
 API_URL = "https://api.orinyx.example"
 PUBLIC_URL = "https://mcp.orinyx.example"
 SLICE = 6
+HOP_SECRET = "synthetic-hop-" * 4
 
 # The new messages, written out rather than imported, so a change to the wording fails here.
 RUN_ID_REFUSED = "orinyx: run_id must be a UUID\n"
@@ -362,7 +363,12 @@ def _unusable_line(case):
 
 
 def _server_env(settings: dict[str, str]) -> dict[str, str]:
-    return {"MCP_PUBLIC_URL": PUBLIC_URL, "PORT": "8000", **settings}
+    return {
+        "MCP_PUBLIC_URL": PUBLIC_URL,
+        "PORT": "8000",
+        "ORINYX_HOP_SECRET": HOP_SECRET,
+        **settings,
+    }
 
 
 @pytest.mark.parametrize("case", sorted(UNUSABLE_URLS))
