@@ -90,7 +90,7 @@ jobs:
           . "$RUNNER_TEMP/build-tools/bin/activate"
           python -I -m build --no-isolation
           python -I -m twine check --strict dist/*
-          python -I scripts/check_dist.py dist --manifest "$manifest" --source .
+          python -I scripts/check_dist.py dist --manifest "$manifest" --source . --require-marker
           (cd dist && sha256sum *.whl *.tar.gz > SHA256SUMS)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

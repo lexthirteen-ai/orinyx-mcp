@@ -178,8 +178,14 @@ def relative(targets: list[str]) -> list[str]:
     return [t for t in targets if not t.startswith(("https://", "mailto:", "#"))]
 
 
-def test_the_first_pypi_upload_has_no_registry_marker_in_the_readme():
-    assert "mcp-name:" not in README
+MARKER_LINE = "<!-- mcp-name: io.github.lexthirteen-ai/orinyx-mcp -->"
+
+
+def test_the_readme_carries_the_registry_marker_once_on_its_own_line_near_the_top():
+    lines = README.splitlines()
+    assert README.count("mcp-name:") == 1
+    assert lines.count(MARKER_LINE) == 1
+    assert lines.index(MARKER_LINE) < 20
 
 
 def test_the_readme_has_no_relative_link_or_image():
