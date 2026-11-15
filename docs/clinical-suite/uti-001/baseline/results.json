@@ -17,11 +17,11 @@
       "python": "3.14.6"
     },
     "orinyx_api": {
-      "origin": "http://localhost:8765",
+      "origin": "local development build (not the hosted API)",
       "version": "0.3.1",
       "source": "GET /openapi.json",
-      "commit": "b1687ccbbbe596902f89e40463fc74485d9527e3",
-      "branch": "build/2026-10-22-password-reset",
+      "commit": "not recorded (private source)",
+      "branch": "not recorded (private source)",
       "commit_note": "REST gives no commit: pass --engine-commit or ORINYX_ENGINE_COMMIT."
     },
     "config": {
@@ -427,7 +427,7 @@
       "checks": [
         "I.patient_context_vitals"
       ],
-      "gap": "Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated (Lex ruling 2026-10-21).",
+      "gap": "Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated.",
       "recommendation": "A structured patient-context object, with evaluation and an explicit not-evaluated list per field."
     },
     {
@@ -461,7 +461,7 @@
         "F.term_pregnancy_contraindication",
         "J.citation_verification"
       ],
-      "gap": "Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label; ingest_quarantine 2026-10-18), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held.",
+      "gap": "Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held.",
       "recommendation": "Treat 'nitrofurantoin (monohydrate/macrocrystals)' as the single-ingredient product it is, so its section 4 rules derive; add fosfomycin, pivmecillinam; review the SMX/TMP hold."
     },
     {
@@ -491,7 +491,7 @@
       "checks": [
         "C.dose_error"
       ],
-      "gap": "Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held (dose_ceiling_held, owner decision 2026-09-29); tablet counts are refused; the label's UTI regimen is not a ceiling.",
+      "gap": "Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held pending review; tablet counts are refused; the label's UTI regimen is not a ceiling.",
       "recommendation": "Curate regimen-level dose rules (dose per administration x frequency) for the common antibacterials, with the label's indication-specific regimen."
     },
     {
@@ -589,7 +589,7 @@
     "Several checks depend on string matching free text, which is fragile: Orinyx matches a contraindication condition by case-insensitive substring of the label's prose, and the order grammar reads words such as 'twice daily' against labeled schedules. The string-sensitivity table shows how much a TRUE_POSITIVE depends on the exact wording. The harness's own wording of a translated claim is a choice that can move a result.",
     "Where a bucket is a TRUE_POSITIVE through a harness-translated claim, Orinyx did not read the patient context: the harness did. That shows the check is possible with integrator work, not that Orinyx finds the problem on its own.",
     "A TRUE_NEGATIVE means no contradicted or unreadable verdict. Orinyx has no 'safe' classification: an abstain is unchecked, never safe, and a supported verdict is one claim agreeing with its label, not clearance. Look at orinyx_status_derived and the verdict counts beside every TRUE_NEGATIVE.",
-    "Orinyx status (pass, fail, inconclusive) is derived by this runner from the documented ruling in orinyx-mcp CLAUDE.md; the engine returns no status field today.",
+    "Orinyx status (pass, fail, inconclusive) is derived by this runner; the engine returns no status field today.",
     "Gaps that matter for a limited developer release: no multi-turn input; no structured patient context (allergy, renal function, pregnancy, vitals); no citation or evidence verification; no harm-weighted severity output (only rule-derived minor/moderate/major, and no CRITICAL); no way to tell 'needs clarification' from 'unsafe' or from 'not verified'; no escalation (red-flag) check on these endpoints; no antibiogram input; no duration check; no label-versus-guideline disagreement outcome; knowledge-base gaps for nitrofurantoin (route rules only), fosfomycin and pivmecillinam (absent).",
     "Results come from one engine at one point in time. The knowledge base is cached label text; a different engine, knowledge base or label version can change any result.",
     "Orinyx can only evaluate output it is given. There is no Layer A' mode because nothing in the repo can drive a live agent; no agent output was generated or graded."
@@ -2997,7 +2997,7 @@
           "capability": "PARTIAL",
           "cap_ref": "CAP-03",
           "string_matching": false,
-          "note": "dose_range exists generally; the SMX/TMP dose ceiling is held by owner decision (dose_ceiling_held), and tablet counts are refused by the dose grammar.",
+          "note": "dose_range exists generally; the SMX/TMP dose ceiling is held pending review, and tablet counts are refused by the dose grammar.",
           "also": [
             "CAP-14"
           ]
@@ -3126,7 +3126,7 @@
           "capability": "PARTIAL",
           "cap_ref": "CAP-03",
           "string_matching": false,
-          "note": "dose_range exists generally; the SMX/TMP dose ceiling is held by owner decision (dose_ceiling_held), and tablet counts are refused by the dose grammar.",
+          "note": "dose_range exists generally; the SMX/TMP dose ceiling is held pending review, and tablet counts are refused by the dose grammar.",
           "also": [
             "CAP-14"
           ]
@@ -3255,7 +3255,7 @@
           "capability": "PARTIAL",
           "cap_ref": "CAP-03",
           "string_matching": false,
-          "note": "dose_range exists generally; the SMX/TMP dose ceiling is held by owner decision (dose_ceiling_held), and tablet counts are refused by the dose grammar.",
+          "note": "dose_range exists generally; the SMX/TMP dose ceiling is held pending review, and tablet counts are refused by the dose grammar.",
           "also": [
             "CAP-14"
           ]
