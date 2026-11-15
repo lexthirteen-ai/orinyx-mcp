@@ -1,116 +1,111 @@
-# First-run examples
+# First-run reference example
 
-Two synthetic orders, one per file, for a first check. Neither is about a real patient.
+Four synthetic orders and one set of structured claims, with the output each one produced on
+the hosted Orinyx API. None of them is about a real patient, and none is a dosing example: each
+order is there to show one kind of result.
 
-| File | Order | What comes back |
-|---|---|---|
-| `clean.txt` | `warfarin 5 mg by mouth daily` | 3 claims (dose, route, frequency), all supported with a citation, no flag. Exit 0. |
-| `planted.txt` | `acetaminophen 1500 mg by mouth every 4 hours` | 1 flag: the dose. 1,500 mg every 4 hours is 9,000 mg in 24 hours, above the 4,000 mg in 24 hours that FDA OTC Monograph M013.50(d)(2) states. Route and frequency are supported. Exit 2. |
+| File | Input | What comes back | Exit |
+|---|---|---|---|
+| `clean.txt` | `warfarin 5 mg by mouth daily` | 4 claims (dose, route, frequency, identity), all supported, each with a citation. No flag. | 0 |
+| `planted.txt` | `acetaminophen 1500 mg by mouth every 4 hours` | The dose is flagged (Moderate). Route, frequency and identity are supported. | 2 |
+| `abstain.txt` | `pravastatin 40 mg by mouth daily` | Route and identity are supported. Dose and frequency **abstain**: no rule covers them. | 3 |
+| `known-limit.txt` | `metoprolol succinate ER 50 mg by mouth daily` | Shows a **published known limit**: frequency is supported from a different formulation's label. | 3 |
+| `claims.json` | Structured dose and route claims for the clean order | 2 claims, both supported. | 0 |
 
-The error in `planted.txt` is planted on purpose. It is there so you can see what a flag looks
-like. It is not a dosing example.
+Exit codes: 0 clean, 2 flagged or unreadable, 3 not verified (at least one claim was not
+checked). The full expected output of each input, for the MCP tool and the CLI, is in
+[expected/](expected/).
 
-From an agent connected to Orinyx, ask for each order to be checked with `verify_order_text`,
-exactly as written. The output to expect is in
-[docs/QUICKSTART.md](../../docs/QUICKSTART.md#first-run). The commands below run the same check
-from a shell.
+## Run it
 
-## From the shell
+**From an agent** connected to Orinyx, ask for each order to be checked with
+`verify_order_text`, exactly as written. To compare line by line, ask the agent to show the
+tool's output as returned.
 
-You need the package installed (see [docs/QUICKSTART.md](../../docs/QUICKSTART.md#install)) and
-`ORINYX_API_URL` and `ORINYX_API_KEY` in the environment.
+**From the shell**, sign in once with `orinyx login`, or set `ORINYX_API_KEY`. Installation is in
+[docs/QUICKSTART.md](../../docs/QUICKSTART.md#install).
 
 ```bash
-orinyx observe examples/first-run/clean.txt      # exit 0
-orinyx observe examples/first-run/planted.txt    # exit 2
-orinyx observe examples/first-run/               # both files, one run each; exit 2, the worse of the two
-orinyx get <run id>                              # either run in full
+orinyx observe examples/first-run/clean.txt         # exit 0
+orinyx observe examples/first-run/planted.txt       # exit 2
+orinyx observe examples/first-run/abstain.txt       # exit 3
+orinyx observe examples/first-run/known-limit.txt   # exit 3
+orinyx get <run id>                                 # one run in full
+orinyx verify --file examples/first-run/claims.json # exit 0
 ```
 
-The output below was captured on 2026-10-22 from Orinyx engine 0.3.1 running on a local
-machine. Your run ids and times will be different. A citation changes when the label behind
-it is updated.
+## Expected results
 
-```text
-$ orinyx observe examples/first-run/clean.txt
-clean.txt#0  run f33589a2-c074-4df8-b1bc-c698412e11bf  3 claims: 0 flagged, 3 supported, 0 abstained
-Observed 1 record, 3 claims: 0 flagged, 3 supported, 0 abstained. Read one in full: orinyx get <run id>
-exit 0
-$ orinyx get f33589a2-c074-4df8-b1bc-c698412e11bf
-Orinyx verification - run f33589a2 (2026-10-22T15:26:27.174539-05:00)
-Checked 3 claims: 0 flagged, 3 supported, 0 abstained.
+Captured on 2026-11-15 (21:35 UTC) from the hosted Orinyx API 0.4.0 (knowledge graph
+`kg-2026.11.6`), with orinyx-mcp 0.1.5 from PyPI. The hosted connector at
+`https://orinyx-mcp.fly.dev/mcp` runs the same release (commit `f0a4386`).
 
-FLAGS (0): no claim was found to contradict its label. This is not a safety clearance; abstained claims below were not checked.
+| Input | Part | Verdict | Severity | Cited label set id or source | Effective |
+|---|---|---|---|---|---|
+| clean | dose | supported | none | `5a5b5e3a-6556-a542-e063-6294a90a6d3f` | 20260831 |
+| clean | route | supported | none | `5a5b5e3a-6556-a542-e063-6294a90a6d3f` | 20260831 |
+| clean | frequency | supported | none | `5a5b5e3a-6556-a542-e063-6294a90a6d3f` | 20260831 |
+| clean | identity | supported | none | `5a5b5e3a-6556-a542-e063-6294a90a6d3f` | 2026-08-31 |
+| planted | dose | contradicted | moderate | FDA OTC Monograph M013.50(d)(2) | document version 1 |
+| planted | route | supported | none | `7f445de3-30cf-4bd8-892d-05979cd399e7` | 20260909 |
+| planted | frequency | supported | none | `7f445de3-30cf-4bd8-892d-05979cd399e7` | 20260909 |
+| planted | identity | supported | none | `7f445de3-30cf-4bd8-892d-05979cd399e7` | 2026-09-09 |
+| abstain | route | supported | none | `222b90fd-f070-4fa8-8f8b-720133cb2b0a` | 20261106 |
+| abstain | identity | supported | none | `222b90fd-f070-4fa8-8f8b-720133cb2b0a` | 2026-11-06 |
+| abstain | dose | abstain | none | - | - |
+| abstain | frequency | abstain | none | - | - |
+| known-limit | route | supported | none | `59ed27b8-32b5-60c0-e063-6394a90a8a23` | 20260826 |
+| known-limit | frequency | supported | none | `59ed27b8-32b5-60c0-e063-6394a90a8a23` | 20260826 |
+| known-limit | dose | abstain | none | - | - |
+| known-limit | identity | abstain | none | - | - |
+| claims.json | dose | supported | none | `5a5b5e3a-6556-a542-e063-6294a90a6d3f` | 20260831 |
+| claims.json | route | supported | none | `5a5b5e3a-6556-a542-e063-6294a90a6d3f` | 20260831 |
 
-SUPPORTED (3) - consistent with the cited label text; not a judgment that the order suits a patient:
-1. warfarin 5 mg by mouth daily (dose)
-   Citation: openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
-2. warfarin 5 mg by mouth daily (route)
-   Citation: openFDA, openFDA product metadata - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
-3. warfarin 5 mg by mouth daily (frequency)
-   Citation: openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+Each set id opens its label on DailyMed:
+`https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=<set id>`. The identity row prints
+the same effective date in a different format.
 
-ABSTAINED (0)
+### The planted error
 
-Orinyx flags; the clinician decides.
-exit 0
-```
+At 1,500 mg every 4 hours, the daily total is 9,000 mg. FDA OTC Monograph M013.50(d)(2) states
+a maximum of 4,000 mg in 24 hours, so the dose is flagged. The error is planted so you can see a
+flag.
 
-```text
-$ orinyx observe examples/first-run/planted.txt
-planted.txt#0  run d59e1459-4abb-469e-9922-f9cb39200ce8  3 claims: 1 flagged, 2 supported, 0 abstained
-Observed 1 record, 3 claims: 1 flagged, 2 supported, 0 abstained. Read one in full: orinyx get <run id>
-exit 2
-$ orinyx get d59e1459-4abb-469e-9922-f9cb39200ce8
-Orinyx verification - run d59e1459 (2026-10-22T15:26:27.553124-05:00)
-Checked 3 claims: 1 flagged, 2 supported, 0 abstained.
+The supported frequency row cites a children's product label. This is a published known limit
+(REG-012 in the
+[0.1.1 release notes](../../docs/RELEASE_NOTES_2026-11-02.md#known-limits)): that label does not
+establish that the frequency applies to an adult order.
 
-FLAGS (1)
-1. [MODERATE] acetaminophen 1500 mg by mouth every 4 hours (dose)
-   Why: Daily exposure 1500.0 mg × 6 doses per day = 9000.0 mg exceeds the explicitly stated maximum of 4000 mg in 24 hours (FDA OTC Monograph, M013.50(d)(2)). Assumption: 'every 4 hours' read as 6 doses in 24 hours, around the clock.
-   Severity: Rated Moderate by Orinyx's curated rule for this dose limit, derived from the cited source (FDA OTC Monograph, M013.50(d)(2)).
-   Citation: FDA OTC Monograph, M013.50(d)(2) - id M013.50(d)(2)@v1 - OTC Monograph M013 §M013.50(d)(2): "Adults: Oral dosage is 325 to 650 milligrams every 4 hours or 325 to 500 milligrams every 3 hours or 650 to 1,000 milligrams every 6 hours, while symptoms persist, not to exceed 4,000 milligrams in 24 hours, or as directed by a doctor." (document version 1, sha256 89db91c7edae) - https://www.accessdata.fda.gov/drugsatfda_docs/omuf/monographs/OTC%20Monograph_M013-Internal%20Analgesic%2C%20Antipyretic%2C%20and%20Antirheumatic%20Drug%20Products%20for%20OTC%20Human%20Use%2010.14.2022.pdf
+### The abstain
 
-SUPPORTED (2) - consistent with the cited label text; not a judgment that the order suits a patient:
-1. acetaminophen 1500 mg by mouth every 4 hours (route)
-   Citation: openFDA, openFDA product metadata - id 7f445de3-30cf-4bd8-892d-05979cd399e7 - childrens fever reducer and pain reliever prescribing information, SPL set ID 7f445de3-30cf-4bd8-892d-05979cd399e7, effective 20260909 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7f445de3-30cf-4bd8-892d-05979cd399e7
-2. acetaminophen 1500 mg by mouth every 4 hours (frequency)
-   Citation: openFDA, Dosage and Administration (§2) - id 7f445de3-30cf-4bd8-892d-05979cd399e7 - childrens fever reducer and pain reliever prescribing information, SPL set ID 7f445de3-30cf-4bd8-892d-05979cd399e7, effective 20260909 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7f445de3-30cf-4bd8-892d-05979cd399e7
+Abstain means the claim was **not checked**. It never means the claim is correct. Here the
+reasons are:
 
-ABSTAINED (0)
+- dose: "No dose_range rule covers this drug; abstaining."
+- frequency: "No frequency rule covers this drug; abstaining."
 
-Orinyx flags; the clinician decides.
-exit 2
-```
+The run is marked NOT VERIFIED and exits 3.
 
-## What to compare
+### The known limit
 
-Your run should match on these points: the same claims, the same verdict and severity for
-each, the same cited sources, and the same exit code. Run ids, times and Orinyx's checking time
-will not match.
+This order names a formulation, metoprolol succinate extended-release. Orinyx holds one label
+per drug, and the label it holds for metoprolol is the tartrate label. So:
 
-If you get a different verdict on an unchanged file, the API you are calling holds different
-reference data from the engine that produced this output. The verdict the API returned is the
-one to read.
+- dose and identity abstain, and say why (the formulation cannot be matched);
+- **frequency is supported from the tartrate label**, which does not establish that the schedule
+  applies to the extended-release formulation.
 
-## Limits
+This is published known limit REG-010 in the
+[0.1.1 release notes](../../docs/RELEASE_NOTES_2026-11-02.md#known-limits). A supported row is
+only as good as the label it cites, so check the label name in each citation.
 
-- **Synthetic data only.** Never put real patient records, names, dates or record numbers in
-  these files or in anything else you send.
-- **A supported claim is not a clearance.** It means one claim agrees with the cited label
-  text. It is not a judgment that the order suits a patient. For warfarin, the API also
-  reports that no 24-hour maximum is on file, so the daily total was not checked.
-- **One check per order part.** Orinyx checks the dose, route and frequency it can read from
-  each order. It does not check the patient or the indication. It checks the order against
-  other medicines only when the request turns on interaction checking
-  (`--check-interactions`).
+## When your results differ
 
-## What is sent
+Results can change when a label is updated. Compare the citation on each row: if the set id or
+the effective date differs from the table above, the API is reading a newer label, and the
+verdict it returns is the one to read. These always differ from run to run:
 
-`orinyx observe` screens every order for identifier-shaped text (phone, SSN, date, long
-number, MRN) before sending anything. One hit stops the whole run, and nothing is sent.
+- the run id and the times;
+- the header, which names your tool if the agent passes a tool name.
 
-The order text goes to the Orinyx API named in `ORINYX_API_URL`. So do `--tool` and
-`--tool-version`, if you give them. The API runs its own identifier screen and refuses a
-request that fails it. It stores the order text in its audit record, and audit records
-cannot be deleted.
+These examples show what each kind of result looks like. They are not evidence of accuracy.

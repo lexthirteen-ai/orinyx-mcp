@@ -1,0 +1,14 @@
+[
+  {
+    "rawText": "warfarin 5 mg by mouth daily",
+    "drug": "warfarin",
+    "claimType": "dose_range",
+    "structuredValue": {"dose": 5, "unit": "mg"}
+  },
+  {
+    "rawText": "warfarin 5 mg by mouth daily",
+    "drug": "warfarin",
+    "claimType": "route",
+    "structuredValue": {"route": "oral"}
+  }
+]
