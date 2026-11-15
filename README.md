@@ -348,10 +348,7 @@ docker run --rm -p 8000:8000 \
 | Cursor editor on macOS | hosted OAuth and synthetic verification smoke tested |
 
 The hosted connector reports its running build at `https://orinyx-mcp.fly.dev/health`.
-This can differ from the [latest repository release](https://github.com/lexthirteen-ai/orinyx-mcp/releases/latest):
-v0.1.4 is a documentation release for developer lookup access enabled by the Orinyx API,
-not a requirement that the hosted connector report v0.1.4. See the
-[0.1.4 release notes](https://github.com/lexthirteen-ai/orinyx-mcp/blob/v0.1.4/docs/RELEASE_NOTES_2026-11-05-0.1.4.md).
+This can differ from the [latest repository release](https://github.com/lexthirteen-ai/orinyx-mcp/releases/latest).
 
 ## Configuration
 
