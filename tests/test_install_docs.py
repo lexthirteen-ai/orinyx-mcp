@@ -286,7 +286,8 @@ def test_pypi_stdio_cli_and_self_serve_key_instructions():
         "orinyx verify --file claims.json",
     ):
         assert command in install
-    assert "Once the first PyPI release is published" in install
+    assert "Once the first PyPI release is published" not in install
+    assert "Before the first PyPI upload" not in install
     assert "HTTP server, not stdio" in _collapse(install)
     keys = _section(readme, "### Get an API key")
     for endpoint in (

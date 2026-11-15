@@ -1,4 +1,4 @@
-"""Every tool's title and behaviour hints as an MCP client reads them from tools/list (CHA-117).
+"""Every tool's title and behaviour hints as an MCP client reads them from tools/list.
 
 Claude's connector directory requires a human-readable title and the applicable hints on each
 tool. The expected values are written out here, not read from annotations.py, so a changed

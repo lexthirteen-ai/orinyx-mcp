@@ -1,5 +1,5 @@
 {
- "_note": "What the orinyx CLI printed at commit 7fa8f7e, before value-free usage errors landed: one entry per case in tests/test_cli_output_unchanged.py, captured with that file's capture() on Python 3.14 and 3.12 (identical bytes). Synthetic data only; <work> is the case's temporary directory. Regenerate only for a deliberate, owner-approved output change. CHA-145 deliberately updates only top-level help/usage for login, logout and status; clinical command outputs are unchanged.",
+ "_note": "What the orinyx CLI printed at commit 7fa8f7e, before value-free usage errors landed: one entry per case in tests/test_cli_output_unchanged.py, captured with that file's capture() on Python 3.14 and 3.12 (identical bytes). Synthetic data only; <work> is the case's temporary directory. Regenerate only for a deliberate, owner-approved output change. The CLI login change deliberately updates only top-level help/usage for login, logout and status; clinical command outputs are unchanged.",
  "cases": {
   "--file followed by a flag": {
    "err": "usage: orinyx verify [-h] --file FILE [--tool TOOL]\n                     [--tool-version TOOL_VERSION] [--check-interactions]\n                     [--json]\norinyx verify: error: argument --file: expected one argument\n",
