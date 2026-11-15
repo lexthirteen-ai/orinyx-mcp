@@ -200,7 +200,8 @@ drug, and combination products. Most show up as a NOT VERIFIED row, a refused or
 total that was not checked, so a missing flag is never evidence that an order is safe. See
 [Known limits](docs/RELEASE_NOTES_2026-11-02.md#known-limits).
 
-[Unreleased]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.1...v0.1.2

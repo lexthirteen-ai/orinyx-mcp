@@ -24,6 +24,18 @@ before sending anything. Sign up at [orinyx.io/developers](https://orinyx.io/dev
 the hosted connector with your Orinyx account, or mint a personal key for stdio, the CLI
 or CI through the [self-serve API](#get-an-api-key).
 
+**Latest release: [0.1.5](https://github.com/lexthirteen-ai/orinyx-mcp/releases/tag/v0.1.5)**, the first
+release on PyPI.
+
+**Your first verification**
+
+1. Connect the hosted connector `https://orinyx-mcp.fly.dev/mcp` and sign in with your
+   Orinyx account ([setup](#hosted-connector-the-self-serve-path)).
+2. Ask your agent to call `verify_order_text` with the synthetic order
+   `warfarin 5 mg by mouth daily`.
+3. Compare what comes back with the
+   [expected output](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#first-run).
+
 ## Features
 
 - **Orders as written.** `verify_order_text` splits each order into its dose, route and

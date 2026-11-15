@@ -35,7 +35,9 @@ The two orders are also in [examples/first-run/](../examples/first-run/) (`clean
 ### Expected output
 
 The output below was captured on 2026-11-07 from the hosted Orinyx connector
-(`https://orinyx-mcp.fly.dev/mcp`, orinyx-mcp 0.1.3). It was captured with this package's own
+(`https://orinyx-mcp.fly.dev/mcp`, orinyx-mcp 0.1.3). Since then, Orinyx API 0.4.0 gives each order
+a verdict on which medication it names, so a run today can show one more row per order than
+this capture. It was captured with this package's own
 MCP server, called by an MCP client in the same way an agent calls it. Your run should match on these points: the same rows, the same
 verdict and severity on each, and the same citations. These parts will be different:
 
