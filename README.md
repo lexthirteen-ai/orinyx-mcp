@@ -1022,9 +1022,10 @@ orinyx observe <path>... [--field DOTTED.PATH] [--tool NAME] [--tool-version V] 
 
 `claims.json` is a JSON list of claims, or a full request body with an `assertions` list
 (its `toolName`, `toolVersion` and `checkInteractions` are used when the flags are absent).
-Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. Today the CLI, and so CI,
-needs an `ork_live_` key issued by Orinyx through the [self-serve API](#get-an-api-key)
-or an operator; hosted connector OAuth is not a CLI credential.
+The CLI uses a saved [CLI login](#cli-login) or `ORINYX_API_KEY`; when both are present, the
+key wins. CI has no browser or keychain for `orinyx login`, so it needs an `ork_live_` key
+issued by Orinyx through the [self-serve API](#get-an-api-key) or an operator. Signing in to
+the hosted connector from your agent does not sign in the CLI.
 
 `verify` takes structured claims. For orders as written, use `orinyx observe` or the
 `verify_order_text` tool. `observe` checks every order in an agent's saved output, one run per

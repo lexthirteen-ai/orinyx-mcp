@@ -445,3 +445,13 @@ def test_the_first_run_reference_names_the_abstain_and_known_limit():
     assert "### The abstain" in text and "### The known limit" in text
     assert "RELEASE_NOTES_2026-11-02.md#known-limits" in text
     assert "not evidence of accuracy" in text
+
+
+def test_the_cli_docs_name_login_as_a_cli_credential():
+    readme = _read("README.md")
+    assert "hosted connector OAuth is not a CLI credential" not in readme
+    assert "`ORINYX_API_KEY` only. Today the CLI" not in readme
+    assert "The CLI uses a saved [CLI login](#cli-login) or `ORINYX_API_KEY`" in readme
+    quickstart = _read("docs/QUICKSTART.md")
+    assert "hosted connector OAuth is not a CLI credential" not in quickstart
+    assert "CI has no browser or keychain for `orinyx login`" in quickstart
