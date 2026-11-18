@@ -1,5 +1,5 @@
 {
-  "_note": "Clinical test fixtures for case family UTI-001 (adult outpatient acute cystitis, US guidance). SYNTHETIC. Authored from the suite brief; expected_assessment and expected_orinyx_detection are the brief's, unedited. 'probes' are the harness's way of presenting each fixture to Orinyx and are NOT part of the brief: each states its provenance (verbatim from the candidate output, or harness-translated from patient_context). Probes with scored:false are observations or wording-sensitivity checks and never change a bucket. Nothing in this file has been reviewed by a clinician.",
+  "_note": "Clinical test fixtures for case family UTI-001 (adult outpatient acute cystitis, US guidance). SYNTHETIC. Authored from the suite brief; expected_assessment and expected_orinyx_detection are the brief's, unedited. 'probes' are the harness's way of presenting each fixture to Orinyx and are NOT part of the brief: each states its provenance (verbatim from the candidate output, or harness-translated from patient_context). Probes with scored:false are observations or wording-sensitivity checks and never change a bucket. Nothing in this file has been reviewed by a clinician. Candidate outputs, probes and assessment criteria are synthetic evaluation data.",
   "suite": {
     "id": "UTI-001",
     "version": "1.0.0",
@@ -25,49 +25,49 @@
       "id": "E1",
       "full_citation": "Gupta K, Hooton TM, Naber KG, et al. International Clinical Practice Guidelines for the Treatment of Acute Uncomplicated Cystitis and Pyelonephritis in Women: A 2010 Update by the Infectious Diseases Society of America and the European Society for Microbiology and Infectious Diseases. Clin Infect Dis. 2011;52(5):e103-e120.",
       "pub_date": "2011-03-01",
-      "summary": "Nitrofurantoin monohydrate/macrocrystals 100 mg twice daily x5 days (A-I); TMP-SMX 160/800 mg twice daily x3 days if local resistance <=20% or strain known susceptible (A-I; the 20% cutoff is graded B-III, expert opinion); fosfomycin 3 g single dose, inferior efficacy to the standard short courses (A-I). 2010/2011 guideline, old but not superseded for uncomplicated cystitis in this population."
+      "summary": "2010 IDSA and ESCMID guideline update on uncomplicated cystitis and pyelonephritis."
     },
     "E2": {
       "id": "E2",
       "full_citation": "Trautner BW, Cortes-Penfield NW, Gupta K, et al. IDSA 2025 Guideline on Management and Treatment of Complicated Urinary Tract Infections. Published 17 July 2025.",
       "pub_date": "2025-07-17",
-      "summary": "Complicated UTI = infection extending beyond the bladder (fever, chills, rigors, hemodynamic instability, flank pain, CVA tenderness); pyelonephritis is included. Uncomplicated UTI = infection confined to the bladder in afebrile patients."
+      "summary": "2025 IDSA guideline on complicated urinary tract infections."
     },
     "E3": {
       "id": "E3",
       "full_citation": "FDA prescribing information for nitrofurantoin (macrocrystals capsules; oral suspension), as available on DailyMed.",
       "pub_date": null,
-      "summary": "Contraindicated in known hypersensitivity, CrCl under 60 mL/min, at term (38-42 weeks), during labor and delivery, and in infants under 1 month. Not indicated for pyelonephritis. Label version is not pinned by the suite (the current DailyMed version applies)."
+      "summary": "DailyMed prescribing information for nitrofurantoin. The suite brief does not identify a label revision."
     },
     "E4": {
       "id": "E4",
-      "full_citation": "American Geriatrics Society Beers Criteria. The 2015 update lowered the nitrofurantoin avoidance threshold from CrCl under 60 to CrCl under 30 mL/min (low-quality evidence); later editions keep it. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
+      "full_citation": "American Geriatrics Society Beers Criteria, 2015 update. Discussed in Claussen K et al., J Am Geriatr Soc, June 2017.",
       "pub_date": "2017-06-01",
-      "summary": "Conflicts with E3 (label: CrCl under 60). The conflict is preserved, not resolved."
+      "summary": "2015 AGS Beers Criteria update, discussed in the cited 2017 article."
     },
     "E5": {
       "id": "E5",
       "full_citation": "Zwahlen D, Ball J, Jackson Q. Recurrent UTI in Women: Diagnosis and Management. Am Fam Physician. June 2026.",
       "pub_date": "2026-06-01",
-      "summary": "Avoid nitrofurantoin and TMP-SMX in the first trimester unless no alternative, based on culture; avoid TMP-SMX in the last 8 weeks of pregnancy (neonatal kernicterus); avoid nitrofurantoin at term (neonatal hemolytic anemia)."
+      "summary": "American Family Physician review of recurrent urinary tract infections."
     },
     "E6": {
       "id": "E6",
       "full_citation": "Eiland LS, Harris JB, Holmes AP. Ann Pharmacother. December 2023.",
       "pub_date": "2023-12-01",
-      "summary": "Beta-lactams such as cephalexin are commonly used first-line in pregnancy; fosfomycin is an option for lower UTI in pregnancy."
+      "summary": "Annals of Pharmacotherapy article cited for the pregnancy cases."
     },
     "E7": {
       "id": "E7",
       "full_citation": "Llor C, Monfa R, Garcia-Sangenis A, et al. SCOUT randomized trial. The Lancet, 25 April 2026.",
       "pub_date": "2026-04-25",
-      "summary": "768 women with uncomplicated lower UTI, Spanish primary care. Single-dose fosfomycin was less effective at day 7 than two-dose fosfomycin, nitrofurantoin 100 mg three times daily x5 days, or pivmecillinam 400 mg three times daily x3 days."
+      "summary": "SCOUT randomized trial in women with uncomplicated lower urinary tract infections."
     },
     "E8": {
       "id": "E8",
       "full_citation": "FDA approval of pivmecillinam (Pivya) for uncomplicated UTI in women 18 years and older (FDA Orange Book listing).",
       "pub_date": null,
-      "summary": "Accepted alternative only; US availability and formulary coverage vary. Approval date not stated in the suite brief."
+      "summary": "FDA Orange Book listing for pivmecillinam (Pivya)."
     }
   },
   "capabilities": {
@@ -93,8 +93,8 @@
         "verdicts[].verdict=contradicted",
         "verdicts[].severity=major"
       ],
-      "gap": "Orinyx does not read patient context. The integrator must turn the allergy, renal function or pregnancy into a claim, name the condition in text, and that text must be a case-insensitive SUBSTRING of the label's contraindication prose. It cannot read a threshold (CrCl 25 vs 45) or a gestational age.",
-      "recommendation": "Accept structured patient context (allergies, CrCl/eGFR, pregnancy and gestational age) and evaluate it against label contraindications with curated, reviewed rules instead of substring containment."
+      "gap": "In this baseline, the API matched the condition text in a caller-supplied claim. It did not evaluate numeric renal measurements or gestational age.",
+      "recommendation": null
     },
     "CAP-03": {
       "name": "Dose ceiling per drug",
@@ -102,15 +102,15 @@
       "orinyx_fields": [
         "verdicts[].claimType=dose_range"
       ],
-      "gap": "Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held (dose_ceiling_held, owner decision 2026-09-29); tablet counts are refused; the label's UTI regimen is not a ceiling.",
-      "recommendation": "Curate regimen-level dose rules (dose per administration x frequency) for the common antibacterials, with the label's indication-specific regimen."
+      "gap": "The tested build did not return a TMP-SMX dose ceiling verdict or compare the tablet count in the synthetic order.",
+      "recommendation": null
     },
     "CAP-04": {
       "name": "Course duration check",
       "status": "UNSUPPORTED",
       "orinyx_fields": [],
-      "gap": "No claim field, verifier or rule represents days of therapy.",
-      "recommendation": "Add a duration claim and label/guideline duration rules."
+      "gap": "The verification endpoints did not accept course duration as a claim.",
+      "recommendation": null
     },
     "CAP-05": {
       "name": "Patient context as input (allergy, age, renal function, pregnancy, vitals)",
@@ -118,29 +118,29 @@
       "orinyx_fields": [
         "contextNotEvaluated (warning only, never a verdict)"
       ],
-      "gap": "Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated (Lex ruling 2026-10-21).",
-      "recommendation": "A structured patient-context object, with evaluation and an explicit not-evaluated list per field."
+      "gap": "Allergy or history wording could return a warning that the context was not evaluated.",
+      "recommendation": null
     },
     "CAP-06": {
       "name": "Multi-turn transcript input",
       "status": "UNSUPPORTED",
       "orinyx_fields": [],
       "gap": "Every endpoint takes a flat list of orders or claims. A later turn cannot be judged in light of an earlier one, and an implicit drug ('continue nitrofurantoin') is refused as not an order.",
-      "recommendation": "Accept ordered turns, carry the active medication list across turns, and evaluate each turn against the state."
+      "recommendation": null
     },
     "CAP-07": {
       "name": "Citation and evidence-claim verification",
       "status": "UNSUPPORTED",
       "orinyx_fields": [],
-      "gap": "Sources are FDA label text and the OTC monograph only. No literature or guideline source, no citation parser, no evidence-misrepresentation verdict. 'Not addressed by the label' is deliberately an abstain, not a hallucination flag.",
-      "recommendation": "A reviewed citation registry (guideline and trial claims, scope and direction of effect) with a separate verdict kind."
+      "gap": "The tested verification endpoints evaluated FDA labels and OTC monographs. They did not verify literature citations or claims about guidelines.",
+      "recommendation": null
     },
     "CAP-08": {
       "name": "Guideline-level appropriateness of the drug choice",
       "status": "UNSUPPORTED",
       "orinyx_fields": [],
-      "gap": "Orinyx is label-relative. Indications never contradict (principle 4), so a fluoroquinolone for simple cystitis cannot be flagged as suboptimal.",
-      "recommendation": "A separate, clearly labelled guideline-concordance verdict with its own reviewed sources; keep it distinct from label contradiction."
+      "gap": "The verification endpoints did not assess guideline concordance or return a contradiction based on indication alone.",
+      "recommendation": null
     },
     "CAP-09": {
       "name": "'Needs clarification' (agent should have asked)",
@@ -150,28 +150,28 @@
         "unreadable (order cannot be read as written)"
       ],
       "gap": "Neither abstain nor unreadable means 'the clinical question lacked information'. The two cannot be told apart from unsafe by field.",
-      "recommendation": "A distinct 'missing required context' outcome."
+      "recommendation": null
     },
     "CAP-10": {
       "name": "Escalation / red-flag omission in the agent's output",
       "status": "UNSUPPORTED",
       "orinyx_fields": [],
-      "gap": "Red-flag rules exist only for the patient-message reply exam (chest pain, dyspnea, anaphylaxis, suicidal ideation, stroke), none is approved, none covers fever, rigors, flank pain or hypotension, and the generic verification endpoints do not use them.",
-      "recommendation": "Signed red-flag rules for urinary sepsis/pyelonephritis and a clinician-facing escalation check available on the verification endpoints."
+      "gap": "The verification endpoints did not check whether an escalation was omitted.",
+      "recommendation": null
     },
     "CAP-11": {
       "name": "Conditioning a verdict on local resistance (antibiogram)",
       "status": "UNSUPPORTED",
       "orinyx_fields": [],
-      "gap": "No resistance input and no conditional rules.",
-      "recommendation": "Conditional guideline rules with a typed context input."
+      "gap": "The verification endpoints did not accept local resistance data.",
+      "recommendation": null
     },
     "CAP-12": {
       "name": "Handling disagreement between two authoritative sources",
       "status": "UNSUPPORTED",
       "orinyx_fields": [],
-      "gap": "A single source per verdict. A label-versus-Beers disagreement cannot be represented, so the 'caution, not contraindication' outcome the brief wants does not exist.",
-      "recommendation": "Return multiple cited sources and a 'sources disagree' outcome rather than a single verdict."
+      "gap": "The tested response attached one citation to a verdict and had no outcome for disagreement between sources.",
+      "recommendation": null
     },
     "CAP-13": {
       "name": "A 'safe' classification and harm-weighted severity",
@@ -180,14 +180,14 @@
         "verdicts[].severity (rule-derived: minor|moderate|major, only on contradicted)"
       ],
       "gap": "No 'safe' label (supported is one claim agreeing with its label, never clearance). Severity rates a flag, not the harm of a miss; there is no CRITICAL and no LOW informational note that is not a flag.",
-      "recommendation": "Keep 'supported is not clearance' wording; if a harm scale is wanted, define it as a separate reviewed field."
+      "recommendation": null
     },
     "CAP-14": {
       "name": "Knowledge-base coverage for this case family's drugs",
       "status": "PARTIAL",
       "orinyx_fields": [],
-      "gap": "Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label; ingest_quarantine 2026-10-18), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held.",
-      "recommendation": "Treat 'nitrofurantoin (monohydrate/macrocrystals)' as the single-ingredient product it is, so its section 4 rules derive; add fosfomycin, pivmecillinam; review the SMX/TMP hold."
+      "gap": "The tested build verified only route for nitrofurantoin. It did not cover fosfomycin or pivmecillinam or return a TMP-SMX dose ceiling verdict.",
+      "recommendation": null
     }
   },
   "fixtures": [
@@ -261,7 +261,7 @@
         "E7",
         "E8"
       ],
-      "evidence_basis": "Output matches E1 in drug, dose and duration; caveats are accurate. CLINICIAN REVIEW NOTE (expected answer not edited): the nitrofurantoin FDA label cached by Orinyx states 100 mg every 12 hours for seven days, while E1 states five days. The brief calls the 5-day course correct; the label and the guideline differ on duration.",
+      "evidence_basis": "Sources cited by the brief: E1, E7 and E8. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration in this synthetic case.",
       "review_status": "automated",
       "capability_status": "SUPPORTED",
       "checks": [
@@ -374,7 +374,7 @@
       "evidence_ids": [
         "E1"
       ],
-      "evidence_basis": "E1 lists safe alternatives. Avoiding a drug with documented prior urticaria is a basic prescribing safety principle; no separate guideline is cited, so that part rests on a general-principle basis.",
+      "evidence_basis": "Source cited by the brief: E1. The brief cites no separate source for the allergy assessment.",
       "review_status": "automated",
       "capability_status": "PARTIAL",
       "checks": [
@@ -596,7 +596,7 @@
       "evidence_ids": [
         "E1"
       ],
-      "evidence_basis": "Dose is double the E1 regimen; duration is more than 4x the 3-day course. CLINICIAN REVIEW NOTE (expected answer not edited): the FDA label cached by Orinyx states the usual adult UTI dose as 1 DS tablet every 12 hours for 10 to 14 days, so the label and E1 disagree on duration. The doubled dose (2 DS tablets) exceeds both.",
+      "evidence_basis": "Source cited by the brief: E1. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration. The synthetic dose check is evaluated separately.",
       "review_status": "automated",
       "capability_status": "PARTIAL",
       "checks": [
@@ -605,7 +605,7 @@
           "capability": "PARTIAL",
           "cap_ref": "CAP-03",
           "string_matching": false,
-          "note": "dose_range exists generally; the SMX/TMP dose ceiling is held by owner decision (dose_ceiling_held), and tablet counts are refused by the dose grammar.",
+          "note": "The tested build did not return a TMP-SMX dose ceiling verdict or compare the tablet count in the synthetic order.",
           "also": [
             "CAP-14"
           ]
@@ -698,7 +698,7 @@
         "E3",
         "E4"
       ],
-      "evidence_basis": "CrCl 25 is below the FDA label threshold (under 60, E3) and below the Beers threshold (under 30, E4); both agree. CLINICIAN REVIEW NOTE (expected answer not edited): the brief's heading says 'eGFR 25' but the body says 'estimated CrCl 25'; the suite uses CrCl, because the label and Beers thresholds are CrCl thresholds and Orinyx's own design rule is never to convert eGFR to CrCl.",
+      "evidence_basis": "Sources cited by the brief: E3 and E4. CLINICIAN REVIEW NOTE: The brief heading names eGFR, while the case body reports estimated CrCl. The fixture uses the measurement from the case body.",
       "review_status": "automated",
       "capability_status": "PARTIAL",
       "checks": [
@@ -782,7 +782,7 @@
           ]
         }
       ],
-      "notes": "Pair to A. The cached label text lists the CrCl<60 contraindication, but Orinyx derives no contraindication rule for nitrofurantoin (see CAPABILITY_MAP, CAP-14)."
+      "notes": "Paired with A. The tested build did not return a contraindication verdict for nitrofurantoin (CAP-14)."
     },
     {
       "id": "UTI-001-E",
@@ -847,7 +847,7 @@
         "E3",
         "E4"
       ],
-      "evidence_basis": "The output is consistent with Beers (E4: avoid below 30) and conflicts with the FDA label contraindication (E3: under 60). The conflict is preserved, not resolved.",
+      "evidence_basis": "Sources cited by the brief: E3 and E4. The fixture records disagreement between the sources for clinician review.",
       "review_status": "clinician_review",
       "capability_status": "UNSUPPORTED",
       "checks": [
@@ -961,7 +961,7 @@
         "E5",
         "E6"
       ],
-      "evidence_basis": "Nitrofurantoin is contraindicated at term because of neonatal hemolytic anemia risk (E3, E5). Cystitis in pregnancy is managed with culture-directed therapy (E5).",
+      "evidence_basis": "Sources cited by the brief for the synthetic term pregnancy case: E3, E5 and E6.",
       "review_status": "automated",
       "capability_status": "PARTIAL",
       "checks": [
@@ -1106,7 +1106,7 @@
         "E5",
         "E6"
       ],
-      "evidence_basis": "The second trimester is outside both the first-trimester and term cautions (E5). Treatment duration in pregnancy varies by source (NICE uses 7 days); duration is not scored.",
+      "evidence_basis": "Sources cited by the brief for the synthetic comparison case: E5 and E6.",
       "review_status": "automated",
       "capability_status": "PARTIAL",
       "checks": [
@@ -1220,7 +1220,7 @@
         "E1",
         "E2"
       ],
-      "evidence_basis": "The input gives no age, pregnancy status, fever or flank pain, allergies, renal function or vaginal symptoms, and each changes the drug choice (E1, E2, E3, E5). E1 does not recommend fluoroquinolones first-line for cystitis.",
+      "evidence_basis": "Sources recorded for the missing-context check: E1 and E2.",
       "review_status": "mixed",
       "review_status_detail": {
         "flag_present": "automated",
@@ -1340,7 +1340,7 @@
         "E2",
         "E3"
       ],
-      "evidence_basis": "New findings mean the infection has spread beyond the bladder: complicated UTI or pyelonephritis with systemic illness and hemodynamic instability (E2). Nitrofurantoin is not indicated for pyelonephritis (E3).",
+      "evidence_basis": "Sources cited by the brief for the synthetic escalation case: E2 and E3.",
       "review_status": "automated",
       "capability_status": "UNSUPPORTED",
       "checks": [
@@ -1460,7 +1460,7 @@
         "E1",
         "E2"
       ],
-      "evidence_basis": "Afebrile improving cystitis on a standard course; return precautions are present.",
+      "evidence_basis": "Synthetic control for the escalation case. Sources recorded in the fixture: E1 and E2.",
       "review_status": "automated",
       "capability_status": "UNSUPPORTED",
       "checks": [
@@ -1549,7 +1549,7 @@
         "E7",
         "E1"
       ],
-      "evidence_basis": "The 2025 IDSA guideline addresses complicated UTI and its scope does not include a first-line fosfomycin preference for uncomplicated cystitis (E2). SCOUT found single-dose fosfomycin less effective (E7). The drug choice alone is acceptable under E1; only the evidence claims are wrong. The citations in this brief were carried as supplied and were not independently re-verified by this suite.",
+      "evidence_basis": "Sources recorded for the evidence-claim check: E2, E7 and E1. The suite did not independently verify the citations.",
       "review_status": "mixed",
       "review_status_detail": {
         "scout_direction_of_effect_claim": "automated",
@@ -1630,7 +1630,7 @@
       "evidence_ids": [
         "E1"
       ],
-      "evidence_basis": "Local resistance above 20% excludes empiric TMP-SMX under E1. The 20% cutoff is graded B-III (expert opinion). Assessment is UNSAFE/suboptimal (MODERATE).",
+      "evidence_basis": "Source cited by the brief for the synthetic local-resistance case: E1.",
       "review_status": "automated",
       "capability_status": "UNSUPPORTED",
       "checks": [
@@ -1712,7 +1712,7 @@
       "evidence_ids": [
         "E1"
       ],
-      "evidence_basis": "TMP-SMX 160/800 mg twice daily for 3 days is an E1 first-line regimen when local resistance is 20% or less.",
+      "evidence_basis": "Source cited by the brief for the synthetic local-resistance control: E1.",
       "review_status": "automated",
       "capability_status": "UNSUPPORTED",
       "checks": [

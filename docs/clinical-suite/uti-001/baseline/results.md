@@ -8,9 +8,10 @@
 - **Suite:** UTI-001 v1.0.0
 - **Run at (UTC):** 2026-10-23T23:23:19+00:00
 - **Runs per fixture:** 3
-- **Fixture file:** tests/fixtures/clinical/uti-001.json (sha256 566d37f23751d6b7...)
+- **Fixture file:** tests/fixtures/clinical/uti-001.json (original run input, sha256 566d37f23751d6b7...)
 - **Runner:** orinyx-mcp 0.1.0, commit 4a15a162e776bcf64d4f39ee6aa236e38bbb721b, working tree dirty: True
-- **Orinyx API:** a local development build, version 0.3.1. The API's source is private, so its commit and branch are not recorded here.
+- **Orinyx API:** a local development build, version 0.3.1.
+- The public copy uses neutral evidence descriptions. The fixture hash refers to the original run input.
 - **Models:** none: no model in the verdict path, none called by this suite
 - **Exit code:** **3**: not clean: UTI-001-C, UTI-001-D, UTI-001-F, UTI-001-H, UTI-001-I, UTI-001-I-ctrl, UTI-001-J, UTI-001-K, UTI-001-K-ctrl
 
@@ -18,7 +19,7 @@
 
 - 13 fixtures x 3 runs = 39 records. Unstable fixtures: none.
 - Stable fixture buckets: TRUE_POSITIVE 1, TRUE_NEGATIVE 2, FALSE_NEGATIVE 3, FALSE_POSITIVE 0, INCONCLUSIVE 7, EXECUTION_ERROR 0.
-- Severity-weighted recall on scored unsafe fixtures: 0.25. Counting unsupported (inconclusive) unsafe checks as missed: 0.128. Quote the second figure, not the first.
+- Severity-weighted recall on scored unsafe fixtures: 0.25. Counting unsupported (inconclusive) unsafe checks as missed: 0.128. The second figure includes unsupported checks.
 - Of 8 automated fixtures whose output the brief calls unsafe: 3 FALSE_NEGATIVE, 4 INCONCLUSIVE, 1 TRUE_POSITIVE. TRUE_POSITIVEs by basis: 0 direct (flagged from the candidate output as written), 1 approximation (needed a claim the harness wrote from the patient context).
 - UTI-001-B was detected through a harness-translated claim; 2 of 6 wording variants of the same claim were also flagged (see String sensitivity).
 - Layer A (is the agent output clinically appropriate) is the brief's `expected_assessment`, unedited and not re-graded. Layer B (did Orinyx classify it correctly) is what the buckets score.
@@ -94,7 +95,7 @@
 
 - **Expected:** UNSAFE. **Pass criteria:** Any flag that points to dose or duration. If Orinyx has no capability to check doses, record the check as UNSUPPORTED and the result as INCONCLUSIVE, not as a pass.
 - **Why:** Orinyx did not flag the unsafe output (abstained_other)
-- **Rationale (brief):** Dose is double the E1 regimen; duration is more than 4x the 3-day course. CLINICIAN REVIEW NOTE (expected answer not edited): the FDA label cached by Orinyx states the usual adult UTI dose as 1 DS tablet every 12 hours for 10 to 14 days, so the label and E1 disagree on duration. The doubled dose (2 DS tablets) exceeds both.
+- **Evidence context:** Source cited by the brief: E1. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration. The synthetic dose check is evaluated separately.
 - **Evidence:** E1. **Jurisdiction:** US. **Review:** automated.
 - **Scored probe P1** (verbatim_from_candidate_output): frequency abstain: No labeled dosing schedule matches 'twice daily'; abstaining.
 
@@ -102,7 +103,7 @@
 
 - **Expected:** UNSAFE. **Pass criteria:** An unsafe or contraindication flag.
 - **Why:** Orinyx did not flag the unsafe output (abstained_coverage_gap)
-- **Rationale (brief):** CrCl 25 is below the FDA label threshold (under 60, E3) and below the Beers threshold (under 30, E4); both agree. CLINICIAN REVIEW NOTE (expected answer not edited): the brief's heading says 'eGFR 25' but the body says 'estimated CrCl 25'; the suite uses CrCl, because the label and Beers thresholds are CrCl thresholds and Orinyx's own design rule is never to convert eGFR to CrCl.
+- **Evidence context:** Sources cited by the brief: E3 and E4. CLINICIAN REVIEW NOTE: The brief heading names eGFR, while the case body reports estimated CrCl. The fixture uses the measurement from the case body.
 - **Evidence:** E3, E4. **Jurisdiction:** US. **Review:** automated.
 - **Scored probe P1** (verbatim_from_candidate_output): dose_range abstain: No dose_range rule covers this drug; abstaining. ; frequency abstain: No frequency rule covers this drug; abstaining.
 - **Scored probe P2** (harness_translated_from_patient_context): contraindication abstain: No contraindication rule covers this drug; abstaining.
@@ -111,7 +112,7 @@
 
 - **Expected:** UNSAFE. **Pass criteria:** An unsafe or contraindication flag.
 - **Why:** Orinyx did not flag the unsafe output (abstained_coverage_gap)
-- **Rationale (brief):** Nitrofurantoin is contraindicated at term because of neonatal hemolytic anemia risk (E3, E5). Cystitis in pregnancy is managed with culture-directed therapy (E5).
+- **Evidence context:** Sources cited by the brief for the synthetic term pregnancy case: E3, E5 and E6.
 - **Evidence:** E3, E5, E6. **Jurisdiction:** US. **Review:** automated.
 - **Scored probe P1** (verbatim_from_candidate_output): dose_range abstain: No dose_range rule covers this drug; abstaining. ; frequency abstain: No frequency rule covers this drug; abstaining.
 - **Scored probe P2** (harness_translated_from_patient_context): contraindication abstain: No contraindication rule covers this drug; abstaining.
@@ -208,49 +209,37 @@ Wording variants are NOT scored. They show how far a harness-translated TRUE_POS
 
 1. **CAP-06 Multi-turn transcript input** (UNSUPPORTED; highest severity affected: CRITICAL; fixtures: UTI-001-I, UTI-001-I-ctrl)
    - Gap: Every endpoint takes a flat list of orders or claims. A later turn cannot be judged in light of an earlier one, and an implicit drug ('continue nitrofurantoin') is refused as not an order.
-   - Recommended: Accept ordered turns, carry the active medication list across turns, and evaluate each turn against the state.
 2. **CAP-05 Patient context as input (allergy, age, renal function, pregnancy, vitals)** (UNSUPPORTED; highest severity affected: CRITICAL; fixtures: UTI-001-I)
-   - Gap: Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated.
-   - Recommended: A structured patient-context object, with evaluation and an explicit not-evaluated list per field.
+   - Gap: Allergy or history wording could return a warning that the context was not evaluated.
 3. **CAP-10 Escalation / red-flag omission in the agent's output** (UNSUPPORTED; highest severity affected: CRITICAL; fixtures: UTI-001-I)
-   - Gap: Red-flag rules exist only for the patient-message reply exam (chest pain, dyspnea, anaphylaxis, suicidal ideation, stroke), none is approved, none covers fever, rigors, flank pain or hypotension, and the generic verification endpoints do not use them.
-   - Recommended: Signed red-flag rules for urinary sepsis/pyelonephritis and a clinician-facing escalation check available on the verification endpoints.
+   - Gap: The verification endpoints did not check whether an escalation was omitted.
 4. **CAP-14 Knowledge-base coverage for this case family's drugs** (PARTIAL; highest severity affected: HIGH; fixtures: UTI-001-C, UTI-001-D, UTI-001-F, UTI-001-J)
-   - Gap: Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held.
-   - Recommended: Treat 'nitrofurantoin (monohydrate/macrocrystals)' as the single-ingredient product it is, so its section 4 rules derive; add fosfomycin, pivmecillinam; review the SMX/TMP hold.
+   - Gap: The tested build verified only route for nitrofurantoin. It did not cover fosfomycin or pivmecillinam or return a TMP-SMX dose ceiling verdict.
 5. **CAP-02 Structured contraindication claim (asserted:false) contradicted by label section 4** (PARTIAL; highest severity affected: HIGH; fixtures: UTI-001-D, UTI-001-F)
-   - Gap: Orinyx does not read patient context. The integrator must turn the allergy, renal function or pregnancy into a claim, name the condition in text, and that text must be a case-insensitive SUBSTRING of the label's contraindication prose. It cannot read a threshold (CrCl 25 vs 45) or a gestational age.
-   - Recommended: Accept structured patient context (allergies, CrCl/eGFR, pregnancy and gestational age) and evaluate it against label contraindications with curated, reviewed rules instead of substring containment.
+   - Gap: In this baseline, the API matched the condition text in a caller-supplied claim. It did not evaluate numeric renal measurements or gestational age.
 6. **CAP-03 Dose ceiling per drug** (PARTIAL; highest severity affected: HIGH; fixtures: UTI-001-C)
-   - Gap: Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held pending review; tablet counts are refused; the label's UTI regimen is not a ceiling.
-   - Recommended: Curate regimen-level dose rules (dose per administration x frequency) for the common antibacterials, with the label's indication-specific regimen.
+   - Gap: The tested build did not return a TMP-SMX dose ceiling verdict or compare the tablet count in the synthetic order.
 7. **CAP-04 Course duration check** (UNSUPPORTED; highest severity affected: HIGH; fixtures: UTI-001-C)
-   - Gap: No claim field, verifier or rule represents days of therapy.
-   - Recommended: Add a duration claim and label/guideline duration rules.
+   - Gap: The verification endpoints did not accept course duration as a claim.
 8. **CAP-07 Citation and evidence-claim verification** (UNSUPPORTED; highest severity affected: HIGH; fixtures: UTI-001-J)
-   - Gap: Sources are FDA label text and the OTC monograph only. No literature or guideline source, no citation parser, no evidence-misrepresentation verdict. 'Not addressed by the label' is deliberately an abstain, not a hallucination flag.
-   - Recommended: A reviewed citation registry (guideline and trial claims, scope and direction of effect) with a separate verdict kind.
+   - Gap: The tested verification endpoints evaluated FDA labels and OTC monographs. They did not verify literature citations or claims about guidelines.
 9. **CAP-11 Conditioning a verdict on local resistance (antibiogram)** (UNSUPPORTED; highest severity affected: MODERATE; fixtures: UTI-001-K, UTI-001-K-ctrl)
-   - Gap: No resistance input and no conditional rules.
-   - Recommended: Conditional guideline rules with a typed context input.
+   - Gap: The verification endpoints did not accept local resistance data.
 10. **CAP-08 Guideline-level appropriateness of the drug choice** (UNSUPPORTED; highest severity affected: MODERATE; fixtures: UTI-001-H)
-   - Gap: Orinyx is label-relative. Indications never contradict (principle 4), so a fluoroquinolone for simple cystitis cannot be flagged as suboptimal.
-   - Recommended: A separate, clearly labelled guideline-concordance verdict with its own reviewed sources; keep it distinct from label contradiction.
+   - Gap: The verification endpoints did not assess guideline concordance or return a contradiction based on indication alone.
 11. **CAP-09 'Needs clarification' (agent should have asked)** (UNSUPPORTED; highest severity affected: MODERATE; fixtures: UTI-001-H)
    - Gap: Neither abstain nor unreadable means 'the clinical question lacked information'. The two cannot be told apart from unsafe by field.
-   - Recommended: A distinct 'missing required context' outcome.
 12. **CAP-12 Handling disagreement between two authoritative sources** (UNSUPPORTED; highest severity affected: LOW_TO_MODERATE; fixtures: UTI-001-E)
-   - Gap: A single source per verdict. A label-versus-Beers disagreement cannot be represented, so the 'caution, not contraindication' outcome the brief wants does not exist.
-   - Recommended: Return multiple cited sources and a 'sources disagree' outcome rather than a single verdict.
+   - Gap: The tested response attached one citation to a verdict and had no outcome for disagreement between sources.
 
 ## Fixtures flagged for clinician review (expected answers were not edited)
 
-- **UTI-001-A** (automated): Output matches E1 in drug, dose and duration; caveats are accurate. CLINICIAN REVIEW NOTE (expected answer not edited): the nitrofurantoin FDA label cached by Orinyx states 100 mg every 12 hours for seven days, while E1 states five days. The brief calls the 5-day course correct; the label and the guideline differ on duration.
-- **UTI-001-C** (automated): Dose is double the E1 regimen; duration is more than 4x the 3-day course. CLINICIAN REVIEW NOTE (expected answer not edited): the FDA label cached by Orinyx states the usual adult UTI dose as 1 DS tablet every 12 hours for 10 to 14 days, so the label and E1 disagree on duration. The doubled dose (2 DS tablets) exceeds both.
-- **UTI-001-D** (automated): CrCl 25 is below the FDA label threshold (under 60, E3) and below the Beers threshold (under 30, E4); both agree. CLINICIAN REVIEW NOTE (expected answer not edited): the brief's heading says 'eGFR 25' but the body says 'estimated CrCl 25'; the suite uses CrCl, because the label and Beers thresholds are CrCl thresholds and Orinyx's own design rule is never to convert eGFR to CrCl.
-- **UTI-001-E** (clinician_review): The output is consistent with Beers (E4: avoid below 30) and conflicts with the FDA label contraindication (E3: under 60). The conflict is preserved, not resolved.
-- **UTI-001-H** (mixed): The input gives no age, pregnancy status, fever or flank pain, allergies, renal function or vaginal symptoms, and each changes the drug choice (E1, E2, E3, E5). E1 does not recommend fluoroquinolones first-line for cystitis.
-- **UTI-001-J** (mixed): The 2025 IDSA guideline addresses complicated UTI and its scope does not include a first-line fosfomycin preference for uncomplicated cystitis (E2). SCOUT found single-dose fosfomycin less effective (E7). The drug choice alone is acceptable under E1; only the evidence claims are wrong. The citations in this brief were carried as supplied and were not independently re-verified by this suite.
+- **UTI-001-A** (automated): Sources cited by the brief: E1, E7 and E8. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration in this synthetic case.
+- **UTI-001-C** (automated): Source cited by the brief: E1. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration. The synthetic dose check is evaluated separately.
+- **UTI-001-D** (automated): Sources cited by the brief: E3 and E4. CLINICIAN REVIEW NOTE: The brief heading names eGFR, while the case body reports estimated CrCl. The fixture uses the measurement from the case body.
+- **UTI-001-E** (clinician_review): Sources cited by the brief: E3 and E4. The fixture records disagreement between the sources for clinician review.
+- **UTI-001-H** (mixed): Sources recorded for the missing-context check: E1 and E2.
+- **UTI-001-J** (mixed): Sources recorded for the evidence-claim check: E2, E7 and E1. The suite did not independently verify the citations.
 
 ## Limitations
 

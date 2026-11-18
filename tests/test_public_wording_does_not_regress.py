@@ -142,12 +142,13 @@ def test_the_methodology_page_makes_no_performance_or_certification_claim():
 
 CLINICAL_SUITE_DOCS = sorted((ROOT / "docs" / "clinical-suite").rglob("*.*"))
 PRIVATE_DETAIL = [
-    r"localhost:\d+",
+    r"\blocalhost\b",
     r"\bbuild/\d{4}-",
     r"`app/",
     r"\bdata/[a-z_]+\.json",
-    r"ingest_quarantine",
-    r"dose_ceiling_held",
+    r"ingest[_]quarantine",
+    r"dose[_]ceiling[_]held",
+    r"\bprinciple\s+\d+",
     r"\bLex\b",
     r"owner decision",
     r"CLAUDE\.md",

@@ -17,6 +17,12 @@ from tests.test_install_docs import ROOT
 
 MANIFEST = ROOT / "release" / "manifests" / f"{__version__}.json"
 INTERNAL_ID = re.compile(r"\bL[0-9]+[a-z]?\b|\bCHA-[0-9]+\b")
+INTERNAL_RULING = re.compile(
+    r"\b(?:ingest[_]quarantine|dose[_]ceiling[_]held)\b"
+    r"|\b(?:ruling|owner\s+decision)\s+\d{4}-\d{2}-\d{2}\b"
+    r"|\b(?:approved\s+by|ruling\s+by)\s+[L]ex\b",
+    re.IGNORECASE,
+)
 
 
 def packaged_text_files() -> list[str]:
@@ -44,13 +50,44 @@ def internal_ids(text: str) -> list[str]:
 
 def test_the_packaged_files_are_read():
     files = packaged_text_files()
-    assert {"README.md", "CHANGELOG.md", "orinyx_mcp/server.py"} <= set(files)
+    assert {
+        "README.md",
+        "CHANGELOG.md",
+        "orinyx_mcp/server.py",
+        "tests/fixtures/check_lines_goldens.json",
+        "tests/fixtures/clinical/uti-001.json",
+    } <= set(files)
     assert "tests/test_packaged_files_hold_no_internal_ids.py" in files
 
 
 @pytest.mark.parametrize("rel", packaged_text_files())
 def test_no_packaged_file_holds_an_internal_id(rel):
     assert internal_ids((ROOT / rel).read_bytes().decode("utf-8")) == []
+
+
+@pytest.mark.parametrize("rel", packaged_text_files())
+def test_no_packaged_file_holds_an_internal_ruling_note(rel):
+    contents = (ROOT / rel).read_text(encoding="utf-8")
+    found = [
+        f"{number}: {match.group(0)}"
+        for number, line in enumerate(contents.splitlines(), start=1)
+        for match in INTERNAL_RULING.finditer(line)
+    ]
+    assert found == []
+
+
+@pytest.mark.parametrize(
+    "note",
+    [
+        "dose_ceiling" + "_held",
+        "ingest" + "_quarantine",
+        "Lex ruling " + "2026-10-21",
+        "owner decision " + "2026-09-29",
+        "approved by " + "Lex",
+    ],
+)
+def test_the_pattern_finds_internal_ruling_notes(note):
+    assert INTERNAL_RULING.search(note)
 
 
 @pytest.mark.parametrize(

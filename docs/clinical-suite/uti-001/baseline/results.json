@@ -9,6 +9,7 @@
       "synthetic": true
     },
     "fixtures_file": "tests/fixtures/clinical/uti-001.json",
+    "fixtures_sha256_note": "Hash of the original run input. This public copy uses neutral evidence descriptions.",
     "fixtures_sha256": "566d37f23751d6b75f35aad873e8001c73e2debf311f2806e8b95c73e97e293e",
     "runner": {
       "orinyx_mcp_version": "0.1.0",
@@ -19,10 +20,7 @@
     "orinyx_api": {
       "origin": "local development build (not the hosted API)",
       "version": "0.3.1",
-      "source": "GET /openapi.json",
-      "commit": "not recorded (private source)",
-      "branch": "not recorded (private source)",
-      "commit_note": "REST gives no commit: pass --engine-commit or ORINYX_ENGINE_COMMIT."
+      "source": "GET /openapi.json"
     },
     "config": {
       "runs_per_fixture": 3,
@@ -35,7 +33,7 @@
     "determinism": {
       "model_in_verdict_path": false,
       "models_used": [],
-      "seed_or_temperature": "not applicable: Orinyx has no model in a verdict (engine principle 1) and this suite calls no model. Candidate outputs are fixed strings.",
+      "seed_or_temperature": "not applicable: Orinyx has no model in a verdict and this suite calls no model. Candidate outputs are fixed strings.",
       "variability_measured_by": "3 repeated runs per fixture; a fixture is unstable if any run differs in bucket or in what Orinyx returned."
     }
   },
@@ -414,7 +412,7 @@
         "Ictrl.no_checkable_order"
       ],
       "gap": "Every endpoint takes a flat list of orders or claims. A later turn cannot be judged in light of an earlier one, and an implicit drug ('continue nitrofurantoin') is refused as not an order.",
-      "recommendation": "Accept ordered turns, carry the active medication list across turns, and evaluate each turn against the state."
+      "recommendation": null
     },
     {
       "cap": "CAP-05",
@@ -427,8 +425,8 @@
       "checks": [
         "I.patient_context_vitals"
       ],
-      "gap": "Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated.",
-      "recommendation": "A structured patient-context object, with evaluation and an explicit not-evaluated list per field."
+      "gap": "Allergy or history wording could return a warning that the context was not evaluated.",
+      "recommendation": null
     },
     {
       "cap": "CAP-10",
@@ -441,8 +439,8 @@
       "checks": [
         "I.escalation_omission"
       ],
-      "gap": "Red-flag rules exist only for the patient-message reply exam (chest pain, dyspnea, anaphylaxis, suicidal ideation, stroke), none is approved, none covers fever, rigors, flank pain or hypotension, and the generic verification endpoints do not use them.",
-      "recommendation": "Signed red-flag rules for urinary sepsis/pyelonephritis and a clinician-facing escalation check available on the verification endpoints."
+      "gap": "The verification endpoints did not check whether an escalation was omitted.",
+      "recommendation": null
     },
     {
       "cap": "CAP-14",
@@ -461,8 +459,8 @@
         "F.term_pregnancy_contraindication",
         "J.citation_verification"
       ],
-      "gap": "Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held.",
-      "recommendation": "Treat 'nitrofurantoin (monohydrate/macrocrystals)' as the single-ingredient product it is, so its section 4 rules derive; add fosfomycin, pivmecillinam; review the SMX/TMP hold."
+      "gap": "The tested build verified only route for nitrofurantoin. It did not cover fosfomycin or pivmecillinam or return a TMP-SMX dose ceiling verdict.",
+      "recommendation": null
     },
     {
       "cap": "CAP-02",
@@ -477,8 +475,8 @@
         "D.renal_contraindication",
         "F.term_pregnancy_contraindication"
       ],
-      "gap": "Orinyx does not read patient context. The integrator must turn the allergy, renal function or pregnancy into a claim, name the condition in text, and that text must be a case-insensitive SUBSTRING of the label's contraindication prose. It cannot read a threshold (CrCl 25 vs 45) or a gestational age.",
-      "recommendation": "Accept structured patient context (allergies, CrCl/eGFR, pregnancy and gestational age) and evaluate it against label contraindications with curated, reviewed rules instead of substring containment."
+      "gap": "In this baseline, the API matched the condition text in a caller-supplied claim. It did not evaluate numeric renal measurements or gestational age.",
+      "recommendation": null
     },
     {
       "cap": "CAP-03",
@@ -491,8 +489,8 @@
       "checks": [
         "C.dose_error"
       ],
-      "gap": "Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held pending review; tablet counts are refused; the label's UTI regimen is not a ceiling.",
-      "recommendation": "Curate regimen-level dose rules (dose per administration x frequency) for the common antibacterials, with the label's indication-specific regimen."
+      "gap": "The tested build did not return a TMP-SMX dose ceiling verdict or compare the tablet count in the synthetic order.",
+      "recommendation": null
     },
     {
       "cap": "CAP-04",
@@ -505,8 +503,8 @@
       "checks": [
         "C.duration_error"
       ],
-      "gap": "No claim field, verifier or rule represents days of therapy.",
-      "recommendation": "Add a duration claim and label/guideline duration rules."
+      "gap": "The verification endpoints did not accept course duration as a claim.",
+      "recommendation": null
     },
     {
       "cap": "CAP-07",
@@ -519,8 +517,8 @@
       "checks": [
         "J.citation_verification"
       ],
-      "gap": "Sources are FDA label text and the OTC monograph only. No literature or guideline source, no citation parser, no evidence-misrepresentation verdict. 'Not addressed by the label' is deliberately an abstain, not a hallucination flag.",
-      "recommendation": "A reviewed citation registry (guideline and trial claims, scope and direction of effect) with a separate verdict kind."
+      "gap": "The tested verification endpoints evaluated FDA labels and OTC monographs. They did not verify literature citations or claims about guidelines.",
+      "recommendation": null
     },
     {
       "cap": "CAP-11",
@@ -535,8 +533,8 @@
         "K.local_resistance_conditioning",
         "Kctrl.local_resistance_conditioning"
       ],
-      "gap": "No resistance input and no conditional rules.",
-      "recommendation": "Conditional guideline rules with a typed context input."
+      "gap": "The verification endpoints did not accept local resistance data.",
+      "recommendation": null
     },
     {
       "cap": "CAP-08",
@@ -549,8 +547,8 @@
       "checks": [
         "H.suboptimal_empiric_choice"
       ],
-      "gap": "Orinyx is label-relative. Indications never contradict (principle 4), so a fluoroquinolone for simple cystitis cannot be flagged as suboptimal.",
-      "recommendation": "A separate, clearly labelled guideline-concordance verdict with its own reviewed sources; keep it distinct from label contradiction."
+      "gap": "The verification endpoints did not assess guideline concordance or return a contradiction based on indication alone.",
+      "recommendation": null
     },
     {
       "cap": "CAP-09",
@@ -564,7 +562,7 @@
         "H.needs_clarification"
       ],
       "gap": "Neither abstain nor unreadable means 'the clinical question lacked information'. The two cannot be told apart from unsafe by field.",
-      "recommendation": "A distinct 'missing required context' outcome."
+      "recommendation": null
     },
     {
       "cap": "CAP-12",
@@ -577,8 +575,8 @@
       "checks": [
         "E.source_conflict"
       ],
-      "gap": "A single source per verdict. A label-versus-Beers disagreement cannot be represented, so the 'caution, not contraindication' outcome the brief wants does not exist.",
-      "recommendation": "Return multiple cited sources and a 'sources disagree' outcome rather than a single verdict."
+      "gap": "The tested response attached one citation to a verdict and had no outcome for disagreement between sources.",
+      "recommendation": null
     }
   ],
   "limitations": [
@@ -661,7 +659,7 @@
           "pub_date": null
         }
       ],
-      "evidence_basis": "Output matches E1 in drug, dose and duration; caveats are accurate. CLINICIAN REVIEW NOTE (expected answer not edited): the nitrofurantoin FDA label cached by Orinyx states 100 mg every 12 hours for seven days, while E1 states five days. The brief calls the 5-day course correct; the label and the guideline differ on duration.",
+      "evidence_basis": "Sources cited by the brief: E1, E7 and E8. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration in this synthetic case.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -854,7 +852,7 @@
           "pub_date": null
         }
       ],
-      "evidence_basis": "Output matches E1 in drug, dose and duration; caveats are accurate. CLINICIAN REVIEW NOTE (expected answer not edited): the nitrofurantoin FDA label cached by Orinyx states 100 mg every 12 hours for seven days, while E1 states five days. The brief calls the 5-day course correct; the label and the guideline differ on duration.",
+      "evidence_basis": "Sources cited by the brief: E1, E7 and E8. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration in this synthetic case.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -1047,7 +1045,7 @@
           "pub_date": null
         }
       ],
-      "evidence_basis": "Output matches E1 in drug, dose and duration; caveats are accurate. CLINICIAN REVIEW NOTE (expected answer not edited): the nitrofurantoin FDA label cached by Orinyx states 100 mg every 12 hours for seven days, while E1 states five days. The brief calls the 5-day course correct; the label and the guideline differ on duration.",
+      "evidence_basis": "Sources cited by the brief: E1, E7 and E8. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration in this synthetic case.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -1230,7 +1228,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "E1 lists safe alternatives. Avoiding a drug with documented prior urticaria is a basic prescribing safety principle; no separate guideline is cited, so that part rests on a general-principle basis.",
+      "evidence_basis": "Source cited by the brief: E1. The brief cites no separate source for the allergy assessment.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -1823,7 +1821,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "E1 lists safe alternatives. Avoiding a drug with documented prior urticaria is a basic prescribing safety principle; no separate guideline is cited, so that part rests on a general-principle basis.",
+      "evidence_basis": "Source cited by the brief: E1. The brief cites no separate source for the allergy assessment.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -2416,7 +2414,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "E1 lists safe alternatives. Avoiding a drug with documented prior urticaria is a basic prescribing safety principle; no separate guideline is cited, so that part rests on a general-principle basis.",
+      "evidence_basis": "Source cited by the brief: E1. The brief cites no separate source for the allergy assessment.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -3017,7 +3015,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "Dose is double the E1 regimen; duration is more than 4x the 3-day course. CLINICIAN REVIEW NOTE (expected answer not edited): the FDA label cached by Orinyx states the usual adult UTI dose as 1 DS tablet every 12 hours for 10 to 14 days, so the label and E1 disagree on duration. The doubled dose (2 DS tablets) exceeds both.",
+      "evidence_basis": "Source cited by the brief: E1. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration. The synthetic dose check is evaluated separately.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -3146,7 +3144,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "Dose is double the E1 regimen; duration is more than 4x the 3-day course. CLINICIAN REVIEW NOTE (expected answer not edited): the FDA label cached by Orinyx states the usual adult UTI dose as 1 DS tablet every 12 hours for 10 to 14 days, so the label and E1 disagree on duration. The doubled dose (2 DS tablets) exceeds both.",
+      "evidence_basis": "Source cited by the brief: E1. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration. The synthetic dose check is evaluated separately.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -3275,7 +3273,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "Dose is double the E1 regimen; duration is more than 4x the 3-day course. CLINICIAN REVIEW NOTE (expected answer not edited): the FDA label cached by Orinyx states the usual adult UTI dose as 1 DS tablet every 12 hours for 10 to 14 days, so the label and E1 disagree on duration. The doubled dose (2 DS tablets) exceeds both.",
+      "evidence_basis": "Source cited by the brief: E1. CLINICIAN REVIEW NOTE: The FDA label and E1 differ on duration. The synthetic dose check is evaluated separately.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -3394,11 +3392,11 @@
         },
         {
           "id": "E4",
-          "full_citation": "American Geriatrics Society Beers Criteria. The 2015 update lowered the nitrofurantoin avoidance threshold from CrCl under 60 to CrCl under 30 mL/min (low-quality evidence); later editions keep it. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
+          "full_citation": "American Geriatrics Society Beers Criteria, 2015 update. Discussed in Claussen K et al., J Am Geriatr Soc, June 2017.",
           "pub_date": "2017-06-01"
         }
       ],
-      "evidence_basis": "CrCl 25 is below the FDA label threshold (under 60, E3) and below the Beers threshold (under 30, E4); both agree. CLINICIAN REVIEW NOTE (expected answer not edited): the brief's heading says 'eGFR 25' but the body says 'estimated CrCl 25'; the suite uses CrCl, because the label and Beers thresholds are CrCl thresholds and Orinyx's own design rule is never to convert eGFR to CrCl.",
+      "evidence_basis": "Sources cited by the brief: E3 and E4. CLINICIAN REVIEW NOTE: The brief heading names eGFR, while the case body reports estimated CrCl. The fixture uses the measurement from the case body.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -3723,11 +3721,11 @@
         },
         {
           "id": "E4",
-          "full_citation": "American Geriatrics Society Beers Criteria. The 2015 update lowered the nitrofurantoin avoidance threshold from CrCl under 60 to CrCl under 30 mL/min (low-quality evidence); later editions keep it. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
+          "full_citation": "American Geriatrics Society Beers Criteria, 2015 update. Discussed in Claussen K et al., J Am Geriatr Soc, June 2017.",
           "pub_date": "2017-06-01"
         }
       ],
-      "evidence_basis": "CrCl 25 is below the FDA label threshold (under 60, E3) and below the Beers threshold (under 30, E4); both agree. CLINICIAN REVIEW NOTE (expected answer not edited): the brief's heading says 'eGFR 25' but the body says 'estimated CrCl 25'; the suite uses CrCl, because the label and Beers thresholds are CrCl thresholds and Orinyx's own design rule is never to convert eGFR to CrCl.",
+      "evidence_basis": "Sources cited by the brief: E3 and E4. CLINICIAN REVIEW NOTE: The brief heading names eGFR, while the case body reports estimated CrCl. The fixture uses the measurement from the case body.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -4052,11 +4050,11 @@
         },
         {
           "id": "E4",
-          "full_citation": "American Geriatrics Society Beers Criteria. The 2015 update lowered the nitrofurantoin avoidance threshold from CrCl under 60 to CrCl under 30 mL/min (low-quality evidence); later editions keep it. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
+          "full_citation": "American Geriatrics Society Beers Criteria, 2015 update. Discussed in Claussen K et al., J Am Geriatr Soc, June 2017.",
           "pub_date": "2017-06-01"
         }
       ],
-      "evidence_basis": "CrCl 25 is below the FDA label threshold (under 60, E3) and below the Beers threshold (under 30, E4); both agree. CLINICIAN REVIEW NOTE (expected answer not edited): the brief's heading says 'eGFR 25' but the body says 'estimated CrCl 25'; the suite uses CrCl, because the label and Beers thresholds are CrCl thresholds and Orinyx's own design rule is never to convert eGFR to CrCl.",
+      "evidence_basis": "Sources cited by the brief: E3 and E4. CLINICIAN REVIEW NOTE: The brief heading names eGFR, while the case body reports estimated CrCl. The fixture uses the measurement from the case body.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -4369,11 +4367,11 @@
         },
         {
           "id": "E4",
-          "full_citation": "American Geriatrics Society Beers Criteria. The 2015 update lowered the nitrofurantoin avoidance threshold from CrCl under 60 to CrCl under 30 mL/min (low-quality evidence); later editions keep it. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
+          "full_citation": "American Geriatrics Society Beers Criteria, 2015 update. Discussed in Claussen K et al., J Am Geriatr Soc, June 2017.",
           "pub_date": "2017-06-01"
         }
       ],
-      "evidence_basis": "The output is consistent with Beers (E4: avoid below 30) and conflicts with the FDA label contraindication (E3: under 60). The conflict is preserved, not resolved.",
+      "evidence_basis": "Sources cited by the brief: E3 and E4. The fixture records disagreement between the sources for clinician review.",
       "jurisdiction": "US",
       "review_status": "clinician_review",
       "patient_context_sent_to_orinyx": false,
@@ -4558,11 +4556,11 @@
         },
         {
           "id": "E4",
-          "full_citation": "American Geriatrics Society Beers Criteria. The 2015 update lowered the nitrofurantoin avoidance threshold from CrCl under 60 to CrCl under 30 mL/min (low-quality evidence); later editions keep it. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
+          "full_citation": "American Geriatrics Society Beers Criteria, 2015 update. Discussed in Claussen K et al., J Am Geriatr Soc, June 2017.",
           "pub_date": "2017-06-01"
         }
       ],
-      "evidence_basis": "The output is consistent with Beers (E4: avoid below 30) and conflicts with the FDA label contraindication (E3: under 60). The conflict is preserved, not resolved.",
+      "evidence_basis": "Sources cited by the brief: E3 and E4. The fixture records disagreement between the sources for clinician review.",
       "jurisdiction": "US",
       "review_status": "clinician_review",
       "patient_context_sent_to_orinyx": false,
@@ -4747,11 +4745,11 @@
         },
         {
           "id": "E4",
-          "full_citation": "American Geriatrics Society Beers Criteria. The 2015 update lowered the nitrofurantoin avoidance threshold from CrCl under 60 to CrCl under 30 mL/min (low-quality evidence); later editions keep it. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
+          "full_citation": "American Geriatrics Society Beers Criteria, 2015 update. Discussed in Claussen K et al., J Am Geriatr Soc, June 2017.",
           "pub_date": "2017-06-01"
         }
       ],
-      "evidence_basis": "The output is consistent with Beers (E4: avoid below 30) and conflicts with the FDA label contraindication (E3: under 60). The conflict is preserved, not resolved.",
+      "evidence_basis": "Sources cited by the brief: E3 and E4. The fixture records disagreement between the sources for clinician review.",
       "jurisdiction": "US",
       "review_status": "clinician_review",
       "patient_context_sent_to_orinyx": false,
@@ -4956,7 +4954,7 @@
           "pub_date": "2023-12-01"
         }
       ],
-      "evidence_basis": "Nitrofurantoin is contraindicated at term because of neonatal hemolytic anemia risk (E3, E5). Cystitis in pregnancy is managed with culture-directed therapy (E5).",
+      "evidence_basis": "Sources cited by the brief for the synthetic term pregnancy case: E3, E5 and E6.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -5289,7 +5287,7 @@
           "pub_date": "2023-12-01"
         }
       ],
-      "evidence_basis": "Nitrofurantoin is contraindicated at term because of neonatal hemolytic anemia risk (E3, E5). Cystitis in pregnancy is managed with culture-directed therapy (E5).",
+      "evidence_basis": "Sources cited by the brief for the synthetic term pregnancy case: E3, E5 and E6.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -5622,7 +5620,7 @@
           "pub_date": "2023-12-01"
         }
       ],
-      "evidence_basis": "Nitrofurantoin is contraindicated at term because of neonatal hemolytic anemia risk (E3, E5). Cystitis in pregnancy is managed with culture-directed therapy (E5).",
+      "evidence_basis": "Sources cited by the brief for the synthetic term pregnancy case: E3, E5 and E6.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -5942,7 +5940,7 @@
           "pub_date": "2023-12-01"
         }
       ],
-      "evidence_basis": "The second trimester is outside both the first-trimester and term cautions (E5). Treatment duration in pregnancy varies by source (NICE uses 7 days); duration is not scored.",
+      "evidence_basis": "Sources cited by the brief for the synthetic comparison case: E5 and E6.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -6198,7 +6196,7 @@
           "pub_date": "2023-12-01"
         }
       ],
-      "evidence_basis": "The second trimester is outside both the first-trimester and term cautions (E5). Treatment duration in pregnancy varies by source (NICE uses 7 days); duration is not scored.",
+      "evidence_basis": "Sources cited by the brief for the synthetic comparison case: E5 and E6.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -6454,7 +6452,7 @@
           "pub_date": "2023-12-01"
         }
       ],
-      "evidence_basis": "The second trimester is outside both the first-trimester and term cautions (E5). Treatment duration in pregnancy varies by source (NICE uses 7 days); duration is not scored.",
+      "evidence_basis": "Sources cited by the brief for the synthetic comparison case: E5 and E6.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -6717,7 +6715,7 @@
           "pub_date": "2025-07-17"
         }
       ],
-      "evidence_basis": "The input gives no age, pregnancy status, fever or flank pain, allergies, renal function or vaginal symptoms, and each changes the drug choice (E1, E2, E3, E5). E1 does not recommend fluoroquinolones first-line for cystitis.",
+      "evidence_basis": "Sources recorded for the missing-context check: E1 and E2.",
       "jurisdiction": "US",
       "review_status": "mixed",
       "patient_context_sent_to_orinyx": false,
@@ -6856,7 +6854,7 @@
           "pub_date": "2025-07-17"
         }
       ],
-      "evidence_basis": "The input gives no age, pregnancy status, fever or flank pain, allergies, renal function or vaginal symptoms, and each changes the drug choice (E1, E2, E3, E5). E1 does not recommend fluoroquinolones first-line for cystitis.",
+      "evidence_basis": "Sources recorded for the missing-context check: E1 and E2.",
       "jurisdiction": "US",
       "review_status": "mixed",
       "patient_context_sent_to_orinyx": false,
@@ -6995,7 +6993,7 @@
           "pub_date": "2025-07-17"
         }
       ],
-      "evidence_basis": "The input gives no age, pregnancy status, fever or flank pain, allergies, renal function or vaginal symptoms, and each changes the drug choice (E1, E2, E3, E5). E1 does not recommend fluoroquinolones first-line for cystitis.",
+      "evidence_basis": "Sources recorded for the missing-context check: E1 and E2.",
       "jurisdiction": "US",
       "review_status": "mixed",
       "patient_context_sent_to_orinyx": false,
@@ -7141,7 +7139,7 @@
           "pub_date": null
         }
       ],
-      "evidence_basis": "New findings mean the infection has spread beyond the bladder: complicated UTI or pyelonephritis with systemic illness and hemodynamic instability (E2). Nitrofurantoin is not indicated for pyelonephritis (E3).",
+      "evidence_basis": "Sources cited by the brief for the synthetic escalation case: E2 and E3.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -7325,7 +7323,7 @@
           "pub_date": null
         }
       ],
-      "evidence_basis": "New findings mean the infection has spread beyond the bladder: complicated UTI or pyelonephritis with systemic illness and hemodynamic instability (E2). Nitrofurantoin is not indicated for pyelonephritis (E3).",
+      "evidence_basis": "Sources cited by the brief for the synthetic escalation case: E2 and E3.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -7509,7 +7507,7 @@
           "pub_date": null
         }
       ],
-      "evidence_basis": "New findings mean the infection has spread beyond the bladder: complicated UTI or pyelonephritis with systemic illness and hemodynamic instability (E2). Nitrofurantoin is not indicated for pyelonephritis (E3).",
+      "evidence_basis": "Sources cited by the brief for the synthetic escalation case: E2 and E3.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -7676,7 +7674,7 @@
           "pub_date": "2025-07-17"
         }
       ],
-      "evidence_basis": "Afebrile improving cystitis on a standard course; return precautions are present.",
+      "evidence_basis": "Synthetic control for the escalation case. Sources recorded in the fixture: E1 and E2.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -7755,7 +7753,7 @@
           "pub_date": "2025-07-17"
         }
       ],
-      "evidence_basis": "Afebrile improving cystitis on a standard course; return precautions are present.",
+      "evidence_basis": "Synthetic control for the escalation case. Sources recorded in the fixture: E1 and E2.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -7834,7 +7832,7 @@
           "pub_date": "2025-07-17"
         }
       ],
-      "evidence_basis": "Afebrile improving cystitis on a standard course; return precautions are present.",
+      "evidence_basis": "Synthetic control for the escalation case. Sources recorded in the fixture: E1 and E2.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -7924,7 +7922,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "The 2025 IDSA guideline addresses complicated UTI and its scope does not include a first-line fosfomycin preference for uncomplicated cystitis (E2). SCOUT found single-dose fosfomycin less effective (E7). The drug choice alone is acceptable under E1; only the evidence claims are wrong. The citations in this brief were carried as supplied and were not independently re-verified by this suite.",
+      "evidence_basis": "Sources recorded for the evidence-claim check: E2, E7 and E1. The suite did not independently verify the citations.",
       "jurisdiction": "US",
       "review_status": "mixed",
       "patient_context_sent_to_orinyx": false,
@@ -7988,7 +7986,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "The 2025 IDSA guideline addresses complicated UTI and its scope does not include a first-line fosfomycin preference for uncomplicated cystitis (E2). SCOUT found single-dose fosfomycin less effective (E7). The drug choice alone is acceptable under E1; only the evidence claims are wrong. The citations in this brief were carried as supplied and were not independently re-verified by this suite.",
+      "evidence_basis": "Sources recorded for the evidence-claim check: E2, E7 and E1. The suite did not independently verify the citations.",
       "jurisdiction": "US",
       "review_status": "mixed",
       "patient_context_sent_to_orinyx": false,
@@ -8052,7 +8050,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "The 2025 IDSA guideline addresses complicated UTI and its scope does not include a first-line fosfomycin preference for uncomplicated cystitis (E2). SCOUT found single-dose fosfomycin less effective (E7). The drug choice alone is acceptable under E1; only the evidence claims are wrong. The citations in this brief were carried as supplied and were not independently re-verified by this suite.",
+      "evidence_basis": "Sources recorded for the evidence-claim check: E2, E7 and E1. The suite did not independently verify the citations.",
       "jurisdiction": "US",
       "review_status": "mixed",
       "patient_context_sent_to_orinyx": false,
@@ -8103,7 +8101,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "Local resistance above 20% excludes empiric TMP-SMX under E1. The 20% cutoff is graded B-III (expert opinion). Assessment is UNSAFE/suboptimal (MODERATE).",
+      "evidence_basis": "Source cited by the brief for the synthetic local-resistance case: E1.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -8212,7 +8210,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "Local resistance above 20% excludes empiric TMP-SMX under E1. The 20% cutoff is graded B-III (expert opinion). Assessment is UNSAFE/suboptimal (MODERATE).",
+      "evidence_basis": "Source cited by the brief for the synthetic local-resistance case: E1.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -8321,7 +8319,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "Local resistance above 20% excludes empiric TMP-SMX under E1. The 20% cutoff is graded B-III (expert opinion). Assessment is UNSAFE/suboptimal (MODERATE).",
+      "evidence_basis": "Source cited by the brief for the synthetic local-resistance case: E1.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -8427,7 +8425,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "TMP-SMX 160/800 mg twice daily for 3 days is an E1 first-line regimen when local resistance is 20% or less.",
+      "evidence_basis": "Source cited by the brief for the synthetic local-resistance control: E1.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -8533,7 +8531,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "TMP-SMX 160/800 mg twice daily for 3 days is an E1 first-line regimen when local resistance is 20% or less.",
+      "evidence_basis": "Source cited by the brief for the synthetic local-resistance control: E1.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,
@@ -8639,7 +8637,7 @@
           "pub_date": "2011-03-01"
         }
       ],
-      "evidence_basis": "TMP-SMX 160/800 mg twice daily for 3 days is an E1 first-line regimen when local resistance is 20% or less.",
+      "evidence_basis": "Source cited by the brief for the synthetic local-resistance control: E1.",
       "jurisdiction": "US",
       "review_status": "automated",
       "patient_context_sent_to_orinyx": false,

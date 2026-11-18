@@ -16,11 +16,10 @@ clinical validation, a safety certification or evidence of release readiness.
 ## Run it
 
 ```bash
-export ORINYX_API_URL=https://<your orinyx api>     # a local engine on localhost also works
-export ORINYX_API_KEY=<a tester key>
+export ORINYX_API_URL=https://api.example.com
+export ORINYX_API_KEY="$TESTER_API_KEY"
 python evals/clinical_suite.py lint
-python evals/clinical_suite.py run --runs 3 --out clinical-suite-results \
-    --engine-commit <engine git sha>                 # REST does not report the engine commit
+python evals/clinical_suite.py run --runs 3 --out clinical-suite-results
 ```
 
 `--only UTI-001-B,UTI-001-D` runs a subset. `--max-per-minute` (default 50) paces requests under the
@@ -44,7 +43,7 @@ trail with tool name `orinyx-clinical-suite`.
   env:
     ORINYX_API_URL: ${{ secrets.ORINYX_API_URL }}
     ORINYX_API_KEY: ${{ secrets.ORINYX_API_KEY }}
-  run: python evals/clinical_suite.py run --runs 3 --out clinical-suite-results --engine-commit "$ENGINE_SHA"
+  run: python evals/clinical_suite.py run --runs 3 --out clinical-suite-results
 ```
 
 Today this step would fail on every run (exit 3): the baseline shows why.
@@ -66,10 +65,7 @@ never merged. An UNSUPPORTED check is INCONCLUSIVE, never a pass; a TRUE_NEGATIV
 
 ## Baseline provenance
 
-The baseline ran on 2026-10-23 against a local development build of the Orinyx API 0.3.1, not the
-hosted API. The API's source is private, so its commit and branch are not recorded here. A baseline
-for the hosted API needs a separate run against it.
-
-The run used a disposable test database. The Orinyx run IDs in `results.json` point into that
-database's audit trail and cannot be looked up on the hosted API. The runner used orinyx-mcp commit `4a15a16`
-with a dirty working tree containing the new suite files.
+The baseline ran on 2026-10-23 against a development build of the Orinyx API 0.3.1. The run IDs
+in `results.json` refer to that environment. The runner used public orinyx-mcp commit `4a15a16`
+with local suite changes. The public copy uses neutral evidence descriptions and retains the
+original run results.
