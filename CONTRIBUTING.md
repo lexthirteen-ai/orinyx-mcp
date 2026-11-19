@@ -90,9 +90,9 @@ GitHub release tags alone do not upload a package to PyPI. For each PyPI release
 4. Each release targets the version set in `orinyx_mcp/__init__.py`, alongside the other
    changes accumulating on `main`.
    Merge the engine API first, then the dashboard/MCP consumers; do not copy engine
-   authorization into either client. The package version is set to `0.1.5`; review
+   authorization into either client. The package version is set to `0.1.6`; review
    the combined release notes before tagging. Existing tags must not be moved. From
-   the reviewed release commit, create and push the matching `v0.1.5` tag. The workflow refuses a
+   the reviewed release commit, create and push the matching `v0.1.6` tag. The workflow refuses a
    tag/version mismatch, tests the package, then builds a wheel and sdist with
    `python -I -m build --no-isolation` and validates their metadata with Twine. The build
    tools come from `requirements-release.lock`, installed with their hashes in an
@@ -100,8 +100,8 @@ GitHub release tags alone do not upload a package to PyPI. For each PyPI release
    `v<major>.<minor>.<patch>` tags publish to TestPyPI then PyPI; prerelease tags are refused.
    `scripts/lint_release_workflow.py` governs the workflow, and
    `scripts/check_dist.py` validates both archives against the version's exact
-   manifest in `release/manifests/` and the source tree. The first 0.1.5 upload
-   does not require the Registry marker.
+   manifest in `release/manifests/` and the source tree. From 0.1.6 the build requires the
+   Registry marker in the package description.
    Update that manifest whenever packaged files change. Checksums and an exact
    file-list check are repeated in each publishing job before upload.
 5. Approve the `testpypi` environment deployment and check the upload at
