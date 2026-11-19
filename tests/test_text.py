@@ -101,6 +101,27 @@ def test_render_is_plain_text_without_markdown():
     assert "```" not in text
 
 
+def test_both_formats_show_a_cited_abstain_with_its_reason():
+    citation = RUN["verdicts"][0]["citation"]
+    reason = "The order and label have different daily dosing schedules."
+    row = {
+        **RUN["verdicts"][2],
+        "rawText": "warfarin 5 mg every 4 hours",
+        "claimType": "frequency",
+        "explanation": reason,
+        "citation": citation,
+    }
+    run = {**RUN, "verdicts": [row], "aggregate": {"total": 1, "abstain": 1}}
+    table = render_run_table(run)
+    assert f"| NOT VERIFIED (abstain) | - | {reason} | [1] |" in table
+    assert f"[1] openFDA, {citation['section']} - id abc-123" in table
+    assert citation["url"] in table
+    plain = render_run_text(run)
+    assert "ABSTAINED (1) - NOT VERIFIED" in plain
+    assert f"   Why not: {reason}\n   Citation: openFDA" in plain
+    assert citation["url"] in plain
+
+
 def test_accuracy_is_rendered_only_when_reviewed():
     without = render_run_text(RUN)
     assert "ACCURACY" not in without
