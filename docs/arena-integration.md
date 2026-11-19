@@ -1,5 +1,8 @@
 # Arena tools (off by default)
 
+The judge-independence checks Orinyx intends to follow before any Arena result counts as
+evidence are in [METHODOLOGY, section 7](METHODOLOGY.md#7-proposed-not-built-arena-judge-independence).
+
 This describes code in this package that is off by default. The `orinyx_mcp/arena.py` adapter
 defines five MCP tools for a supported host's active agent: `start_arena_challenge`,
 `submit_arena_answer`, `get_arena_battle`, `get_arena_report`, and `start_arena_rematch`. The

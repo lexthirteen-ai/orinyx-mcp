@@ -4,7 +4,7 @@ The exam tools are listed in the README under [Available tools](../README.md#ava
 the steps to sit an exam are in [QUICKSTART.md](QUICKSTART.md#sit-an-exam).
 
 An exam scores a product on a fixed, synthetic test set held on the server (the answer key
-never leaves it). Each answer is recorded once and cannot be changed; how it was judged is
+never leaves it). How results are counted is in [METHODOLOGY](METHODOLOGY.md). Each answer is recorded once and cannot be changed; how it was judged is
 not shown until the report. A report is marked REHEARSAL, not evidence, while its test set
 or rules are unsigned.
 

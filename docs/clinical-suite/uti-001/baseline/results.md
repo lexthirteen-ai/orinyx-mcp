@@ -10,8 +10,7 @@
 - **Runs per fixture:** 3
 - **Fixture file:** tests/fixtures/clinical/uti-001.json (sha256 566d37f23751d6b7...)
 - **Runner:** orinyx-mcp 0.1.0, commit 4a15a162e776bcf64d4f39ee6aa236e38bbb721b, working tree dirty: True
-- **Orinyx API:** http://localhost:8765, engine version 0.3.1, engine commit b1687ccbbbe596902f89e40463fc74485d9527e3
-- **Engine branch at the time of the run:** `build/2026-10-22-password-reset` at the commit above. Engine `main` was at `bc86d37`.
+- **Orinyx API:** a local development build, version 0.3.1. The API's source is private, so its commit and branch are not recorded here.
 - **Models:** none: no model in the verdict path, none called by this suite
 - **Exit code:** **3**: not clean: UTI-001-C, UTI-001-D, UTI-001-F, UTI-001-H, UTI-001-I, UTI-001-I-ctrl, UTI-001-J, UTI-001-K, UTI-001-K-ctrl
 
@@ -189,7 +188,7 @@ Wording variants are NOT scored. They show how far a harness-translated TRUE_POS
 | --- | --- | --- | --- | --- |
 | UTI-001-A | A.classified_safe | UNSUPPORTED | CAP-13 | Orinyx has no 'safe' classification; scored as 'no flag'. |
 | UTI-001-B | B.allergy_conflict | PARTIAL | CAP-02 | Orinyx reads no patient context. It can contradict a structured 'contraindication, asserted:false' claim whose condition text is a substring of the label's contraindication text. |
-| UTI-001-C | C.dose_error | PARTIAL | CAP-03 | dose_range exists generally; the SMX/TMP dose ceiling is held by owner decision (dose_ceiling_held), and tablet counts are refused by the dose grammar. |
+| UTI-001-C | C.dose_error | PARTIAL | CAP-03 | dose_range exists generally; the SMX/TMP dose ceiling is held pending review, and tablet counts are refused by the dose grammar. |
 | UTI-001-C | C.duration_error | UNSUPPORTED | CAP-04 | No claim field, verifier or rule represents course length. |
 | UTI-001-D | D.renal_contraindication | PARTIAL | CAP-02 | Needs a harness-supplied contraindication claim AND a contraindication rule for the drug in the knowledge base. |
 | UTI-001-E | E.source_conflict | UNSUPPORTED | CAP-12 | Orinyx cites FDA label text only; it has no Beers or guideline source, so it cannot represent a label-versus-guideline disagreement. |
@@ -211,19 +210,19 @@ Wording variants are NOT scored. They show how far a harness-translated TRUE_POS
    - Gap: Every endpoint takes a flat list of orders or claims. A later turn cannot be judged in light of an earlier one, and an implicit drug ('continue nitrofurantoin') is refused as not an order.
    - Recommended: Accept ordered turns, carry the active medication list across turns, and evaluate each turn against the state.
 2. **CAP-05 Patient context as input (allergy, age, renal function, pregnancy, vitals)** (UNSUPPORTED; highest severity affected: CRITICAL; fixtures: UTI-001-I)
-   - Gap: Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated (Lex ruling 2026-10-21).
+   - Gap: Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated.
    - Recommended: A structured patient-context object, with evaluation and an explicit not-evaluated list per field.
 3. **CAP-10 Escalation / red-flag omission in the agent's output** (UNSUPPORTED; highest severity affected: CRITICAL; fixtures: UTI-001-I)
    - Gap: Red-flag rules exist only for the patient-message reply exam (chest pain, dyspnea, anaphylaxis, suicidal ideation, stroke), none is approved, none covers fever, rigors, flank pain or hypotension, and the generic verification endpoints do not use them.
    - Recommended: Signed red-flag rules for urinary sepsis/pyelonephritis and a clinician-facing escalation check available on the verification endpoints.
 4. **CAP-14 Knowledge-base coverage for this case family's drugs** (PARTIAL; highest severity affected: HIGH; fixtures: UTI-001-C, UTI-001-D, UTI-001-F, UTI-001-J)
-   - Gap: Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label; ingest_quarantine 2026-10-18), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held.
+   - Gap: Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held.
    - Recommended: Treat 'nitrofurantoin (monohydrate/macrocrystals)' as the single-ingredient product it is, so its section 4 rules derive; add fosfomycin, pivmecillinam; review the SMX/TMP hold.
 5. **CAP-02 Structured contraindication claim (asserted:false) contradicted by label section 4** (PARTIAL; highest severity affected: HIGH; fixtures: UTI-001-D, UTI-001-F)
    - Gap: Orinyx does not read patient context. The integrator must turn the allergy, renal function or pregnancy into a claim, name the condition in text, and that text must be a case-insensitive SUBSTRING of the label's contraindication prose. It cannot read a threshold (CrCl 25 vs 45) or a gestational age.
    - Recommended: Accept structured patient context (allergies, CrCl/eGFR, pregnancy and gestational age) and evaluate it against label contraindications with curated, reviewed rules instead of substring containment.
 6. **CAP-03 Dose ceiling per drug** (PARTIAL; highest severity affected: HIGH; fixtures: UTI-001-C)
-   - Gap: Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held (dose_ceiling_held, owner decision 2026-09-29); tablet counts are refused; the label's UTI regimen is not a ceiling.
+   - Gap: Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held pending review; tablet counts are refused; the label's UTI regimen is not a ceiling.
    - Recommended: Curate regimen-level dose rules (dose per administration x frequency) for the common antibacterials, with the label's indication-specific regimen.
 7. **CAP-04 Course duration check** (UNSUPPORTED; highest severity affected: HIGH; fixtures: UTI-001-C)
    - Gap: No claim field, verifier or rule represents days of therapy.
@@ -262,7 +261,7 @@ Wording variants are NOT scored. They show how far a harness-translated TRUE_POS
 - Several checks depend on string matching free text, which is fragile: Orinyx matches a contraindication condition by case-insensitive substring of the label's prose, and the order grammar reads words such as 'twice daily' against labeled schedules. The string-sensitivity table shows how much a TRUE_POSITIVE depends on the exact wording. The harness's own wording of a translated claim is a choice that can move a result.
 - Where a bucket is a TRUE_POSITIVE through a harness-translated claim, Orinyx did not read the patient context: the harness did. That shows the check is possible with integrator work, not that Orinyx finds the problem on its own.
 - A TRUE_NEGATIVE means no contradicted or unreadable verdict. Orinyx has no 'safe' classification: an abstain is unchecked, never safe, and a supported verdict is one claim agreeing with its label, not clearance. Look at orinyx_status_derived and the verdict counts beside every TRUE_NEGATIVE.
-- Orinyx status (pass, fail, inconclusive) is derived by this runner from the documented ruling in orinyx-mcp CLAUDE.md; the engine returns no status field today.
+- Orinyx status (pass, fail, inconclusive) is derived by this runner; the engine returns no status field today.
 - Gaps that matter for a limited developer release: no multi-turn input; no structured patient context (allergy, renal function, pregnancy, vitals); no citation or evidence verification; no harm-weighted severity output (only rule-derived minor/moderate/major, and no CRITICAL); no way to tell 'needs clarification' from 'unsafe' or from 'not verified'; no escalation (red-flag) check on these endpoints; no antibiogram input; no duration check; no label-versus-guideline disagreement outcome; knowledge-base gaps for nitrofurantoin (route rules only), fosfomycin and pivmecillinam (absent).
 - Results come from one engine at one point in time. The knowledge base is cached label text; a different engine, knowledge base or label version can change any result.
 - Orinyx can only evaluate output it is given. There is no Layer A' mode because nothing in the repo can drive a live agent; no agent output was generated or graded.

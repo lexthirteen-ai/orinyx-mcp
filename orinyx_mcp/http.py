@@ -6,8 +6,9 @@ the Orinyx API, never here: the bearer an agent presents (an `ork_live_*` key or
 describes it or refuses it. Every tool call then becomes an ordinary REST request to the API
 carrying the CALLER'S OWN credential, so tenancy, scopes, the per-client rate limit, the
 access log and the chain of custody are enforced by the API's one existing path, not
-re-implemented here. This process holds no database, no service credential and no key of
-its own.
+re-implemented here. The network server holds no database and no API key of its own. It
+holds one service secret, `ORINYX_HOP_SECRET`, shared with the API, which marks its requests
+as coming from the hosted connector. That secret never stands in for a caller's credential.
 
 The transport is stateless with JSON replies (one replica holds no MCP session state).
 `Host` is checked against the public URL, so a rebinding page cannot drive a tester's local
@@ -393,6 +394,11 @@ def build_app(
     """The ASGI application: `/mcp` (and `/mcp/`: both must ANSWER, since a mount alone
     redirects the bare path and behind a TLS proxy that redirect names http), the
     protected-resource document at the origin, and `/health`."""
+    if not config.hop_secret:
+        raise ConfigError(
+            "Hosted MCP requires ORINYX_HOP_SECRET; no public REST fallback is allowed"
+        )
+
     from mcp.server.auth.routes import create_protected_resource_routes
     from mcp.server.auth.settings import AuthSettings
     from mcp.server.transport_security import TransportSecuritySettings

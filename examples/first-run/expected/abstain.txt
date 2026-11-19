@@ -1,0 +1,79 @@
+Input: examples/first-run/abstain.txt (pravastatin 40 mg by mouth daily)
+Captured 2026-11-15 (21:35 UTC) from the hosted Orinyx API 0.4.0, knowledge graph
+kg-2026.11.6, with orinyx-mcp 0.1.5 from PyPI (the hosted connector runs the same release,
+commit f0a4386). Run ids and times are replaced with placeholders.
+
+Verdict fields, from `orinyx get <run id> --json`:
+
+| Part | Verdict | Severity | Cited section | Label set id or source | Effective |
+|---|---|---|---|---|---|
+| dose | abstain | none | - | - | - |
+| route | supported | none | openFDA product metadata | 222b90fd-f070-4fa8-8f8b-720133cb2b0a | 20261106 |
+| frequency | abstain | none | - | - | - |
+| identity | supported | none | openFDA product metadata | 222b90fd-f070-4fa8-8f8b-720133cb2b0a | 2026-11-06 |
+
+--- MCP: verify_order_text, exactly as written ---
+
+Orinyx verification - run <run id>
+Checked 4 claims: 0 flagged, 2 supported, 2 abstained.
+
+| # | Claim | Part | Result | Severity | Why | Citation |
+|---|---|---|---|---|---|---|
+| 1 | pravastatin 40 mg by mouth daily | route | SUPPORTED | - | Route 'oral' matches the labeled route. | [1] |
+| 2 | pravastatin 40 mg by mouth daily | identity | SUPPORTED | - | Matched pravastatin via KB name. Reference label: PRAVASTATIN SODIUM. | [2] |
+| 3 | pravastatin 40 mg by mouth daily | dose | NOT VERIFIED (abstain) | - | No dose_range rule covers this drug; abstaining. | - |
+| 4 | pravastatin 40 mg by mouth daily | frequency | NOT VERIFIED (abstain) | - | No frequency rule covers this drug; abstaining. | - |
+
+Citations:
+[1] openFDA, openFDA product metadata - id 222b90fd-f070-4fa8-8f8b-720133cb2b0a - PRAVASTATIN SODIUM prescribing information, SPL set ID 222b90fd-f070-4fa8-8f8b-720133cb2b0a, effective 20261106 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=222b90fd-f070-4fa8-8f8b-720133cb2b0a
+[2] openFDA, openFDA product metadata - id 222b90fd-f070-4fa8-8f8b-720133cb2b0a - PRAVASTATIN SODIUM prescribing information, SPL set ID 222b90fd-f070-4fa8-8f8b-720133cb2b0a, effective 2026-11-06 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=222b90fd-f070-4fa8-8f8b-720133cb2b0a
+
+NOT VERIFIED: Orinyx could not check every claim in this run, so this is not a safety clearance.
+SUPPORTED: consistent with the cited label text; not a judgment that the order suits a patient.
+NOT VERIFIED: Orinyx could not check these, which does not mean they are correct.
+
+Orinyx flags; the clinician decides.
+
+Knowledge base, pravastatin: No numeric dose-range rule covers this drug; abstaining.
+Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
+Orinyx checking time: <time> ms
+
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): rows 1, 3, 4 - 1 supported, 2 not verified
+Semantic Mapping (beta): row 2 - 1 supported
+Source Evidence (beta): no rows in this run
+
+Run id: <run id>
+
+--- CLI: orinyx observe examples/first-run/abstain.txt ---
+
+abstain.txt#0  run <run id>  4 claims: 0 flagged, 2 supported, 2 abstained
+Observed 1 record, 4 claims: 0 flagged, 2 supported, 2 abstained. Read one in full: orinyx get <run id>
+exit 3
+
+--- CLI: orinyx get <run id> ---
+
+Orinyx verification - run <run id> (<time>)
+Checked 4 claims: 0 flagged, 2 supported, 2 abstained.
+
+FLAGS (0) - NOT VERIFIED: Orinyx could not check every claim in this run, so this is not a safety clearance.
+
+SUPPORTED (2) - consistent with the cited label text; not a judgment that the order suits a patient:
+1. pravastatin 40 mg by mouth daily (route)
+   Citation: openFDA, openFDA product metadata - id 222b90fd-f070-4fa8-8f8b-720133cb2b0a - PRAVASTATIN SODIUM prescribing information, SPL set ID 222b90fd-f070-4fa8-8f8b-720133cb2b0a, effective 20261106 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=222b90fd-f070-4fa8-8f8b-720133cb2b0a
+2. pravastatin 40 mg by mouth daily (identity)
+   Citation: openFDA, openFDA product metadata - id 222b90fd-f070-4fa8-8f8b-720133cb2b0a - PRAVASTATIN SODIUM prescribing information, SPL set ID 222b90fd-f070-4fa8-8f8b-720133cb2b0a, effective 2026-11-06 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=222b90fd-f070-4fa8-8f8b-720133cb2b0a
+
+ABSTAINED (2) - NOT VERIFIED; Orinyx could not check these, which does not mean they are correct:
+1. pravastatin 40 mg by mouth daily (dose)
+   Why not: No dose_range rule covers this drug; abstaining.
+2. pravastatin 40 mg by mouth daily (frequency)
+   Why not: No frequency rule covers this drug; abstaining.
+
+Orinyx flags; the clinician decides.
+
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): Supported 1; Abstained 1, 2 - 1 supported, 2 not verified
+Semantic Mapping (beta): Supported 2 - 1 supported
+Source Evidence (beta): no rows in this run
+exit 3

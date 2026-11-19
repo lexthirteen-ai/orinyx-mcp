@@ -124,6 +124,14 @@ class Aggregate(_Wire):
     unreadable: int = 0
 
 
+class ContextNotEvaluated(_Wire):
+    model_config = ConfigDict(strict=True)
+
+    note: str
+    fields: list[str]
+    count: int
+
+
 class VerificationResult(_Wire):
     run_id: str
     verdicts: list[Verdict]
@@ -131,6 +139,7 @@ class VerificationResult(_Wire):
     tool_name: str | None = None
     tool_version: str | None = None
     created_at: str | None = None
+    context_not_evaluated: ContextNotEvaluated | None = None
     # The JSON exactly as the API returned it (for rendering and --json output).
     raw: dict = Field(default_factory=dict, exclude=True)
 
@@ -487,10 +496,14 @@ class OrinyxClient:
     def vendors(self) -> dict[str, Any]:
         return self._json_object(self._request("GET", "/v1/vendors", params={"limit": 200}))
 
-    def open_exam(self, vendor_id: int, case_set_id: str, version: str) -> dict[str, Any]:
+    def open_exam(
+        self, vendor_id: int, case_set_id: str, version: str, *, entry_mode: str = "vendor"
+    ) -> dict[str, Any]:
         if isinstance(vendor_id, bool) or not str(vendor_id).isdigit():
             raise ValueError("vendor_id is the vendor's number")
-        body = {"caseSetId": case_set_id, "caseSetVersion": version}
+        if entry_mode not in {"vendor", "operator"}:
+            raise ValueError("entry_mode must be vendor or operator")
+        body = {"caseSetId": case_set_id, "caseSetVersion": version, "entryMode": entry_mode}
         path = f"/v1/vendors/{int(vendor_id)}/benchmark-runs"
         return self._json_object(self._request("POST", path, json=body))
 
