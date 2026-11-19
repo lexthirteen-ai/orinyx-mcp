@@ -114,6 +114,7 @@ SUGGESTIONS_HEADING = (
     "any of these):"
 )
 _PARTS = {
+    "identity": "Medication identity",
     "dose_range": "dose",
     "route": "route",
     "frequency": "frequency",
@@ -494,6 +495,8 @@ def render_run_text(run: Mapping, accuracy: Mapping | None = None) -> str:
         )
         for index, row in enumerate(supported, start=1):
             lines.append(f"{index}. {_one_line(row.get('rawText', ''))} ({_part(row)})")
+            if row.get("claimType") == "identity" and row.get("explanation"):
+                lines.append(f"   Why: {_one_line(row['explanation'])}")
             lines.append(f"   Citation: {_citation_line(row.get('citation'))}")
     else:
         lines.append("SUPPORTED (0)")
