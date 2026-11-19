@@ -19,6 +19,7 @@ NOT_EXPORTED = ("SMOKE_TEST", "docs/qa/")
 # No README target stays relative.
 HELD_RELATIVE = []
 DEPENDENCIES = [
+    "keyring>=25.7,<26",
     "mcp>=2.3,<3",
     "httpx>=0.28,<1",
     "httpx2>=2.13,<3",
@@ -61,7 +62,7 @@ def test_the_dependencies_are_exactly_the_bounded_ranges():
 
 def test_every_locked_version_is_inside_its_range():
     locked = dict(
-        line.split("==")
+        line.split(";", 1)[0].strip().split("==", 1)
         for line in (ROOT / "requirements.lock").read_text(encoding="utf-8").splitlines()
         if "==" in line and not line.startswith("#")
     )
@@ -177,6 +178,16 @@ def relative(targets: list[str]) -> list[str]:
     return [t for t in targets if not t.startswith(("https://", "mailto:", "#"))]
 
 
+MARKER_LINE = "<!-- mcp-name: io.github.lexthirteen-ai/orinyx-mcp -->"
+
+
+def test_the_readme_carries_the_registry_marker_once_on_its_own_line_near_the_top():
+    lines = README.splitlines()
+    assert README.count("mcp-name:") == 1
+    assert lines.count(MARKER_LINE) == 1
+    assert lines.index(MARKER_LINE) < 20
+
+
 def test_the_readme_has_no_relative_link_or_image():
     targets = link_targets(README)
     assert len(targets) > 30
@@ -211,7 +222,7 @@ def test_every_repository_link_in_the_readme_points_at_a_public_file_in_this_tre
         for prefix in (PAGE, IMAGE)
         if target.startswith(prefix)
     ]
-    assert len(paths) == 22 - len(HELD_RELATIVE)
+    assert len(paths) == 25 - len(HELD_RELATIVE)
     for path in paths:
         assert (ROOT / path).exists(), path
         assert not any(rule in path for rule in NOT_EXPORTED), path

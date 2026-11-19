@@ -1,4 +1,4 @@
-"""Gate B17: SECURITY.md and the release notes name both feedback channels on the
+"""SECURITY.md and the release notes name both feedback channels on the
 public release repository: private vulnerability reporting for vulnerabilities, Issues with the
 "Report a problem" template for everything else. A later edit fails here if it drops either
 channel, moves one into another section or bullet, or drops the synthetic-data rule. It also fails

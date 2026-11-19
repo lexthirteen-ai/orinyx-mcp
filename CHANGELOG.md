@@ -3,18 +3,21 @@
 All notable changes to this project are recorded here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
-
-Planned release: **0.1.5**.
+## [0.1.5] - 2026-11-15
 
 ### Added
+
+- `orinyx login`, `logout`, and `status`: browser OAuth with native keychain storage,
+  rotating refresh, and CLI/stdio credential resolution. Verification and Arena are included
+  according to account permissions; exams remain excluded. Explicit environment keys win.
 
 - Tag-driven PyPI publishing through GitHub OIDC and the protected `pypi` environment.
   The workflow tests and builds the package, requires a matching version tag, and publishes
   only the resulting wheel and source distribution without a long-lived PyPI token.
-- [Local package/stdio setup and CLI examples](README.md#install), alongside the engine's
+- [Local package/stdio setup and CLI examples](README.md#installation), alongside the engine's
   session-only self-serve key flow. The engine must be deployed first;
   developer keys carry only `verify:read` and `verify:write` and expire within 90 days.
+  An account can have at most two active keys; a revoked or expired key does not count.
 
 - Every tool now has a human-readable title and MCP behaviour hints in `tools/list`
   (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), set from what each
@@ -22,9 +25,18 @@ Planned release: **0.1.5**.
   destructive, since it closes a sitting for good. The verifications and exports are
   additive and not idempotent, since each adds a run or an audit-chain entry. Tool names,
   input schemas and descriptions are unchanged.
+- Nine new tests hold rules the code already followed, so a later change cannot loosen them
+  unnoticed: which credential a request carries, what the sign-in callback refuses, what the
+  CLI accepts from the token endpoint, the sign-in metadata and the keychain, the lock that
+  keeps sign-in renewals apart, the two scope lists, the credential module's imports, and the
+  match between the release manifest and the tracked files.
 
 ### Changed
 
+- Onboarding docs: the README includes the welcome-email password step before connecting,
+  the README and Quickstart include help for a missing email, and troubleshooting correctly
+  permits developer FDA reference lookups. The README notes that the hosted connector's running
+  build can differ from the latest repository release.
 - Packaging for PyPI: the package metadata is complete (authors, keywords, classifiers and
   project URLs), dependency ranges stop before the next major version, the build backend has
   a bounded range, the source distribution holds a reviewed list of files, and the README's
@@ -38,6 +50,32 @@ Planned release: **0.1.5**.
 - On the first tool call, the MCP server checks its copies of the label sections and the
   identifier screen against the API's, in the background, when the API serves those lists. A
   difference is logged. The API does not serve them yet, so for now the local copies are used.
+
+### Fixed
+
+- Reports no longer obey characters inside the text they show. In what `orinyx verify` and
+  `orinyx get` print, and in the tables the MCP tools return, a line break or tab inside a
+  claim, an explanation or a citation is shown as one space, and a control, format or
+  bidirectional character is shown as an escape such as `\x1b` or `\u202e`. Before this, an
+  AI tool under test could write an order that added lines of its own to the report, or hid
+  part of it on a terminal. Exit codes and `--json` output are unchanged, and text made of
+  ordinary characters and single spaces prints exactly as before.
+- The HTTP app keeps an explicitly supplied client pool even when it is empty. Previously,
+  an empty pool was treated as missing and replaced by the default, discarding its custom
+  transport and idle-client limit. Omitting the pool or passing `None` still selects the
+  default; the selected pool is closed when the app shuts down.
+- The network server refuses to start when `MCP_PUBLIC_URL` contains a username or password,
+  which it would otherwise publish in its protected-resource document and in the challenge of
+  every 401.
+- The network server refuses to start when `ORINYX_HOP_SECRET` cannot be sent as an HTTP header
+  (a line break or a NUL inside it, or a space or tab at either end), instead of starting,
+  reporting healthy and then refusing every caller.
+- Running the tests can no longer read, refresh or use a sign-in saved by `orinyx login`: the
+  test suite now blocks the OS keychain in its own process and in the child processes it
+  starts, and refuses any connection that leaves the machine.
+- `requirements.lock` pins `opentelemetry-api` 1.45.2 (was 1.45.1), the release that fixes
+  GHSA-mf5v-w3w3-f6cg (CVE-2026-126360), slow parsing of a crafted `traceparent`. A new test
+  fails if the pin falls below 1.45.2. The package's own dependency ranges are unchanged.
 
 ## [0.1.4] - 2026-11-05
 
@@ -101,7 +139,7 @@ Planned release: **0.1.5**.
 ### Added
 
 - The not-for-clinical-use statement opens the server instructions and every tool description,
-  the README's first screen and the release notes; tests pin the exact text (gate B15).
+  the README's first screen and the release notes; tests pin the exact text.
 
 ### Changed
 
@@ -162,7 +200,8 @@ drug, and combination products. Most show up as a NOT VERIFIED row, a refused or
 total that was not checked, so a missing flag is never evidence that an order is safe. See
 [Known limits](docs/RELEASE_NOTES_2026-11-02.md#known-limits).
 
-[Unreleased]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/lexthirteen-ai/orinyx-mcp/compare/v0.1.1...v0.1.2

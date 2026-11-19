@@ -21,7 +21,7 @@ from orinyx_mcp.client import OrinyxApiError, OrinyxClient
 from orinyx_mcp.config import ConfigError
 from orinyx_mcp.gateway import Gateway
 
-# Gate B15: the not-for-clinical-use statement, worded by the owner on 2026-10-31. It
+# The not-for-clinical-use statement, worded by the owner on 2026-10-31. It
 # opens the server INSTRUCTIONS and every tool description; tests pin the exact text.
 NOT_FOR_CLINICAL_USE = (
     "Not for clinical use. Orinyx checks medication claims against cited FDA label text for "
@@ -258,7 +258,7 @@ def _guard_tool_descriptions(server: Any) -> None:
     `MCPServer.tool()` delegates to `add_tool`, so wrapping the instance's `add_tool` covers
     each registration path: the decorators below, `register_arena_tools` in arena.py and any
     later `register_*` function, with or without an explicit description. An explicit
-    description that already opens with the statement is kept as given (gate B15).
+    description that already opens with the statement is kept as given.
     """
     from orinyx_mcp.annotations import TOOL_METADATA
 

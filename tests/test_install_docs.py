@@ -286,7 +286,8 @@ def test_pypi_stdio_cli_and_self_serve_key_instructions():
         "orinyx verify --file claims.json",
     ):
         assert command in install
-    assert "Once the first PyPI release is published" in install
+    assert "Once the first PyPI release is published" not in install
+    assert "Before the first PyPI upload" not in install
     assert "HTTP server, not stdio" in _collapse(install)
     keys = _section(readme, "### Get an API key")
     for endpoint in (
@@ -327,9 +328,21 @@ def test_no_changed_file_shows_a_key_shaped_value(rel):
     assert not KEY_SHAPED.search(_read(rel))
 
 
-@pytest.mark.parametrize("rel", _doc_files())
-def test_no_doc_names_a_cli_login(rel):
-    assert not CLI_LOGIN.search(_read(rel))
+def test_cli_login_docs_explain_secure_storage_scope_and_release_dependency():
+    readme = _read("README.md")
+    login = _section(readme, "### CLI login")
+    assert CLI_LOGIN.search(login)
+    for requirement in (
+        "New in 0.1.5",
+        "Keychain",
+        "Secret Service",
+        "never exam scopes",
+        "ORINYX_API_KEY",
+        "always wins",
+        "no-browser",
+        "same device",
+    ):
+        assert requirement in login
 
 
 def test_troubleshooting_exists_and_is_linked_from_installation():
@@ -391,3 +404,54 @@ def test_supported_environments_is_linked_and_states_facts_only():
 def test_the_ci_python_versions_match_the_supported_environments_row():
     workflow = _read(".github/workflows/ci.yml")
     assert 'python-version: ["3.11", "3.12", "3.13"]' in workflow
+
+
+FIRST_RUN = ROOT / "examples" / "first-run"
+FIRST_RUN_ORDERS = ["clean", "planted", "abstain", "known-limit"]
+
+
+@pytest.mark.parametrize("name", FIRST_RUN_ORDERS)
+def test_each_first_run_order_passes_the_identifier_screen(name):
+    from orinyx_mcp.screen import screen_orders
+
+    orders = (FIRST_RUN / f"{name}.txt").read_text(encoding="utf-8").splitlines()
+    assert orders and screen_orders(orders) is None
+
+
+@pytest.mark.parametrize("name", [*FIRST_RUN_ORDERS, "claims"])
+def test_each_expected_output_names_its_capture_date_and_versions(name):
+    text = (FIRST_RUN / "expected" / f"{name}.txt").read_text(encoding="utf-8")
+    head = text.split("\n\n", 1)[0]
+    assert "Captured 2026-" in head
+    assert "Orinyx API 0.4.0" in head and "kg-2026.11.6" in head
+    assert "orinyx-mcp 0.1.5" in head
+    assert "Verdict fields" in text and "| Part | Verdict | Severity |" in text
+    assert not re.search(r"Run id: [0-9a-f]{8}-", text)
+
+
+def test_the_first_run_claims_file_has_the_documented_claim_shape():
+    from orinyx_mcp.cli import _load_claims
+
+    claims, _ = _load_claims(FIRST_RUN / "claims.json")
+    assert claims
+    for claim in claims:
+        assert set(claim) == {"rawText", "drug", "claimType", "structuredValue"}
+        assert claim["claimType"] in {"dose_range", "route", "frequency"}
+        assert isinstance(claim["structuredValue"], dict)
+
+
+def test_the_first_run_reference_names_the_abstain_and_known_limit():
+    text = (FIRST_RUN / "README.md").read_text(encoding="utf-8")
+    assert "### The abstain" in text and "### The known limit" in text
+    assert "RELEASE_NOTES_2026-11-02.md#known-limits" in text
+    assert "not evidence of accuracy" in text
+
+
+def test_the_cli_docs_name_login_as_a_cli_credential():
+    readme = _read("README.md")
+    assert "hosted connector OAuth is not a CLI credential" not in readme
+    assert "`ORINYX_API_KEY` only. Today the CLI" not in readme
+    assert "The CLI uses a saved [CLI login](#cli-login) or `ORINYX_API_KEY`" in readme
+    quickstart = _read("docs/QUICKSTART.md")
+    assert "hosted connector OAuth is not a CLI credential" not in quickstart
+    assert "CI has no browser or keychain for `orinyx login`" in quickstart

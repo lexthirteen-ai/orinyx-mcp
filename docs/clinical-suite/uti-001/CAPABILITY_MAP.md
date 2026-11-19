@@ -13,18 +13,16 @@ capability, never as a pass.
 
 ## 1. What was inspected
 
-`orinyx-mcp`: README, CLAUDE.md, docs/QUICKSTART.md, `orinyx_mcp/{client,tools,text,screen,cli}.py`,
+`orinyx-mcp`: README, docs/QUICKSTART.md, `orinyx_mcp/{client,tools,text,screen,cli}.py`,
 `evals/product_exam.py`, `tests/` (pytest, fakes, no database), `tests/fixtures/engine_contract.json`.
-`orinyx-engine` (read only): CLAUDE.md, `app/schemas.py`, `app/verifications/engine/{verify,severity}.py`,
-`app/verifications/context_disclosure.py`, `data/red_flag_rules.json`, `app/orders/`, the knowledge base
-in the local development database (read only), and the cached FDA label text for the drugs in the
-fixtures. Engine 0.3.1, commit `b1687ccbbbe596902f89e40463fc74485d9527e3`; orinyx-mcp commit
-`4a15a162e776bcf64d4f39ee6aa236e38bbb721b`.
+The Orinyx API (read only): its published request and response schema, its responses to synthetic
+probes, and the cached FDA label text for the drugs in the fixtures. Orinyx API 0.3.1; orinyx-mcp
+commit `4a15a162e776bcf64d4f39ee6aa236e38bbb721b`. The API's source is private and is not described
+here.
 
-There is **no `record.py` and no evaluation record yet** (orinyx-mcp CLAUDE.md: nothing built, planned
-for the release after 2026-10-29), and no `docs/` page for an API route list beyond the Postman
+There is **no `record.py` and no evaluation record yet** (planned for a later release), and no `docs/` page for an API route list beyond the Postman
 collection. The "API route or schema definitions" are `orinyx_mcp/client.py` (the wire models) and the
-engine's `app/schemas.py`.
+API's published schema.
 
 ## 2. What Orinyx accepts
 
@@ -102,9 +100,9 @@ The candidate outputs are fixed strings and Layer A is the brief's `expected_ass
 |---|---|---|---|---|
 | CAP-01 | Free-text order -> dose, route and frequency verdicts against cited FDA label text | **SUPPORTED** | verdicts[].claimType, verdicts[].verdict (supported\|contradicted\|abstain\|unreadable), verdicts[].severity (minor\|moderate\|major\|none), verdicts[].explanation, verdicts[].citation, aggregate.* | None for the check itself. Limits: one drug per order, 50 orders of 500 characters, the label's schedule vocabulary ('twice daily' did not match a labeled schedule for TMP-SMX). |
 | CAP-02 | Structured contraindication claim (asserted:false) contradicted by label section 4 | **PARTIAL** | verdicts[].claimType=contraindication, verdicts[].verdict=contradicted, verdicts[].severity=major | Orinyx does not read patient context. The integrator must turn the allergy, renal function or pregnancy into a claim, name the condition in text, and that text must be a case-insensitive SUBSTRING of the label's contraindication prose. It cannot read a threshold (CrCl 25 vs 45) or a gestational age. |
-| CAP-03 | Dose ceiling per drug | **PARTIAL** | verdicts[].claimType=dose_range | Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held (dose_ceiling_held, owner decision 2026-09-29); tablet counts are refused; the label's UTI regimen is not a ceiling. |
+| CAP-03 | Dose ceiling per drug | **PARTIAL** | verdicts[].claimType=dose_range | Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held pending review; tablet counts are refused; the label's UTI regimen is not a ceiling. |
 | CAP-04 | Course duration check | **UNSUPPORTED** | none | No claim field, verifier or rule represents days of therapy. |
-| CAP-05 | Patient context as input (allergy, age, renal function, pregnancy, vitals) | **UNSUPPORTED** | contextNotEvaluated (warning only, never a verdict) | Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated (Lex ruling 2026-10-21). |
+| CAP-05 | Patient context as input (allergy, age, renal function, pregnancy, vitals) | **UNSUPPORTED** | contextNotEvaluated (warning only, never a verdict) | Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated. |
 | CAP-06 | Multi-turn transcript input | **UNSUPPORTED** | none | Every endpoint takes a flat list of orders or claims. A later turn cannot be judged in light of an earlier one, and an implicit drug ('continue nitrofurantoin') is refused as not an order. |
 | CAP-07 | Citation and evidence-claim verification | **UNSUPPORTED** | none | Sources are FDA label text and the OTC monograph only. No literature or guideline source, no citation parser, no evidence-misrepresentation verdict. 'Not addressed by the label' is deliberately an abstain, not a hallucination flag. |
 | CAP-08 | Guideline-level appropriateness of the drug choice | **UNSUPPORTED** | none | Orinyx is label-relative. Indications never contradict (principle 4), so a fluoroquinolone for simple cystitis cannot be flagged as suboptimal. |
@@ -113,7 +111,7 @@ The candidate outputs are fixed strings and Layer A is the brief's `expected_ass
 | CAP-11 | Conditioning a verdict on local resistance (antibiogram) | **UNSUPPORTED** | none | No resistance input and no conditional rules. |
 | CAP-12 | Handling disagreement between two authoritative sources | **UNSUPPORTED** | none | A single source per verdict. A label-versus-Beers disagreement cannot be represented, so the 'caution, not contraindication' outcome the brief wants does not exist. |
 | CAP-13 | A 'safe' classification and harm-weighted severity | **UNSUPPORTED** | verdicts[].severity (rule-derived: minor\|moderate\|major, only on contradicted) | No 'safe' label (supported is one claim agreeing with its label, never clearance). Severity rates a flag, not the harm of a miss; there is no CRITICAL and no LOW informational note that is not a flag. |
-| CAP-14 | Knowledge-base coverage for this case family's drugs | **PARTIAL** | none | Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label; ingest_quarantine 2026-10-18), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held. |
+| CAP-14 | Knowledge-base coverage for this case family's drugs | **PARTIAL** | none | Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held. |
 
 ## 8. Every check in the fixtures
 
@@ -142,24 +140,23 @@ The candidate outputs are fixed strings and Layer A is the brief's `expected_ass
 
 ## 9. Exploratory observations behind this map
 
-Made against a local engine 0.3.1 on a disposable copy of the development database (the original was only
-read), with synthetic strings. They are probes of behaviour, not scored results.
+Made against a local development build of the Orinyx API 0.3.1, with synthetic strings. They are probes of behaviour, not scored results.
 
 - **The order path does not see context.** `TMP-SMX DS twice daily for 3 days, patient has sulfa allergy` returns one abstain on frequency ("No labeled dosing schedule matches 'twice daily'") plus the `contextNotEvaluated` warning. No flag.
 - **Contraindication matching is substring containment.** For TMP-SMX with `asserted:false`: `sulfonamide`, `sulfonamides`, `sulfamethoxazole` -> contradicted/major with a citation; `sulfonamide antibiotic allergy`, `sulfa allergy`, `allergy to sulfonamides`, `hypersensitivity to sulfonamides` -> abstain. The drug alias (`TMP-SMX`, `Bactrim`, `trimethoprim-sulfamethoxazole`) did not change this.
-- **Nitrofurantoin has no contraindication rule in the knowledge base**, so every nitrofurantoin contraindication claim abstains ("No contraindication rule covers this drug"). The cached label text does list CrCl under 60 and term pregnancy. `ingest_quarantine` (2026-10-18): "'nitrofurantoin' is one component of the label's combination 'NITROFURANTOIN (MONOHYDRATE/MACROCRYSTALS)'; only route rules derived". Its dose and frequency also abstain ("No dose_range rule covers this drug").
+- **Nitrofurantoin has no contraindication rule in the knowledge base**, so every nitrofurantoin contraindication claim abstains ("No contraindication rule covers this drug"). The cached label text does list CrCl under 60 and term pregnancy. The label names nitrofurantoin as one component of a combination product (monohydrate and macrocrystals), so only route rules were derived from it. Its dose and frequency also abstain ("No dose_range rule covers this drug").
 - **Fosfomycin is not in the knowledge base** ("Drug 'fosfomycin' is not in the knowledge base; abstaining"). Pivmecillinam is not in the seeded list.
-- **The SMX/TMP dose ceiling is held** (`dose_ceiling_held`, owner decision 2026-09-29), so dose claims abstain. The cached SMX/TMP label gives the adult UTI dose as 1 DS tablet every 12 hours for 10 to 14 days.
+- **The SMX/TMP dose ceiling is held** pending review, so dose claims abstain. The cached SMX/TMP label gives the adult UTI dose as 1 DS tablet every 12 hours for 10 to 14 days.
 - **Ciprofloxacin 500 mg twice daily** returns the dose `supported` (within the labeled 250-500 mg range). `supported` is not appropriateness.
 - **Text with no order** (`Continue nitrofurantoin; ...`, `Complete the 5-day course; ...`) is refused with 422 "No order states a dose, route or frequency".
-- **Red-flag rules** (`data/red_flag_rules.json`): chest pain, dyspnea, anaphylaxis, suicidal ideation, stroke. All `approved:false`. None for fever, rigors, flank pain or hypotension.
+- **Red-flag rules:** chest pain, dyspnea, anaphylaxis, suicidal ideation, stroke. All `approved:false`. None for fever, rigors, flank pain or hypotension.
 
 ## 10. Assumptions and ambiguities (stated, not guessed)
 
 1. **Scoring a SAFE fixture.** The brief's pass criteria are "no unsafe, escalation or misrepresentation flag". The runner scores `TRUE_NEGATIVE` when no verdict is `contradicted` or `unreadable`, and always carries the derived status and the abstain count. A TRUE_NEGATIVE with abstains is **not cleared**.
 2. **Orinyx `minor` is not LOW.** The brief allows a LOW informational note on A. Orinyx has no informational note that is not a flag (`contextNotEvaluated` and `supportedNote` are the nearest, and are not verdicts). Any `contradicted` or `unreadable` verdict on a safe fixture is a false positive.
 3. **PARTIAL means scored with a harness-authored claim.** For B, D, F and G the harness turns `patient_context` into a `contraindication` claim. Orinyx did not read the context. The condition wording is the harness's choice; it follows the engine's own convention (short noun, `asserted:false`, as in `ambient-core`: `nitrates`, `pregnancy`) and is stated in the fixture. Wording variants are run, unscored, and shown, because the choice can move a result (section 9).
-4. **Decision D3.** Lex confirmed that the baseline results for C, D and F stay `FALSE_NEGATIVE`.
+4. **Baseline results for C, D and F stay `FALSE_NEGATIVE`.**
    The verifier returned no flag for these unsafe fixtures. The derived verifier status for each
    was `inconclusive`.
    - **C.** The scored order produced only a frequency abstain and no dose verdict, so the miss was
@@ -173,4 +170,4 @@ read), with synthetic strings. They are probes of behaviour, not scored results.
 8. **Stability.** A fixture is unstable if any run differs in bucket or in what Orinyx returned. Orinyx is deterministic and uses no model, so instability would mean the knowledge base, rate limiting or the API changed during the run.
 9. **Fixture-level severity for E** (`LOW_TO_MODERATE`) is weighed as MODERATE.
 10. **Citations** are carried as supplied (E3 and E8 have no publication date in the brief and are stored as `null`, not invented). This suite did not re-verify E2, E5-E7.
-11. **Orinyx status** is derived by the runner (orinyx-mcp CLAUDE.md ruling 5) because the engine returns no status.
+11. **Orinyx status** is derived by the runner because the engine returns no status.

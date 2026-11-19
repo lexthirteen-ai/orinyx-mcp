@@ -1,4 +1,4 @@
-"""Every tool's title and behaviour hints as an MCP client reads them from tools/list (CHA-117).
+"""Every tool's title and behaviour hints as an MCP client reads them from tools/list.
 
 Claude's connector directory requires a human-readable title and the applicable hints on each
 tool. The expected values are written out here, not read from annotations.py, so a changed
@@ -22,10 +22,10 @@ DEFAULT_TOOLS = {
     "find_fda_label": ("Find an FDA prescribing label", True, False, True),
     "read_fda_label_section": ("Read an FDA label section", True, False, True),
     "start_a_test": ("Choose a test", True, False, True),
-    "get_next_exam_case": ("Get the next exam case", False, False, True),
-    "get_exam_cases": ("Get every exam case", False, False, True),
-    "submit_exam_answers": ("Submit exam answers", False, False, True),
-    "finish_exam": ("Finish an exam", False, True, True),
+    "get_next_exam_case": ("Get the next exam case", False, False, False),
+    "get_exam_cases": ("Get every exam case", False, False, False),
+    "submit_exam_answers": ("Submit exam answers", False, False, False),
+    "finish_exam": ("Finish an exam", False, True, False),
     "get_exam_report": ("Read an exam report", True, False, True),
 }
 ARENA_TOOLS = {

@@ -66,10 +66,10 @@ never merged. An UNSUPPORTED check is INCONCLUSIVE, never a pass; a TRUE_NEGATIV
 
 ## Baseline provenance
 
-The baseline ran against a local engine 0.3.1 at `b1687ccbbbe596902f89e40463fc74485d9527e3`, the
-head of `build/2026-10-22-password-reset` at the time. Engine `main` was at `bc86d37`. Establishing
-a baseline for `main` requires a separate run against a pinned `main` commit.
+The baseline ran on 2026-10-23 against a local development build of the Orinyx API 0.3.1, not the
+hosted API. The API's source is private, so its commit and branch are not recorded here. A baseline
+for the hosted API needs a separate run against it.
 
-The run used a disposable copy of the development database (`orinyx_uti001_baseline`). Orinyx run IDs
-in `results.json` point into that copy's audit trail. The runner used orinyx-mcp commit `4a15a16`
+The run used a disposable test database. The Orinyx run IDs in `results.json` point into that
+database's audit trail and cannot be looked up on the hosted API. The runner used orinyx-mcp commit `4a15a16`
 with a dirty working tree containing the new suite files.

@@ -66,8 +66,7 @@ examples, issues, pull requests or logs you paste. Use synthetic data throughout
 
 ## Publishing to TestPyPI and PyPI (owner checklist)
 
-The repository is already public and has GitHub release tags; those do not upload a
-package to PyPI. Before the November 9 announcement:
+GitHub release tags alone do not upload a package to PyPI. For each PyPI release:
 
 1. Merge the publishing workflow and deploy the engine's self-serve key endpoints
    before advertising that credential path.
@@ -88,17 +87,21 @@ package to PyPI. Before the November 9 announcement:
    No PyPI API token or GitHub repository secret is needed. For CHA-142 L5b, add exactly
    one Actions allowlist entry, shared by both publishing jobs (v1.14.3):
    `pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086`.
-4. This work targets **0.1.5**, alongside the other changes accumulating on `main`.
+4. Each release targets the version set in `orinyx_mcp/__init__.py`, alongside the other
+   changes accumulating on `main`.
    Merge the engine API first, then the dashboard/MCP consumers; do not copy engine
    authorization into either client. The package version is set to `0.1.5`; review
    the combined release notes before tagging. Existing tags must not be moved. From
    the reviewed release commit, create and push the matching `v0.1.5` tag. The workflow refuses a
    tag/version mismatch, tests the package, then builds a wheel and sdist with
-   `python -I -m build` and validates their metadata with Twine. Only stable
+   `python -I -m build --no-isolation` and validates their metadata with Twine. The build
+   tools come from `requirements-release.lock`, installed with their hashes in an
+   environment of their own. Only stable
    `v<major>.<minor>.<patch>` tags publish to TestPyPI then PyPI; prerelease tags are refused.
    `scripts/lint_release_workflow.py` governs the workflow, and
    `scripts/check_dist.py` validates both archives against the version's exact
-   manifest in `release/manifests/`, the source tree and the Registry marker.
+   manifest in `release/manifests/` and the source tree. The first 0.1.5 upload
+   does not require the Registry marker.
    Update that manifest whenever packaged files change. Checksums and an exact
    file-list check are repeated in each publishing job before upload.
 5. Approve the `testpypi` environment deployment and check the upload at
@@ -116,6 +119,24 @@ account settings, and never creates a release tag itself. Account creation, 2FA,
 publisher registration, environment reviewer settings and the allowlist entry are Lex-only
 console actions. CHA-142 L5c's npm `orinyx` organization is also a Lex-only console action;
 this workflow publishes nothing to npm.
+
+### Registry marker sequencing
+
+Lex's ruling of 2026-11-07, reaffirmed on 2026-11-08 in
+[CHA-178](https://linear.app/charmthirteen/issue/CHA-178):
+
+> the marker lands on public `main` only after PyPI 0.1.5 is published under her account
+
+orinyx-mcp 0.1.5 was published on PyPI under Lex's account on 2026-11-15. The marker then landed in one reviewed change: the exact `mcp-name` HTML comment once,
+on its own line, within the README's first 20 lines; a test that pins its exact line, single
+occurrence and placement; and `--require-marker` on in the release workflow. Keep the checker's
+marker support and tests intact.
+
+The 0.1.5 PyPI description is frozen at upload, so the marker reaches PyPI with the next
+release. Publish that release before adding the Registry `packages` entry in
+[CHA-144](https://linear.app/charmthirteen/issue/CHA-144). The marker's premature landing in
+[PR #12](https://github.com/lexthirteen-ai/orinyx-mcp/pull/12), later reverted, stays on the
+record.
 
 ## License
 

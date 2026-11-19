@@ -1,0 +1,34 @@
+Input: examples/first-run/claims.json (structured claims for warfarin 5 mg by mouth daily)
+Captured 2026-11-15 (21:35 UTC) from the hosted Orinyx API 0.4.0, knowledge graph
+kg-2026.11.6, with orinyx-mcp 0.1.5 from PyPI (the hosted connector runs the same release,
+commit f0a4386). Run ids and times are replaced with placeholders.
+
+Verdict fields, from `orinyx verify --file examples/first-run/claims.json --json`:
+
+| Part | Verdict | Severity | Cited section | Label set id or source | Effective |
+|---|---|---|---|---|---|
+| dose | supported | none | Dosage and Administration (§2) | 5a5b5e3a-6556-a542-e063-6294a90a6d3f | 20260831 |
+| route | supported | none | openFDA product metadata | 5a5b5e3a-6556-a542-e063-6294a90a6d3f | 20260831 |
+
+--- CLI: orinyx verify --file examples/first-run/claims.json ---
+
+Orinyx verification - run <run id>
+Checked 2 claims: 0 flagged, 2 supported, 0 abstained.
+
+FLAGS (0): no claim was found to contradict its label. This is not a safety clearance; abstained claims below were not checked.
+
+SUPPORTED (2) - consistent with the cited label text; not a judgment that the order suits a patient:
+1. warfarin 5 mg by mouth daily (dose)
+   Citation: openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+2. warfarin 5 mg by mouth daily (route)
+   Citation: openFDA, openFDA product metadata - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+
+ABSTAINED (0)
+
+Orinyx flags; the clinician decides.
+
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): Supported 1, 2 - 2 supported
+Semantic Mapping (beta): no rows in this run
+Source Evidence (beta): no rows in this run
+exit 0

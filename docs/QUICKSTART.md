@@ -4,8 +4,10 @@ Connect an agent to Orinyx, run a first check, add it to CI, and sit an exam. Sy
 only throughout: never real patient records, names, dates or record numbers.
 
 For the hosted connector, the self-serve path, you need an Orinyx account and no key;
-[First run](#first-run) starts with signing up. The stdio server, the CLI and CI each
-need an Orinyx API URL and a key (`ork_live_...`) issued by Orinyx through the
+[First run](#first-run) starts with signing up. Local CLI and stdio also support
+[`orinyx login`](../README.md#cli-login): browser sign-in,
+secure OS storage, verification and Arena access according to account permissions, no exams.
+CI and explicit key-based use need an Orinyx API URL and a key (`ork_live_...`) issued through the
 [self-serve API](../README.md#get-an-api-key) or an operator. PyPI and `uvx` installation
 instructions are in the [README](../README.md#install-from-pypi).
 
@@ -15,7 +17,7 @@ Nothing to install: this uses the hosted connector.
 
 1. **Sign up** at [orinyx.io/developers](https://orinyx.io/developers).
 2. **Open the welcome email** and follow its link to set your password. The link can be used
-   once.
+   once. If the email has not arrived after 10 minutes, contact [hello@orinyx.io](mailto:hello@orinyx.io).
 3. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` in your client (steps for each client
    are under [Connect your client](#connect-your-client)). The client sends you to the
    Orinyx sign-in page. Sign in with your email and the password you set.
@@ -28,14 +30,18 @@ Nothing to install: this uses the hosted connector.
 7. **Compare** each result with the expected output below.
 
 The two orders are also in [examples/first-run/](../examples/first-run/) (`clean.txt`,
-`planted.txt`), with the same check run from the shell.
+`planted.txt`), with the same check run from the shell, an abstain example and a known-limit
+example.
 
 ### Expected output
 
-The output below was captured on 2026-11-07 from the hosted Orinyx connector
-(`https://orinyx-mcp.fly.dev/mcp`, orinyx-mcp 0.1.3). It was captured with this package's own
-MCP server, called by an MCP client in the same way an agent calls it. Your run should match on these points: the same rows, the same
-verdict and severity on each, and the same citations. These parts will be different:
+The expected output of both orders is in the
+[first-run reference example](../examples/first-run/README.md#expected-results), with each
+row's verdict, severity, cited label set id and effective date, and the API and package
+versions it was captured on. The full text the tool returns is in
+[examples/first-run/expected/](../examples/first-run/expected/). Your run should match on these
+points: the same rows, the same verdict and severity on each, and the same citations. These parts
+will be different:
 
 - the run id;
 - the "Orinyx checking time" line;
@@ -44,81 +50,9 @@ verdict and severity on each, and the same citations. These parts will be differ
 Your agent may summarise the result in its own words. To compare line by line, ask it to show
 the tool's output exactly as returned.
 
-**Clean example:** three claims, all supported, each with a citation, and no flag.
-
-```text
-Orinyx verification - run c368f727
-Checked 3 claims: 0 flagged, 3 supported, 0 abstained.
-
-| # | Claim | Part | Result | Severity | Why | Citation |
-|---|---|---|---|---|---|---|
-| 1 | warfarin 5 mg by mouth daily | dose | SUPPORTED | - | Dose 5.0 mg falls within the labeled range 5–7 mg. Daily total 5 mg in 24 hours (1 dose; assumption: 'once daily' around the clock); no 24-hour maximum is on file for this drug, so the daily total was not checked. | [1] |
-| 2 | warfarin 5 mg by mouth daily | route | SUPPORTED | - | Route 'oral' matches the labeled route. | [2] |
-| 3 | warfarin 5 mg by mouth daily | frequency | SUPPORTED | - | Frequency 'once daily' matches a labeled schedule. | [3] |
-
-Citations:
-[1] openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
-[2] openFDA, openFDA product metadata - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
-[3] openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
-
-No claim was found to contradict its label. This is not a safety clearance; claims not verified were not checked.
-SUPPORTED: consistent with the cited label text; not a judgment that the order suits a patient.
-
-Orinyx flags; the clinician decides.
-
-Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
-Orinyx checking time: 42.2 ms
-
-Checks (beta release candidates; Orinyx names the check behind each row):
-Medication Claims (beta): rows 1, 2, 3 - 3 supported
-Semantic Mapping (beta): no rows in this run
-Source Evidence (beta): no rows in this run
-
-Run id: c368f727-c697-4f94-a16d-94642bdc6c17
-```
-
-**Planted example:** the dose is flagged (Moderate), and route and frequency are supported. At
-1,500 mg every 4 hours, the daily total is 9,000 mg. FDA OTC Monograph M013.50(d)(2) states a
-maximum of 4,000 mg in 24 hours. The error is planted so you can see a flag. It is not a dosing
-example.
-
-```text
-Orinyx verification - run f57fc863
-Checked 3 claims: 1 flagged, 2 supported, 0 abstained.
-
-| # | Claim | Part | Result | Severity | Why | Citation |
-|---|---|---|---|---|---|---|
-| 1 | acetaminophen 1500 mg by mouth every 4 hours | dose | FLAGGED | MODERATE | Daily exposure 1500.0 mg × 6 doses per day = 9000.0 mg exceeds the explicitly stated maximum of 4000 mg in 24 hours (FDA OTC Monograph, M013.50(d)(2)). Assumption: 'every 4 hours' read as 6 doses in 24 hours, around the clock. | [1] |
-| 2 | acetaminophen 1500 mg by mouth every 4 hours | route | SUPPORTED | - | Route 'oral' matches the labeled route. | [2] |
-| 3 | acetaminophen 1500 mg by mouth every 4 hours | frequency | SUPPORTED | - | Frequency 'every 4 hours' matches a labeled schedule. | [3] |
-
-Citations:
-[1] FDA OTC Monograph, M013.50(d)(2) - id M013.50(d)(2)@v1 - OTC Monograph M013 §M013.50(d)(2): "Adults: Oral dosage is 325 to 650 milligrams every 4 hours or 325 to 500 milligrams every 3 hours or 650 to 1,000 milligrams every 6 hours, while symptoms persist, not to exceed 4,000 milligrams in 24 hours, or as directed by a doctor." (document version 1, sha256 89db91c7edae) - https://www.accessdata.fda.gov/drugsatfda_docs/omuf/monographs/OTC%20Monograph_M013-Internal%20Analgesic%2C%20Antipyretic%2C%20and%20Antirheumatic%20Drug%20Products%20for%20OTC%20Human%20Use%2010.14.2022.pdf
-[2] openFDA, openFDA product metadata - id 7f445de3-30cf-4bd8-892d-05979cd399e7 - childrens fever reducer and pain reliever prescribing information, SPL set ID 7f445de3-30cf-4bd8-892d-05979cd399e7, effective 20260909 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7f445de3-30cf-4bd8-892d-05979cd399e7
-[3] openFDA, Dosage and Administration (§2) - id 7f445de3-30cf-4bd8-892d-05979cd399e7 - childrens fever reducer and pain reliever prescribing information, SPL set ID 7f445de3-30cf-4bd8-892d-05979cd399e7, effective 20260909 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7f445de3-30cf-4bd8-892d-05979cd399e7
-
-Why each severity:
-Row 1 (MODERATE): Rated Moderate by Orinyx's curated rule for this dose limit, derived from the cited source (FDA OTC Monograph, M013.50(d)(2)).
-
-FLAGGED: the cited label says otherwise, at the severity shown.
-SUPPORTED: consistent with the cited label text; not a judgment that the order suits a patient.
-
-Orinyx flags; the clinician decides.
-
-Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
-Orinyx checking time: 29 ms
-
-Checks (beta release candidates; Orinyx names the check behind each row):
-Medication Claims (beta): rows 1, 2, 3 - 1 flagged, 2 supported
-Semantic Mapping (beta): no rows in this run
-Source Evidence (beta): no rows in this run
-
-Run id: f57fc863-a31b-4a0a-af73-440f5d1215b8
-```
-
-If you get a different verdict for either order, the API you reached holds different reference
-data from the engine that produced this output. The verdict the API returned is the one to
-read.
+If you get a different verdict for either order, compare the citation's set id and effective
+date with the reference example. A different label means different results, and the verdict
+the API returned is the one to read.
 
 ### Limits
 
@@ -332,8 +266,9 @@ orinyx export <run id> --format report --out report.pdf   # csv | pdf | report; 
 `orinyx verify` exits 0 clean, 2 flagged (a `contradicted` claim or an `unreadable` order),
 3 not verified (no flag, but an abstain), 1 error. Usage errors exit 1, never 2.
 
-CI needs an `ork_live_` key issued by Orinyx through the [self-serve API](../README.md#get-an-api-key)
-or an operator: hosted connector OAuth is not a CLI credential. Have your test job write the agent's claims for a
+CI has no browser or keychain for `orinyx login`, so it needs an `ork_live_` key issued by
+Orinyx through the [self-serve API](../README.md#get-an-api-key) or an operator. Signing in to
+the hosted connector from your agent does not sign in the CLI. Have your test job write the agent's claims for a
 fixed set of synthetic inputs to a JSON file, then:
 
 ```yaml

@@ -1,0 +1,79 @@
+Input: examples/first-run/clean.txt (warfarin 5 mg by mouth daily)
+Captured 2026-11-15 (21:35 UTC) from the hosted Orinyx API 0.4.0, knowledge graph
+kg-2026.11.6, with orinyx-mcp 0.1.5 from PyPI (the hosted connector runs the same release,
+commit f0a4386). Run ids and times are replaced with placeholders.
+
+Verdict fields, from `orinyx get <run id> --json`:
+
+| Part | Verdict | Severity | Cited section | Label set id or source | Effective |
+|---|---|---|---|---|---|
+| dose | supported | none | Dosage and Administration (§2) | 5a5b5e3a-6556-a542-e063-6294a90a6d3f | 20260831 |
+| route | supported | none | openFDA product metadata | 5a5b5e3a-6556-a542-e063-6294a90a6d3f | 20260831 |
+| frequency | supported | none | Dosage and Administration (§2) | 5a5b5e3a-6556-a542-e063-6294a90a6d3f | 20260831 |
+| identity | supported | none | openFDA product metadata | 5a5b5e3a-6556-a542-e063-6294a90a6d3f | 2026-08-31 |
+
+--- MCP: verify_order_text, exactly as written ---
+
+Orinyx verification - run <run id>
+Checked 4 claims: 0 flagged, 4 supported, 0 abstained.
+
+| # | Claim | Part | Result | Severity | Why | Citation |
+|---|---|---|---|---|---|---|
+| 1 | warfarin 5 mg by mouth daily | dose | SUPPORTED | - | Dose 5.0 mg falls within the labeled range 5–7 mg. Daily total 5 mg in 24 hours (1 dose; assumption: 'once daily' around the clock); no 24-hour maximum is on file for this drug, so the daily total was not checked. | [1] |
+| 2 | warfarin 5 mg by mouth daily | route | SUPPORTED | - | Route 'oral' matches the labeled route. | [2] |
+| 3 | warfarin 5 mg by mouth daily | frequency | SUPPORTED | - | Frequency 'once daily' matches a labeled schedule. | [3] |
+| 4 | warfarin 5 mg by mouth daily | identity | SUPPORTED | - | Matched warfarin via KB name. Reference label: Warfarin Sodium. | [4] |
+
+Citations:
+[1] openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+[2] openFDA, openFDA product metadata - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+[3] openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+[4] openFDA, openFDA product metadata - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 2026-08-31 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+
+No claim was found to contradict its label. This is not a safety clearance; claims not verified were not checked.
+SUPPORTED: consistent with the cited label text; not a judgment that the order suits a patient.
+
+Orinyx flags; the clinician decides.
+
+Note: Supported means one claim agrees with its cited label text. It does not clear the regimen: the daily total, the schedule and patient context are checked only where a row says so.
+Orinyx checking time: <time> ms
+
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): rows 1, 2, 3 - 3 supported
+Semantic Mapping (beta): row 4 - 1 supported
+Source Evidence (beta): no rows in this run
+
+Run id: <run id>
+
+--- CLI: orinyx observe examples/first-run/clean.txt ---
+
+clean.txt#0  run <run id>  4 claims: 0 flagged, 4 supported, 0 abstained
+Observed 1 record, 4 claims: 0 flagged, 4 supported, 0 abstained. Read one in full: orinyx get <run id>
+exit 0
+
+--- CLI: orinyx get <run id> ---
+
+Orinyx verification - run <run id> (<time>)
+Checked 4 claims: 0 flagged, 4 supported, 0 abstained.
+
+FLAGS (0): no claim was found to contradict its label. This is not a safety clearance; abstained claims below were not checked.
+
+SUPPORTED (4) - consistent with the cited label text; not a judgment that the order suits a patient:
+1. warfarin 5 mg by mouth daily (dose)
+   Citation: openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+2. warfarin 5 mg by mouth daily (route)
+   Citation: openFDA, openFDA product metadata - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+3. warfarin 5 mg by mouth daily (frequency)
+   Citation: openFDA, Dosage and Administration (§2) - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 20260831 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+4. warfarin 5 mg by mouth daily (identity)
+   Citation: openFDA, openFDA product metadata - id 5a5b5e3a-6556-a542-e063-6294a90a6d3f - Warfarin Sodium prescribing information, SPL set ID 5a5b5e3a-6556-a542-e063-6294a90a6d3f, effective 2026-08-31 - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5a5b5e3a-6556-a542-e063-6294a90a6d3f
+
+ABSTAINED (0)
+
+Orinyx flags; the clinician decides.
+
+Checks (beta release candidates; Orinyx names the check behind each row):
+Medication Claims (beta): Supported 1, 2, 3 - 3 supported
+Semantic Mapping (beta): Supported 4 - 1 supported
+Source Evidence (beta): no rows in this run
+exit 0

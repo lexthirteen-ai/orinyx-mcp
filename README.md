@@ -26,6 +26,18 @@ before sending anything. Sign up at [orinyx.io/developers](https://orinyx.io/dev
 the hosted connector with your Orinyx account, or mint a personal key for stdio, the CLI
 or CI through the [self-serve API](#get-an-api-key).
 
+**Latest release: [0.1.5](https://github.com/lexthirteen-ai/orinyx-mcp/releases/tag/v0.1.5)**, the first
+release on PyPI.
+
+**Your first verification**
+
+1. Connect the hosted connector `https://orinyx-mcp.fly.dev/mcp` and sign in with your
+   Orinyx account ([setup](#hosted-connector-the-self-serve-path)).
+2. Ask your agent to call `verify_order_text` with the synthetic order
+   `warfarin 5 mg by mouth daily`.
+3. Compare what comes back with the
+   [expected output](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#first-run).
+
 ## Features
 
 - **Orders as written.** `verify_order_text` splits each order into its dose, route and
@@ -75,7 +87,8 @@ or want a clinical decision. Orinyx does not do any of these: see
 ## Installation
 
 Use the hosted connector with OAuth, or install the Python package for stdio, the CLI
-and CI. Local use needs an API URL and a [personal API key](#get-an-api-key).
+and CI. Local use supports [browser login](#cli-login) or an API URL and a
+[personal API key](#get-an-api-key). CI remains key-based.
 
 | Path | For | What you need |
 |---|---|---|
@@ -94,9 +107,11 @@ Nothing to install and no key: this uses the hosted connector, and you sign in w
 Orinyx account.
 
 1. **Sign up** at [orinyx.io/developers](https://orinyx.io/developers).
-2. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` (Streamable HTTP) in your client.
-   The steps for each client are below.
-3. **Start a test.** Then ask your agent to call `start_a_test`. It lists what your
+2. **Open the welcome email** and follow its link to set your password. The link can be used
+   once. If the email has not arrived after 10 minutes, contact [hello@orinyx.io](mailto:hello@orinyx.io).
+3. **Add the connector** `https://orinyx-mcp.fly.dev/mcp` (Streamable HTTP) in your client.
+   Sign in with your email and the password you set. The steps for each client are below.
+4. **Start a test.** Then ask your agent to call `start_a_test`. It lists what your
    account can run and the next step for each.
 
 The client sends you to the Orinyx sign-in page (OAuth 2.1; the API is the authorization
@@ -166,6 +181,43 @@ starts Codex. In the `codex` terminal UI, `/mcp` lists the servers Codex has con
 **Never commit a client config file that holds a key**, such as `claude_desktop_config.json`,
 `.cursor/mcp.json`, `.codex/config.toml` or a project `.mcp.json`.
 
+### CLI login
+
+New in 0.1.5.
+On macOS or desktop Linux with an unlocked OS keychain:
+
+```bash
+orinyx login
+orinyx status --json
+orinyx-mcp stdio
+orinyx logout
+```
+
+Login opens your external browser and receives the result on a one-time IPv4 loopback
+listener. `orinyx login --no-browser` prints the authorization URL instead; open it on
+the **same device** within three minutes. It is not a device-code or SSH login flow.
+No password, code, or token is entered in the terminal.
+
+The default API is `https://orinyx-api.fly.dev`; set `ORINYX_API_URL` to select another
+HTTPS API origin (HTTP is accepted only on loopback). The issuer and OAuth endpoints
+must belong to that origin. Each origin has its own saved login and public-client
+registration. Re-run commands with the same origin; credentials are never sent to a new target.
+
+Login grants verification and Arena scopes permitted by your account, **never exam scopes**.
+Arena still needs operator enablement, tester eligibility, and `ORINYX_ARENA_ENABLED=true`
+in the local MCP environment; sign-in does not bypass any of those gates.
+Use the hosted connector for exam workflows.
+
+Credentials, including rotating refresh tokens, live only in macOS Keychain or Linux
+Secret Service. There is no plaintext config-file fallback. Headless CI uses environment
+keys. The explicit `ORINYX_API_KEY` always wins, even if invalid; unset it to use a login.
+`logout` revokes the saved grant and removes the local record, not environment API keys.
+Offline logout reports that server revocation was not confirmed; end account sessions
+to invalidate a remaining server-side grant. Expired/revoked logins require login again;
+commands never launch a browser implicitly. Long-running stdio refreshes before API calls,
+not during startup, and does not retry writes after authentication failures.
+
+
 ### Get an API key
 
 Beta developers can mint their own keys after signing up and setting a password:
@@ -196,7 +248,7 @@ Never paste passwords or session tokens into an agent prompt or commit them.
 
 ### Install from PyPI
 
-Python 3.11 or later. Once the first PyPI release is published:
+Python 3.11 or later:
 
 ```bash
 pip install orinyx-mcp
@@ -205,7 +257,8 @@ orinyx --help
 orinyx verify --file claims.json --tool my-agent
 ```
 
-Set the API URL and key in the process environment first; see [Get an API key](#get-an-api-key).
+Use [CLI login](#cli-login), or set the API URL and key in the process environment first;
+see [Get an API key](#get-an-api-key).
 For an isolated run without installing into your current Python environment, use
 [uv](https://docs.astral.sh/uv/):
 
@@ -216,13 +269,13 @@ uvx --from orinyx-mcp orinyx --help
 
 The `stdio` argument is required: bare `orinyx-mcp` (or `uvx orinyx-mcp`) starts the
 HTTP server, not stdio. Agent hosts can launch `uvx` with `args: ["orinyx-mcp", "stdio"]`
-and the same API environment variables. Before the first PyPI upload, use the source
-install below; a GitHub release alone does not publish the package to PyPI.
+and the same API environment variables.
 
 ### Local stdio (from source)
 
-The stdio server, the CLI and CI each need an Orinyx API URL and a key (`ork_live_...`)
-issued by Orinyx through the [self-serve API](#get-an-api-key) or an operator. To develop
+The stdio server and CLI support [CLI login](#cli-login). For CI or explicit key-based use,
+provide an Orinyx API URL and a key (`ork_live_...`) issued through the
+[self-serve API](#get-an-api-key) or an operator. To develop
 from a checkout instead of using PyPI:
 
 ```bash
@@ -329,8 +382,12 @@ docker build -t orinyx-mcp .
 docker run --rm -p 8000:8000 \
   -e MCP_PUBLIC_URL=https://mcp.example \
   -e ORINYX_API_URL=https://api.example \
+  -e ORINYX_HOP_SECRET \
   orinyx-mcp
 ```
+
+`ORINYX_HOP_SECRET` is required, and the server refuses to start without it;
+`-e ORINYX_HOP_SECRET` passes the value from your shell, so it stays out of the command.
 
 `MCP_PUBLIC_URL` must be an https URL (plain http only for localhost). The Fly.io layout is in
 [docs/DEPLOY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/DEPLOY.md).
@@ -347,7 +404,8 @@ docker run --rm -p 8000:8000 \
 | Cursor CLI on macOS | hosted OAuth and synthetic verification smoke tested |
 | Cursor editor on macOS | hosted OAuth and synthetic verification smoke tested |
 
-The hosted connector reports its version at `https://orinyx-mcp.fly.dev/health`.
+The hosted connector reports its running build at `https://orinyx-mcp.fly.dev/health`.
+This can differ from the [latest repository release](https://github.com/lexthirteen-ai/orinyx-mcp/releases/latest).
 
 ## Configuration
 
@@ -358,7 +416,8 @@ The hosted connector reports its version at `https://orinyx-mcp.fly.dev/health`.
 | `ORINYX_API_URL` | the Orinyx API (https; plain http only for localhost) |
 | `ORINYX_API_KEY` | an `ork_live_` key issued to you by Orinyx |
 
-Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. The `DOWNSTREAM_MCP_*`
+An explicit `ORINYX_API_KEY` takes precedence; otherwise local CLI/stdio use the secure
+[saved login](#cli-login) for the selected API origin. No API key is read from disk. The `DOWNSTREAM_MCP_*`
 variables under [Gateway](#gateway-another-mcp-server) work over stdio too.
 
 ### Network server
@@ -370,14 +429,21 @@ Configuration is the environment only:
 | `MCP_PUBLIC_URL` | the https origin agents connect to; `/mcp` is served there (the `Host` check is built from it) |
 | `ORINYX_API_URL` | the Orinyx API this service calls on the caller's behalf |
 | `ORINYX_ISSUER_URL` | the API's public origin, named in the resource metadata for sign-in (defaults to the `ORINYX_API_URL` origin) |
-| `ORINYX_HOP_SECRET` | optional, at least 32 characters, shared with the API so each agent keeps its own rate-limit bucket |
+| `ORINYX_HOP_SECRET` | required for hosted MCP, at least 32 ASCII characters, shared with the API; the backend must reach the API from an admitted private peer |
 | `ORINYX_API_ALLOW_HTTP` | `true` only on a private network trusted end to end |
 | `TRUST_PROXY_FORWARDED_FOR` | `true` behind exactly one proxy (the host's edge) |
 | `TRUSTED_CLIENT_IP_HEADER` | a header that proxy sets to the caller's address (Fly: `fly-client-ip`) |
 | `PORT` | listening port (default 8000) |
 
+Vendor exams support hosted MCP and authenticated dashboard sessions. New sittings default to
+`entryMode: "vendor"`; `evals/product_exam.py open --operator-entry` opens a separate
+`entryMode: "operator"` sitting for manual quality-lead/admin entry. An operator cannot answer a
+vendor sitting, and operator sittings cannot record MCP traces or be publicly certified. Dashboard
+answers are not fabricated as tool traces. Apply the engine's entry-mode migration/API first.
+
 ```bash
-MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example orinyx-mcp
+MCP_PUBLIC_URL=https://mcp.example ORINYX_API_URL=https://api.example \
+  ORINYX_HOP_SECRET="${ORINYX_HOP_SECRET:?configure the shared backend secret}" orinyx-mcp
 ```
 
 How the server handles the bearer an agent presents is in
@@ -533,7 +599,9 @@ Optional: `tool_name` and `tool_version` (named in the report header) and `check
 model) and answers with one table row per claim. The order above is one of the two
 [first-run examples](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/examples/first-run/), with its dose error planted. The output below was
 captured on 2026-11-07 from the hosted Orinyx connector (`https://orinyx-mcp.fly.dev/mcp`,
-orinyx-mcp 0.1.3). It was not written by hand. Run ids and times differ from run to run:
+orinyx-mcp 0.1.3). It was not written by hand. Run ids and times differ from run to run.
+Output captured on Orinyx API 0.4.0, with its provenance, is in the
+[first-run reference example](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/examples/first-run/README.md#expected-results):
 
 ```text
 Orinyx verification - run f57fc863
@@ -954,9 +1022,10 @@ orinyx observe <path>... [--field DOTTED.PATH] [--tool NAME] [--tool-version V] 
 
 `claims.json` is a JSON list of claims, or a full request body with an `assertions` list
 (its `toolName`, `toolVersion` and `checkInteractions` are used when the flags are absent).
-Credentials come from `ORINYX_API_URL` and `ORINYX_API_KEY` only. Today the CLI, and so CI,
-needs an `ork_live_` key issued by Orinyx through the [self-serve API](#get-an-api-key)
-or an operator; hosted connector OAuth is not a CLI credential.
+The CLI uses a saved [CLI login](#cli-login) or `ORINYX_API_KEY`; when both are present, the
+key wins. CI has no browser or keychain for `orinyx login`, so it needs an `ork_live_` key
+issued by Orinyx through the [self-serve API](#get-an-api-key) or an operator. Signing in to
+the hosted connector from your agent does not sign in the CLI.
 
 `verify` takes structured claims. For orders as written, use `orinyx observe` or the
 `verify_order_text` tool. `observe` checks every order in an agent's saved output, one run per
@@ -1038,6 +1107,9 @@ Every non-2xx answer, malformed answer or transport failure raises `OrinyxApiErr
 
 ## Safety and limits
 
+How Orinyx reaches and tests its verdicts is set out in the
+[evaluation methodology](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/METHODOLOGY.md).
+
 ### What Orinyx does not do
 
 - **No EHR connection.** The MCP server talks only to the Orinyx API. There is no FHIR, no
@@ -1048,7 +1120,7 @@ Every non-2xx answer, malformed answer or transport failure raises `OrinyxApiErr
 - **No "safe by default".** `abstain` means unchecked, never safe.
 - **No model in the verdict.** No language model decides a verdict, a severity or a score.
 
-The release notes list this release's [known limits](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/RELEASE_NOTES_2026-11-02.md#known-limits):
+The 0.1.1 release notes list the [known limits](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/RELEASE_NOTES_2026-11-02.md#known-limits):
 gaps in the knowledge base and the checks. Most show up as a NOT VERIFIED row, a refused
 order or a daily total that was not checked, so a missing flag is never evidence that an order
 is safe.
@@ -1058,7 +1130,7 @@ is safe.
 ```bash
 pip install -e ".[dev]"
 pytest          # no database, no engine: fakes stand in for the API
-ruff check . && ruff format .
+ruff check . && ruff format --check .
 ```
 
 `tests/test_client.py::test_nothing_in_the_package_imports_the_engine` keeps this a client:

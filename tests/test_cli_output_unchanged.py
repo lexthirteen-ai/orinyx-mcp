@@ -10,9 +10,12 @@ plain-http error landed, on Python 3.14 and 3.12 (both gave the same bytes). The
 httpx.MockTransport answering with the synthetic run in tests/test_text.py; nothing is sent.
 A file path in an output is written as `<work>`, the case's own temporary directory.
 
-Two entries were changed by hand since, when those errors stopped repeating a value: "a run
-id that is not a UUID" no longer quotes the run id, and "observe a file of the wrong kind"
-names the path by its position. Every other entry is as captured."""
+Nine entries were changed by hand since. Two changed when those errors stopped repeating a
+value: "a run id that is not a UUID" no longer quotes the run id, and "observe a file of the
+wrong kind" names the path by its position. Seven changed when the CLI gained `login`,
+`logout` and `status`, which lengthened the top-level usage line: "--help", "-h", "-h glued
+to a value", "no command", "one unknown option", "two unknown options" and "an unknown short
+option". Every other entry is as captured."""
 
 import contextlib
 import io
