@@ -89,7 +89,7 @@ def test_the_project_table():
         "orinyx": "orinyx_mcp.cli:main",
         "orinyx-mcp": "orinyx_mcp.http:serve",
     }
-    assert project["authors"] == [{"name": "Lex Hamilton"}]
+    assert project["authors"] == [{"name": "Orinyx"}]
     assert project["keywords"] == [
         "mcp",
         "model-context-protocol",

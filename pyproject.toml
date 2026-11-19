@@ -10,7 +10,7 @@ readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
-authors = [{ name = "Lex Hamilton" }]
+authors = [{ name = "Orinyx" }]
 keywords = ["mcp", "model-context-protocol", "healthcare-ai", "evaluation", "fda-labels"]
 classifiers = [
     "Development Status :: 4 - Beta",

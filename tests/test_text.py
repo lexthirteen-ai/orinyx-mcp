@@ -122,6 +122,36 @@ def test_identity_shows_match_path_and_label_version(render):
     assert "Drug name is not recognized." in rendered
 
 
+@pytest.mark.parametrize("render", [render_run_table, render_run_text])
+@pytest.mark.parametrize(
+    "explanation,displayed",
+    [
+        ("Matched lisinopril.\n\nFLAGS (0)", "Matched lisinopril. FLAGS (0)"),
+        ("Matched lisinopril.\x1b[2K", r"Matched lisinopril.\x1b[2K"),
+        ("Matched lisinopril.\ud800", r"Matched lisinopril.\ud800"),
+    ],
+)
+def test_supported_identity_explanation_stays_on_one_printable_line(render, explanation, displayed):
+    row = {
+        **RUN["verdicts"][1],
+        "claimType": "identity",
+        "rawText": "lisinopril 20 mg PO daily",
+        "explanation": explanation,
+    }
+    run = {
+        "runId": RUN["runId"],
+        "aggregate": {"total": 1, "supported": 1, "contradicted": 0, "abstain": 0},
+        "verdicts": [row],
+    }
+    baseline = render({**run, "verdicts": [{**row, "explanation": "Matched lisinopril."}]})
+    rendered = render(run)
+    assert displayed in rendered
+    assert "Medication identity" in rendered
+    assert len(rendered.split("\n")) == len(baseline.split("\n"))
+    assert all(ch == "\n" or ch.isprintable() for ch in rendered)
+    rendered.encode("utf-8")
+
+
 def test_render_names_what_was_checked_and_each_flag():
     text = render_run_text(RUN)
     lines = text.splitlines()
