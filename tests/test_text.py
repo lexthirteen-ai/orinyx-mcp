@@ -3,7 +3,9 @@ and citation, the counts, and the clinician-decides footer. The CLI prints plain
 markdown), so it reads the same in a terminal; an agent over MCP gets one table row per
 claim, with the same order and the same warnings."""
 
+import httpx
 import pytest
+from orinyx_mcp.client import OrinyxClient
 from orinyx_mcp.text import (
     INCOMPLETE_CITATION,
     SUGGESTIONS_HEADING,
@@ -78,7 +80,11 @@ ACCURACY = {
 
 
 @pytest.mark.parametrize("render", [render_run_table, render_run_text])
-def test_identity_shows_match_path_and_label_version(render):
+@pytest.mark.parametrize("read_saved", [False, True], ids=["immediate", "saved"])
+@pytest.mark.parametrize("effective_date", ["2026-09-10", "2026-10-15"])
+def test_identity_shows_match_path_spl_set_id_and_effective_date(
+    render, read_saved, effective_date
+):
     set_id = "aa5d68e7-c2b9-41eb-ade4-2cd57edc1533"
     explanation = "Matched lisinopril via RxNorm. Reference label: Lisinopril Tablets."
     url = f"https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid={set_id}"
@@ -88,35 +94,81 @@ def test_identity_shows_match_path_and_label_version(render):
         "verdicts": [
             {
                 "rawText": "RxCUI 29046 20 mg PO daily",
+                "drug": "lisinopril",
+                "rxcui": "29046",
                 "claimType": "identity",
                 "verdict": "supported",
+                "severity": "none",
                 "explanation": explanation,
+                # Identity evidence has a set ID and effective date, not a numeric SPL version.
+                "structuredValue": {
+                    "ingredient": "lisinopril",
+                    "matchedVia": "rxnorm",
+                    "label": {
+                        "name": "Lisinopril Tablets",
+                        "splSetId": set_id,
+                        "effectiveDate": effective_date,
+                    },
+                },
                 "citation": {
                     "source": "openFDA",
                     "section": "openFDA product metadata",
                     "sourceId": set_id,
-                    "citation": f"Lisinopril Tablets, SPL set ID {set_id}, effective 2026-09-10",
+                    "citation": (
+                        f"Lisinopril Tablets prescribing information, SPL set ID {set_id}, "
+                        f"effective {effective_date}"
+                    ),
                     "url": url,
                 },
             },
             {
                 "rawText": "Lisinopril 20 mg IV",
+                "drug": "lisinopril",
                 "claimType": "identity",
                 "verdict": "abstain",
+                "severity": "none",
                 "explanation": "The current reference label does not cover the route.",
             },
             {
                 "rawText": "Lisinoplr 20 mg PO",
+                "drug": "Lisinoplr",
                 "claimType": "identity",
                 "verdict": "unreadable",
+                "severity": "none",
+                "explanation": "Drug name is not recognized.",
                 "unreadableFacets": [{"facet": "drug", "reason": "Drug name is not recognized."}],
             },
         ],
     }
-    rendered = render(run)
+
+    def respond(request):
+        if read_saved:
+            assert request.method == "GET"
+            assert request.url.path == f"/v1/verifications/{run['runId']}"
+        else:
+            assert request.method == "POST"
+            assert request.url.path == "/v1/verifications/orders"
+        return httpx.Response(200 if read_saved else 201, json=run)
+
+    with OrinyxClient(
+        "https://api.orinyx.example",
+        "synthetic-identity-key",
+        transport=httpx.MockTransport(respond),
+    ) as client:
+        result = (
+            client.get_run(run["runId"])
+            if read_saved
+            else client.verify_orders([row["rawText"] for row in run["verdicts"]])
+        )
+
+    assert result.raw == run
+    label = result.verdicts[0].structured_value["label"]
+    assert label["splSetId"] == set_id
+    assert label["effectiveDate"] == effective_date
+    rendered = render(result.raw)
     assert rendered.count("Medication identity") == 3
     assert explanation in rendered
-    assert f"SPL set ID {set_id}, effective 2026-09-10" in rendered
+    assert f"SPL set ID {set_id}, effective {effective_date}" in rendered
     assert rendered.count(url) == 1
     assert "The current reference label does not cover the route." in rendered
     assert "Drug name is not recognized." in rendered
