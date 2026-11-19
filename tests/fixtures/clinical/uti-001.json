@@ -25,49 +25,49 @@
       "id": "E1",
       "full_citation": "Gupta K, Hooton TM, Naber KG, et al. International Clinical Practice Guidelines for the Treatment of Acute Uncomplicated Cystitis and Pyelonephritis in Women: A 2010 Update by the Infectious Diseases Society of America and the European Society for Microbiology and Infectious Diseases. Clin Infect Dis. 2011;52(5):e103-e120.",
       "pub_date": "2011-03-01",
-      "summary": "Nitrofurantoin monohydrate/macrocrystals 100 mg twice daily x5 days (A-I); TMP-SMX 160/800 mg twice daily x3 days if local resistance <=20% or strain known susceptible (A-I; the 20% cutoff is graded B-III, expert opinion); fosfomycin 3 g single dose, inferior efficacy to the standard short courses (A-I). 2010/2011 guideline, old but not superseded for uncomplicated cystitis in this population."
+      "summary": "Treatment guideline for acute uncomplicated cystitis and pyelonephritis in women. Cited for the regimens it grades; the regimens, doses and durations are in the source."
     },
     "E2": {
       "id": "E2",
       "full_citation": "Trautner BW, Cortes-Penfield NW, Gupta K, et al. IDSA 2025 Guideline on Management and Treatment of Complicated Urinary Tract Infections. Published 17 July 2025.",
       "pub_date": "2025-07-17",
-      "summary": "Complicated UTI = infection extending beyond the bladder (fever, chills, rigors, hemodynamic instability, flank pain, CVA tenderness); pyelonephritis is included. Uncomplicated UTI = infection confined to the bladder in afebrile patients."
+      "summary": "Guideline on complicated urinary tract infection. Cited for its definitions of complicated and uncomplicated UTI; the definitions are in the source."
     },
     "E3": {
       "id": "E3",
       "full_citation": "FDA prescribing information for nitrofurantoin (macrocrystals capsules; oral suspension), as available on DailyMed.",
       "pub_date": null,
-      "summary": "Contraindicated in known hypersensitivity, CrCl under 60 mL/min, at term (38-42 weeks), during labor and delivery, and in infants under 1 month. Not indicated for pyelonephritis. Label version is not pinned by the suite (the current DailyMed version applies)."
+      "summary": "FDA labeling. Cited for its contraindications and indications; those are in the label text. The suite does not pin a label version: the current DailyMed version applies."
     },
     "E4": {
       "id": "E4",
-      "full_citation": "American Geriatrics Society Beers Criteria. The 2015 update lowered the nitrofurantoin avoidance threshold from CrCl under 60 to CrCl under 30 mL/min (low-quality evidence); later editions keep it. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
+      "full_citation": "American Geriatrics Society Beers Criteria, 2015 update and later editions. Summarized in Claussen K et al., J Am Geriatr Soc, June 2017.",
       "pub_date": "2017-06-01",
-      "summary": "Conflicts with E3 (label: CrCl under 60). The conflict is preserved, not resolved."
+      "summary": "Cited for its renal-function threshold for nitrofurantoin, which differs from E3's. The suite keeps the disagreement and does not resolve it."
     },
     "E5": {
       "id": "E5",
       "full_citation": "Zwahlen D, Ball J, Jackson Q. Recurrent UTI in Women: Diagnosis and Management. Am Fam Physician. June 2026.",
       "pub_date": "2026-06-01",
-      "summary": "Avoid nitrofurantoin and TMP-SMX in the first trimester unless no alternative, based on culture; avoid TMP-SMX in the last 8 weeks of pregnancy (neonatal kernicterus); avoid nitrofurantoin at term (neonatal hemolytic anemia)."
+      "summary": "Review of recurrent UTI in women. Cited for antibiotic use in pregnancy; the recommendations are in the source."
     },
     "E6": {
       "id": "E6",
       "full_citation": "Eiland LS, Harris JB, Holmes AP. Ann Pharmacother. December 2023.",
       "pub_date": "2023-12-01",
-      "summary": "Beta-lactams such as cephalexin are commonly used first-line in pregnancy; fosfomycin is an option for lower UTI in pregnancy."
+      "summary": "Review article. Cited for antibiotic options in pregnancy; the options are in the source."
     },
     "E7": {
       "id": "E7",
       "full_citation": "Llor C, Monfa R, Garcia-Sangenis A, et al. SCOUT randomized trial. The Lancet, 25 April 2026.",
       "pub_date": "2026-04-25",
-      "summary": "768 women with uncomplicated lower UTI, Spanish primary care. Single-dose fosfomycin was less effective at day 7 than two-dose fosfomycin, nitrofurantoin 100 mg three times daily x5 days, or pivmecillinam 400 mg three times daily x3 days."
+      "summary": "Randomized trial in 768 women with uncomplicated lower UTI in Spanish primary care. Cited for its comparison of fosfomycin, nitrofurantoin and pivmecillinam regimens at day 7; the regimens and results are in the source."
     },
     "E8": {
       "id": "E8",
       "full_citation": "FDA approval of pivmecillinam (Pivya) for uncomplicated UTI in women 18 years and older (FDA Orange Book listing).",
       "pub_date": null,
-      "summary": "Accepted alternative only; US availability and formulary coverage vary. Approval date not stated in the suite brief."
+      "summary": "Cited for the US approval of pivmecillinam for this indication. US availability and formulary coverage vary. The suite does not state the approval date."
     }
   },
   "capabilities": {
@@ -102,7 +102,7 @@
       "orinyx_fields": [
         "verdicts[].claimType=dose_range"
       ],
-      "gap": "Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is held (dose_ceiling_held, owner decision 2026-09-29); tablet counts are refused; the label's UTI regimen is not a ceiling.",
+      "gap": "Contradicts only when a dose exceeds an explicit label maximum. The SMX/TMP ceiling is not checked; tablet counts are refused; the label's UTI regimen is not a ceiling.",
       "recommendation": "Curate regimen-level dose rules (dose per administration x frequency) for the common antibacterials, with the label's indication-specific regimen."
     },
     "CAP-04": {
@@ -118,7 +118,7 @@
       "orinyx_fields": [
         "contextNotEvaluated (warning only, never a verdict)"
       ],
-      "gap": "Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated (Lex ruling 2026-10-21).",
+      "gap": "Allergy or history wording in a request produces only a fixed warning that the context was NOT evaluated.",
       "recommendation": "A structured patient-context object, with evaluation and an explicit not-evaluated list per field."
     },
     "CAP-06": {
@@ -186,7 +186,7 @@
       "name": "Knowledge-base coverage for this case family's drugs",
       "status": "PARTIAL",
       "orinyx_fields": [],
-      "gap": "Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label; ingest_quarantine 2026-10-18), although the cached label text lists the CrCl<60 and term-pregnancy contraindications. Fosfomycin and pivmecillinam are not in the knowledge base. TMP-SMX dose ceiling is held.",
+      "gap": "Nitrofurantoin has route rules only (its monohydrate/macrocrystals label is treated as a combination label and is not loaded), although the cached label text lists contraindications that apply to this case family (E3). Fosfomycin and pivmecillinam are not in the knowledge base. The TMP-SMX dose ceiling is not checked.",
       "recommendation": "Treat 'nitrofurantoin (monohydrate/macrocrystals)' as the single-ingredient product it is, so its section 4 rules derive; add fosfomycin, pivmecillinam; review the SMX/TMP hold."
     }
   },
@@ -605,7 +605,7 @@
           "capability": "PARTIAL",
           "cap_ref": "CAP-03",
           "string_matching": false,
-          "note": "dose_range exists generally; the SMX/TMP dose ceiling is held by owner decision (dose_ceiling_held), and tablet counts are refused by the dose grammar.",
+          "note": "dose_range exists generally; the SMX/TMP dose ceiling is not checked, and tablet counts are refused by the dose grammar.",
           "also": [
             "CAP-14"
           ]

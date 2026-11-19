@@ -26,8 +26,7 @@ before sending anything. Sign up at [orinyx.io/developers](https://orinyx.io/dev
 the hosted connector with your Orinyx account, or mint a personal key for stdio, the CLI
 or CI through the [self-serve API](#get-an-api-key).
 
-**Latest release: [0.1.5](https://github.com/lexthirteen-ai/orinyx-mcp/releases/tag/v0.1.5)**, the first
-release on PyPI.
+**Latest release: [0.1.6](https://github.com/lexthirteen-ai/orinyx-mcp/releases/tag/v0.1.6)**, on PyPI.
 
 **Your first verification**
 
