@@ -1143,6 +1143,17 @@ Scripted checks:
 | `python evals/mcp_local_check.py [--url https://orinyx-mcp.fly.dev/mcp]` | a deployment works from a real MCP client (stdio without `--url`) |
 | `python evals/gateway_check.py [--call <tool>] [--args '{...}']` | another MCP server can be connected (no Orinyx key needed) |
 
+## Feedback
+
+Found a wrong or missing flag, a refused order, an install or connection problem, or a
+confusing message? Open an issue on
+[lexthirteen-ai/orinyx-mcp](https://github.com/lexthirteen-ai/orinyx-mcp/issues/new/choose)
+with the "Report a problem" template. Include the version or commit and the full run id.
+
+Use synthetic data only. Never include real patient data, credentials or keys in an issue.
+Vulnerabilities go through [SECURITY.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/SECURITY.md),
+never a public issue.
+
 ## Contributing
 
 Contributions are welcome. Setup, the rules a change must keep and how licensing works are in
