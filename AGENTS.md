@@ -38,7 +38,7 @@ the same rules.
 - **Maintainer** (the repository owner): final authority. Approves design changes, high-risk
   work, output-contract changes, every merge and every release. The only person who deploys.
 - **Coding agent:** implements one assigned issue on its own branch and opens a draft pull
-  request, once agent pushing is enabled. Merges only when the maintainer says so in the
+  request, once pushing is enabled for it. Merges only when the maintainer says so in the
   session; never deploys.
 - **Reviewer:** an independent agent or person who reviews the diff against the issue's
   acceptance criteria. Never the agent that wrote the change.
@@ -51,9 +51,9 @@ the same rules.
 3. All work happens on an isolated branch, one branch per issue.
 4. Independent review uses the resulting diff and the acceptance criteria, never the author's
    reasoning.
-5. Once agent pushing is enabled (see Permission model), agents may push to authorized feature
-   branches (`agent/**`, or `devin/**` for Devin) and open draft pull requests; until then,
-   stop at a local commit and record the branch and test counts.
+5. Once pushing is enabled for the agent (see Permission model), it may push to authorized
+   feature branches (`agent/**`, or `devin/**` for Devin) and open draft pull requests; until
+   then, it stops at a local commit and records the branch and test counts.
 6. Agents never deploy, and merge only on the maintainer's instruction in the session.
 7. A security failure, or a result that misstates what the API returned, stops the work and is
    escalated to the maintainer on the issue.
@@ -72,9 +72,9 @@ Coding agents may:
 - run tests and CI;
 - update the issue tracker.
 
-Coding agents never deploy, and merge only on the maintainer's instruction. Until the
-maintainer has enabled agent identities and branch rules, agents push nothing: they commit
-locally and the maintainer pushes.
+Coding agents never deploy, and merge only on the maintainer's instruction. The maintainer
+enables pushing per agent. Today it is enabled for Devin only, on `devin/**`. Every other agent
+pushes nothing: it commits locally and the maintainer pushes.
 
 ## Never allowed
 
@@ -113,7 +113,7 @@ A claim in a message is not a record.
    pytest -q
    ```
    Report the real counts. A check you could not run is reported as not run, never as passed.
-5. **Draft pull request**, once agent pushing is enabled (see Permission model): open it from
+5. **Draft pull request**, once pushing is enabled for you (see Permission model): open it from
    `.github/pull_request_template.md`, linking the issue. Until then, stop at a local commit and
    record the branch and test counts.
 6. **Record** the outcome on the issue: branch, commit, pull request, counts and verdicts.
