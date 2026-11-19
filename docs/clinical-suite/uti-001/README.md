@@ -73,3 +73,9 @@ for the hosted API needs a separate run against it.
 The run used a disposable test database. The Orinyx run IDs in `results.json` point into that
 database's audit trail and cannot be looked up on the hosted API. The runner used orinyx-mcp commit `4a15a16`
 with a dirty working tree containing the new suite files.
+
+The fixture file has changed since that run. Its evidence entries now say only what each source is
+cited for, and the regimen and threshold details stay in the cited sources. Internal notes were
+removed from three capability gaps and one check note. No fixture, check, probe or expected outcome
+changed. The baseline's fixture hash and the E4 citation text in `results.json` are from the
+earlier file.

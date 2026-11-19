@@ -5,6 +5,9 @@ optional letter, or a tracker key and a number, means nothing to a reader of the
 stays in every copy of the release once it is uploaded. This test reads every UTF-8 file the
 release manifest lists for the source distribution and names each such id by file and line. A
 test that needs one as an example builds it from pieces, as this file does.
+
+A note that names a person's or an owner's dated ruling or approval means nothing to a reader
+either, and the same files are checked for one.
 """
 
 import json
@@ -17,6 +20,10 @@ from tests.test_install_docs import ROOT
 
 MANIFEST = ROOT / "release" / "manifests" / f"{__version__}.json"
 INTERNAL_ID = re.compile(r"\bL[0-9]+[a-z]?\b|\bCHA-[0-9]+\b")
+RULING_NOTE = re.compile(
+    r"\b(?:ruling|decision|approved)(?: on| of| by \w+ on)? 20[0-9]{2}-[0-9]{2}-[0-9]{2}\b"
+    r"|\bLex(?:'s)? (?:ruling|decision)s?\b|\bapproved by Lex\b"
+)
 
 
 def packaged_text_files() -> list[str]:
@@ -39,6 +46,15 @@ def internal_ids(text: str) -> list[str]:
         f"{number}: {match.group(0)}"
         for number, line in enumerate(text.split("\n"), start=1)
         for match in INTERNAL_ID.finditer(line)
+    ]
+
+
+def ruling_notes(text: str) -> list[str]:
+    """Each ruling or approval note in `text`, as `line: note`, in order."""
+    return [
+        f"{number}: {match.group(0)}"
+        for number, line in enumerate(text.split("\n"), start=1)
+        for match in RULING_NOTE.finditer(line)
     ]
 
 
@@ -68,3 +84,30 @@ def test_the_pattern_finds_an_internal_id(text):
 )
 def test_the_pattern_leaves_ordinary_text_alone(text):
     assert internal_ids(text) == []
+
+
+@pytest.mark.parametrize("rel", packaged_text_files())
+def test_no_packaged_file_holds_a_ruling_note(rel):
+    assert ruling_notes((ROOT / rel).read_bytes().decode("utf-8")) == []
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Assembled, so that this packaged file holds no ruling note of its own.
+    [
+        "(" + "Lex" + " rul" + "ing 2026-10-21)",
+        "owner " + "decision" + " 2026-09-29",
+        "approved by " + "Lex" + " on 2026-11-03",
+        "stays as " + "approved" + " on 2026-11-14",
+    ],
+)
+def test_the_pattern_finds_a_ruling_note(text):
+    assert ruling_notes(text) != []
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["Copyright 2026 Lex Hamilton", "without an owner decision", "released on 2026-11-15"],
+)
+def test_the_ruling_pattern_leaves_ordinary_text_alone(text):
+    assert ruling_notes(text) == []

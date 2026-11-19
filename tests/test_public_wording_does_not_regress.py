@@ -1,4 +1,4 @@
-"""The 0.1.5 public wording stays as approved on 2026-11-14.
+"""The approved 0.1.5 public wording does not regress.
 
 Each test fails if an older sentence comes back: CLI login said it waited on an engine update
 that has shipped; the network server was said to hold no service credential, when it holds the
@@ -165,3 +165,30 @@ def test_the_clinical_suite_docs_hold_no_private_engine_detail_or_ruling_names(p
     text = path.read_text(encoding="utf-8")
     found = [p for p in PRIVATE_DETAIL if re.search(p, text)]
     assert found == []
+
+
+# The clinical fixtures ship in the source distribution, so they meet the same bar.
+SHIPPED_CLINICAL_FIXTURES = [
+    ROOT / "tests" / "fixtures" / "clinical" / "uti-001.json",
+    ROOT / "tests" / "fixtures" / "check_lines_goldens.json",
+]
+
+
+@pytest.mark.parametrize("path", SHIPPED_CLINICAL_FIXTURES, ids=lambda p: p.name)
+def test_the_shipped_fixtures_hold_no_private_engine_detail_or_ruling_names(path):
+    text = path.read_text(encoding="utf-8")
+    found = [p for p in PRIVATE_DETAIL if re.search(p, text)]
+    assert found == []
+
+
+def test_the_uti_001_evidence_summaries_point_to_the_source_and_give_no_regimen():
+    """Each evidence summary says what the source is cited for. The dose, duration, pregnancy
+    and renal statements stay in the cited source, not in this file."""
+    doc = json.loads(SHIPPED_CLINICAL_FIXTURES[0].read_text(encoding="utf-8"))
+    regimen = re.compile(
+        r"\d\s*(?:mg|g)\b|\btwice daily\b|\bthree times daily\b|\bx\s*\d+\s*days?\b"
+        r"|\bavoid\b|\bfirst-line\b|\bCrCl\b|\btrimester\b|\bat term\b"
+    )
+    for entry in doc["evidence"].values():
+        for field in ("summary", "full_citation"):
+            assert regimen.search(entry[field]) is None, (entry["id"], field)
