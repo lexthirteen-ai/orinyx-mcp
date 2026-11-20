@@ -197,6 +197,28 @@ async def test_a_live_key_lists_the_tools():
         assert {"verify_medications", "start_a_test", "get_exam_report"} <= names
 
 
+async def test_hosted_connector_serves_the_sources_app_and_its_result_payload():
+    uri = "ui://orinyx/sources-card"
+    async with _remote() as remote:
+        headers = _auth(GOOD)
+        resource = await remote.post(
+            "/mcp", json=_rpc("resources/read", {"uri": uri}), headers=headers
+        )
+        assert resource.status_code == 200
+        (page,) = resource.json()["result"]["contents"]
+        assert page["uri"] == uri
+        assert page["mimeType"] == "text/html;profile=mcp-app"
+
+        call = _rpc(
+            "tools/call", {"name": "get_verification", "arguments": {"run_id": RUN["runId"]}}
+        )
+        response = await remote.post("/mcp", json=call, headers=headers)
+        assert response.status_code == 200
+        result = response.json()["result"]
+        assert result["_meta"]["ui"]["resourceUri"] == uri
+        assert result["_meta"]["orinyx/sources"][0] == RUN["verdicts"][0]["citation"]
+
+
 async def test_a_sign_in_token_for_this_endpoint_is_admitted():
     async with _remote() as remote:
         response = await remote.post("/mcp", json=_rpc("tools/list"), headers=_auth(SIGNED_IN))

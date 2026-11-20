@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cited sources</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; font: 0.875rem/1.45 system-ui, sans-serif; }
+    section { padding: 0.75rem; }
+    h1 { margin: 0; font-size: 1em; }
+    ul { margin: 0.35rem 0 0; padding-inline-start: 1.25rem; }
+    li { overflow-wrap: anywhere; }
+    li + li { margin-block-start: 0.35rem; }
+    small { display: block; }
+  </style>
+</head>
+<body>
+  <section hidden aria-labelledby="sources-heading">
+    <h1 id="sources-heading">Cited sources</h1>
+    <ul></ul>
+  </section>
+  <script>
+    // SEP-2133 bridge for this resource. The immediate parent is the host's sandbox proxy.
+    const section = document.querySelector("section");
+    const list = section.querySelector("ul");
+    let openLinks = false;
+    let connected = false;
+    let requestId = 1;
+
+    function send(message) {
+      window.parent.postMessage({ jsonrpc: "2.0", ...message }, "*");
+    }
+
+    function httpsUrl(value) {
+      if (typeof value !== "string" || !/^https:\/\//i.test(value)) return null;
+      try {
+        return new URL(value).protocol === "https:" ? value : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function addCitation(citation) {
+      const item = document.createElement("li");
+      const url = httpsUrl(citation.url);
+      if (url) {
+        const link = document.createElement("a");
+        link.textContent = citation.citation || citation.source;
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.addEventListener("click", (event) => {
+          if (openLinks) {
+            event.preventDefault();
+            send({ id: ++requestId, method: "ui/open-link", params: { url } });
+          }
+        });
+        item.append(link);
+      } else {
+        item.textContent = citation.source;
+      }
+      const details = [url && citation.citation && citation.source, citation.section, citation.sourceId]
+        .filter(Boolean);
+      if (details.length) {
+        const line = document.createElement("small");
+        line.textContent = details.join(" · ");
+        item.append(line);
+      }
+      list.append(item);
+    }
+
+    function render(result) {
+      const citations = result?._meta?.["orinyx/sources"];
+      list.replaceChildren();
+      if (!result?.isError && Array.isArray(citations)) {
+        for (const citation of citations) {
+          if (citation && typeof citation.source === "string") addCitation(citation);
+        }
+      }
+      section.hidden = list.childElementCount === 0;
+    }
+
+    const observer = new ResizeObserver(() => {
+      const { width, height } = document.body.getBoundingClientRect();
+      send({
+        method: "ui/notifications/size-changed",
+        params: { width: Math.ceil(width), height: Math.ceil(height) },
+      });
+    });
+
+    window.addEventListener("message", (event) => {
+      const message = event.data;
+      if (event.source !== window.parent || message?.jsonrpc !== "2.0") return;
+      if (!connected) {
+        if (message.id !== 1 || !message.result) return;
+        connected = true;
+        openLinks = Boolean(message.result.hostCapabilities?.openLinks);
+        send({ method: "ui/notifications/initialized" });
+        observer.observe(document.body);
+      } else if (message.method === "ui/notifications/tool-result") {
+        render(message.params);
+      } else if (message.method === "ui/resource-teardown") {
+        observer.disconnect();
+        send({ id: message.id, result: {} });
+      } else if (message.method === "ping") {
+        send({ id: message.id, result: {} });
+      }
+    });
+
+    if (window.parent !== window) {
+      send({
+        id: requestId,
+        method: "ui/initialize",
+        params: {
+          appInfo: { name: "Orinyx cited sources", version: "1.0.0" },
+          appCapabilities: {},
+          protocolVersion: "2026-01-26",
+        },
+      });
+    }
+  </script>
+</body>
+</html>

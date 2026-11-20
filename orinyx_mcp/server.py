@@ -14,12 +14,13 @@ import time
 from collections.abc import Callable
 from contextlib import contextmanager
 from importlib import resources
-from typing import Any
+from typing import Annotated, Any
 
 from orinyx_mcp import tools
 from orinyx_mcp.client import OrinyxApiError, OrinyxClient
 from orinyx_mcp.config import ConfigError
 from orinyx_mcp.gateway import Gateway
+from orinyx_mcp.tools.verify import get_verification_report, verify_medications_report
 
 # The not-for-clinical-use statement, worded by the owner on 2026-10-31. It
 # opens the server INSTRUCTIONS and every tool description; tests pin the exact text.
@@ -289,7 +290,9 @@ def build_server(
     **server_options: Any,
 ):
     from mcp.server.mcpserver import MCPServer
-    from mcp.types import BlobResourceContents, EmbeddedResource
+    from mcp.types import BlobResourceContents, CallToolResult, EmbeddedResource
+
+    from orinyx_mcp.sources_card import SOURCES_UI_META, sources_app, with_sources
 
     server_class = MCPServer
     instructions = INSTRUCTIONS
@@ -304,6 +307,7 @@ def build_server(
     handlers, level = list(root.handlers), root.level
     # The icons go to the constructor (the gateway subclass inherits it).
     server_options.setdefault("icons", server_icons())
+    server_options["extensions"] = [*(server_options.get("extensions") or ()), sources_app()]
     try:
         server = server_class("orinyx", instructions=instructions, **server_options)
     finally:
@@ -312,13 +316,13 @@ def build_server(
 
     _guard_tool_descriptions(server)
 
-    @server.tool()
+    @server.tool(meta=SOURCES_UI_META)
     def verify_medications(
         claims: list[dict[str, Any]],
         tool_name: str | None = None,
         tool_version: str | None = None,
         check_interactions: bool = False,
-    ) -> str:
+    ) -> Annotated[CallToolResult, str]:
         """Verify STRUCTURED medication claims. Each claim: {rawText, drug, claimType,
         structuredValue} where claimType is one of dose_range, route, frequency, indication,
         contraindication, interaction, monitoring, controlled_substance, rems_attestation.
@@ -334,13 +338,14 @@ def build_server(
         Claims must be synthetic test data, never real patient records or identifiers:
         rawText is stored in the audit record."""
         with _calling(client_for) as client:
-            return tools.verify_medications(
+            text, result = verify_medications_report(
                 client,
                 claims=claims,
                 tool_name=tool_name,
                 tool_version=tool_version,
                 check_interactions=check_interactions,
             )
+            return with_sources(text, result)
 
     @server.tool()
     def verify_order_text(
@@ -365,12 +370,13 @@ def build_server(
                 check_interactions=check_interactions,
             )
 
-    @server.tool()
-    def get_verification(run_id: str) -> str:
+    @server.tool(meta=SOURCES_UI_META)
+    def get_verification(run_id: str) -> Annotated[CallToolResult, str]:
         """Read a saved verification run (and its physician-review accuracy, if any).
         Each row names the check that produced it (beta)."""
         with _calling(client_for) as client:
-            return tools.get_verification(client, run_id=run_id)
+            text, result = get_verification_report(client, run_id=run_id)
+            return with_sources(text, result)
 
     @server.tool()
     def get_accuracy(run_id: str) -> str:
