@@ -12,10 +12,12 @@ the same rules.
    (`tests/test_client.py::test_nothing_in_the_package_imports_the_engine`).
 2. **Local logic lives in one place:** the `observe` pre-flight identifier screen
    (`orinyx_mcp/screen.py`). It decides only whether text may be sent, never a verdict.
-3. **Configuration and credentials come from the environment only** (`ORINYX_API_URL`,
+3. **Configuration and credentials come from the environment** (`ORINYX_API_URL`,
    `ORINYX_API_KEY` and the server's settings (`ORINYX_*`, `MCP_PUBLIC_URL`, `PORT`,
-   `TRUST_PROXY_*`, `TRUSTED_CLIENT_IP_HEADER`, `DOWNSTREAM_MCP_*`)), never from flags, and no
-   message, error or log prints a key or secret.
+   `TRUST_PROXY_*`, `TRUSTED_CLIENT_IP_HEADER`, `DOWNSTREAM_MCP_*`)) or, for local CLI and
+   stdio use without `ORINYX_API_KEY`, from the saved login that `orinyx login` keeps in the
+   OS keychain for the selected API origin. Never from flags or a key file, and no message,
+   error or log prints a key, token or secret.
 4. **Results are shown as the API returned them.** An abstain is unchecked, never safe. Never
    add, infer or reword a reason, a correction or a verdict.
 5. **Output contracts do not change without a maintainer decision.** Agents, CI jobs and
@@ -102,7 +104,7 @@ A claim in a message is not a record.
 ## Workflow
 
 1. **Issue.** Confirm the issue, its acceptance criteria and that no one else owns it.
-2. **Branch** from `main`: `agent/<issue-id>-<slug>`.
+2. **Branch** from `main`: `agent/<issue-id>-<slug>`, or `devin/<issue-id>-<slug>` for Devin.
 3. **Test first.** Write the failing test that states the behaviour, then make the change. A
    change to readable text needs a test that pins the exact bytes.
 4. **Verify locally.** No database, engine or API key is needed; fakes stand in for the API:
