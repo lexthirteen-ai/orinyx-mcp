@@ -486,6 +486,11 @@ What is relayed, and what is never sent there, is in
 | `finish_exam` | product | close and score the sitting |
 | `get_exam_report` | product | the scored report |
 
+MCP Apps hosts can show a **Cited sources** card beside the text from
+`verify_medications` and `get_verification`. The card lists the citations attached to
+that run's verdicts in their returned order. HTTPS links open externally. Citations
+without an HTTPS link show the source label as text.
+
 ### Account types
 
 What a credential can reach is fixed by its account type, enforced by the API:

@@ -92,7 +92,7 @@ class Citation(_Wire):
     section: str
     source_id: str | None = None
     citation: str
-    url: str
+    url: str | None = None
 
 
 class Verdict(_Wire):
