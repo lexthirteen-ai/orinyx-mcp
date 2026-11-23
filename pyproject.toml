@@ -62,7 +62,7 @@ packages = ["orinyx_mcp"]
 # The connector icon (package data, read by orinyx_mcp/server.py). Hatchling already ships
 # every file under a listed package; `artifacts` keeps the icon in even if an ignore rule
 # ever matched it.
-artifacts = ["orinyx_mcp/assets/*.svg", "orinyx_mcp/assets/*.png", "orinyx_mcp/assets/*.json"]
+artifacts = ["orinyx_mcp/assets/*.svg", "orinyx_mcp/assets/*.png"]
 
 [tool.hatch.build.targets.sdist]
 include = ["orinyx_mcp/", "tests/", "README.md", "LICENSE", "CHANGELOG.md", "pyproject.toml"]

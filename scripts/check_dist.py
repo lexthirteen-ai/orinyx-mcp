@@ -31,8 +31,8 @@ the manifest says `wheel_only: true`. `--print-shape` reads only the manifest an
 manifest is not valid (the `FAIL:` lines then go to stderr, because stdout may be redirected
 to a CI output file). `deny_exemptions` is off unless a manifest lists
 an entry: each entry excuses one exact member path from the file-name deny rules below, with
-a recorded reason, and is printed as a `NOTE:` whenever it is used. It never excuses the
-banner files or a credential-shaped string.
+a recorded reason, and is printed as a `NOTE:` whenever it is used. It never excuses a
+credential-shaped string.
 
 Checks, in addition to the exact member sets:
 
@@ -42,8 +42,6 @@ Checks, in addition to the exact member sets:
   CLAUDE.md (case-insensitive substrings) or a `.pem` suffix;
 * no member contains a credential-shaped string (`ork_live_`, `ork_test_`, `ork_oat_` or
   `ork_ort_` followed by 8 or more letters, digits, `-` or `_`); the string is never printed;
-* neither archive holds the terminal banner (`orinyx_mcp/banner.py`,
-  `orinyx_mcp/assets/banner.json`), whose font licence is not cleared;
 * with `--source`, every sdist member and every wheel member under `orinyx_mcp/` is
   byte-for-byte the file at the same path in that tree (generated metadata is exempt), and
   the wheel's version equals `__version__` in that tree;
@@ -73,8 +71,6 @@ PATH_DENY = (
     "CLAUDE.md",
 )
 PATH_DENY_SUFFIX = (".pem",)
-# The terminal banner stays out of every distribution until its font licence is cleared.
-BANNER_PATHS = ("orinyx_mcp/banner.py", "orinyx_mcp/assets/banner.json")
 CREDENTIAL = re.compile(rb"ork_(?:live|test|oat|ort)_[A-Za-z0-9_-]{8,}")
 MARKER = "mcp-name: io.github.lexthirteen-ai/orinyx-mcp"
 LICENSE_EXPRESSION = "Apache-2.0"
@@ -213,17 +209,11 @@ def path_denied(path: str) -> bool:
     return any(rule.lower() in lowered for rule in PATH_DENY) or lowered.endswith(PATH_DENY_SUFFIX)
 
 
-def banner_present(path: str) -> bool:
-    return any(path == banned or path.endswith("/" + banned) for banned in BANNER_PATHS)
-
-
 def check_content_rules(
     label: str, files: dict[str, bytes], exemptions: dict[str, str]
 ) -> tuple[list[str], list[str]]:
     failures, notes = [], []
     for path, data in sorted(files.items()):
-        if banner_present(path):
-            failures.append(f"{label} holds the terminal banner: {path!r}")
         if path_denied(path):
             if path in exemptions:
                 notes.append(

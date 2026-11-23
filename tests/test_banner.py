@@ -282,6 +282,26 @@ def test_subcommand_help_never_carries_the_banner(argv):
     assert run(argv) == BEFORE["verify --help"]
 
 
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["login", "-h"],
+        ["logout", "-h"],
+        ["status", "-h"],
+        ["login", "--help"],
+        ["status", "--json"],
+        ["status"],
+    ],
+)
+def test_the_sign_in_commands_never_carry_the_banner(argv):
+    """`login`, `logout` and `status` came after the banner. On a terminal their bytes and exit
+    codes equal the same run into a file, and none carries a banner mark. `status` runs with the
+    environment key, so it reads no saved login."""
+    on_a_terminal = run(argv)
+    assert on_a_terminal == run(argv, stdout=io.StringIO())
+    assert _banner_marks(on_a_terminal["out"] + on_a_terminal["err"]) == []
+
+
 def test_help_written_to_another_file_never_carries_the_banner():
     parser = cli._parser()
     parser.banner = True
@@ -295,7 +315,16 @@ def test_only_the_top_level_parser_carries_the_banner():
     parser = cli._parser()
     assert type(parser) is cli._TopParser
     (sub,) = [a for a in parser._actions if isinstance(a, argparse._SubParsersAction)]
-    assert sorted(sub.choices) == ["accuracy", "export", "get", "observe", "verify"]
+    assert sorted(sub.choices) == [
+        "accuracy",
+        "export",
+        "get",
+        "login",
+        "logout",
+        "observe",
+        "status",
+        "verify",
+    ]
     assert all(type(child) is cli._Parser for child in sub.choices.values())
 
 
@@ -331,7 +360,8 @@ def _imports(path: Path) -> set[str]:
 
 def test_only_the_cli_imports_the_banner_and_nothing_imports_the_cli():
     modules = {path.name: _imports(path) for path in sorted(PACKAGE.glob("*.py"))}
-    assert {"__main__.py", "http.py", "server.py", "tools.py", "arena.py"} <= set(modules)
+    expected = {"__main__.py", "http.py", "server.py", "gateway.py", "arena.py", "login.py"}
+    assert expected <= set(modules)
 
     def importers(target: str) -> set[str]:
         return {
@@ -593,7 +623,7 @@ def test_loading_the_rest_of_the_package_never_loads_the_banner_or_the_cli():
     others = sorted(
         path.stem for path in PACKAGE.glob("*.py") if path.stem not in {"banner", "cli"}
     )
-    assert {"__main__", "http", "server", "tools", "arena"} <= set(others)
+    assert {"__main__", "http", "server", "gateway", "arena", "login"} <= set(others)
     script = "\n".join(
         [
             "import importlib, sys",
@@ -615,7 +645,11 @@ def test_loading_the_rest_of_the_package_never_loads_the_banner_or_the_cli():
     done = subprocess.run(
         [sys.executable, "-c", script],
         cwd=ROOT,
-        env={**environment, "PYTHONPATH": str(ROOT)},
+        # tests/no_keychain first, as conftest.py gives every child: no keychain is opened.
+        env={
+            **environment,
+            "PYTHONPATH": os.pathsep.join([str(ROOT / "tests" / "no_keychain"), str(ROOT)]),
+        },
         capture_output=True,
         stdin=subprocess.DEVNULL,
         timeout=120,
@@ -648,7 +682,7 @@ def test_no_new_dependency_and_the_wheel_lists_the_asset():
         assert name not in project_text.lower() and name not in lock, name
     project = tomllib.loads(project_text)
     wheel = project["tool"]["hatch"]["build"]["targets"]["wheel"]
-    assert "orinyx_mcp/assets/*.json" in wheel["artifacts"]
+    # Hatchling ships every file under the listed package, so the asset needs no artifact entry.
     assert wheel["packages"] == ["orinyx_mcp"]
 
 

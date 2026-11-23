@@ -15,6 +15,8 @@ The tools, verdicts and API client are unchanged from 0.1.5.
 - One [reference example](examples/first-run/README.md) with expected results, captured on
   the Orinyx API 0.4.0.
 - A Feedback section in the README.
+- On a terminal, `orinyx -h` opens with a banner. Set `ORINYX_NO_BANNER` or pass
+  `--no-banner` to turn it off.
 
 ### Changed
 
@@ -98,11 +100,6 @@ The tools, verdicts and API client are unchanged from 0.1.5.
 - `requirements.lock` pins `opentelemetry-api` 1.45.2 (was 1.45.1), the release that fixes
   GHSA-mf5v-w3w3-f6cg (CVE-2026-126360), slow parsing of a crafted `traceparent`. A new test
   fails if the pin falls below 1.45.2. The package's own dependency ranges are unchanged.
-
-### Added
-
-- On a terminal, `orinyx -h` opens with a banner. Set `ORINYX_NO_BANNER` or pass
-  `--no-banner` to turn it off.
 
 ## [0.1.4] - 2026-11-05
 
