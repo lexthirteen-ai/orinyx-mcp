@@ -75,8 +75,9 @@ def _encodable(text: str, stream: TextIO) -> bool:
 
 
 def _coloured(environ: Mapping[str, str]) -> bool:
-    """Use colour only when permitted, and on Windows only in Windows Terminal."""
-    if "NO_COLOR" in environ or environ.get("TERM") == "dumb":
+    """no-color.org: a non-empty NO_COLOR turns colour off (an empty one does not, as in
+    Python's own help colouring). On Windows, colour only in Windows Terminal."""
+    if environ.get("NO_COLOR") or environ.get("TERM") == "dumb":
         return False
     return sys.platform != "win32" or "WT_SESSION" in environ
 

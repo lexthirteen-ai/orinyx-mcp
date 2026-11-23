@@ -344,23 +344,35 @@ def test_a_pipe_from_a_real_process_gets_no_banner():
     assert done.stdout.decode("utf-8") == BEFORE["-h"]["out"]
 
 
+def _module_files() -> dict[str, Path]:
+    """Every module of the package, subpackages included, by its path under orinyx_mcp/."""
+    return {
+        path.relative_to(PACKAGE).as_posix(): path
+        for path in sorted(PACKAGE.rglob("*.py"))
+        if "__pycache__" not in path.parts
+    }
+
+
 def _imports(path: Path) -> set[str]:
     names: set[str] = set()
+    package = ["orinyx_mcp", *path.relative_to(PACKAGE).parent.parts]
     for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
         if isinstance(node, ast.Import):
             names.update(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
             module = node.module or ""
             if node.level:
-                module = "orinyx_mcp" + (f".{module}" if module else "")
+                base = ".".join(package[: len(package) - (node.level - 1)])
+                module = base + (f".{module}" if module else "")
             names.add(module)
             names.update(f"{module}.{alias.name}" for alias in node.names)
     return names
 
 
 def test_only_the_cli_imports_the_banner_and_nothing_imports_the_cli():
-    modules = {path.name: _imports(path) for path in sorted(PACKAGE.glob("*.py"))}
+    modules = {name: _imports(path) for name, path in _module_files().items()}
     expected = {"__main__.py", "http.py", "server.py", "gateway.py", "arena.py", "login.py"}
+    assert "tools/verify.py" in modules
     assert expected <= set(modules)
 
     def importers(target: str) -> set[str]:
@@ -421,7 +433,7 @@ def test_a_terminal_that_cannot_encode_the_art_gets_the_compact_line(encoding):
         ("linux", {"TERM": "dumb"}, False),
         ("win32", {}, False),
         ("win32", {"WT_SESSION": "0f1e2d3c"}, True),
-        ("linux", {"NO_COLOR": ""}, False),
+        ("linux", {"NO_COLOR": ""}, True),
         ("linux", {"TERM": "xterm-256color"}, True),
         ("darwin", {}, True),
     ],
@@ -621,9 +633,13 @@ def test_loading_the_rest_of_the_package_never_loads_the_banner_or_the_cli():
     that imports every other module, then runs the stdio entry point and `serve` without a
     configuration, has loaded neither `orinyx_mcp.banner` nor `orinyx_mcp.cli`."""
     others = sorted(
-        path.stem for path in PACKAGE.glob("*.py") if path.stem not in {"banner", "cli"}
+        name.removesuffix(".py").removesuffix("/__init__").replace("/", ".")
+        for name in _module_files()
+        if name not in {"banner.py", "cli.py"}
     )
-    assert {"__main__", "http", "server", "gateway", "arena", "login"} <= set(others)
+    assert {"__main__", "http", "server", "gateway", "arena", "login", "tools.verify"} <= set(
+        others
+    )
     script = "\n".join(
         [
             "import importlib, sys",
