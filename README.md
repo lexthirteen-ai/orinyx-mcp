@@ -1053,9 +1053,9 @@ subprocess) the output is unchanged, and the banner never appears in a subcomman
 help, in `--json` output or from the MCP server. To turn it off on a terminal, set
 `ORINYX_NO_BANNER` to any non-empty value (a non-empty `CI` does the same) or pass
 `--no-banner` before the command, as in `orinyx --no-banner -h`; `-h` does not list it. With
-`NO_COLOR` set to any non-empty value, the banner is printed in one colour. The banner art is drawn in the ANSI Shadow
-FIGlet font, from the TheDraw font collection, whose author is not recorded. Only the drawn
-text ships; the font file does not.
+`NO_COLOR` set to any non-empty value, the banner is printed in one colour. The banner art is
+drawn in the ANSI Shadow FIGlet font, from the TheDraw font collection, whose author is not
+recorded. Only the drawn text ships; the font file does not.
 
 A GitHub Actions step that fails the job on a flag (full recipe in
 [docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#ci-recipe)):
