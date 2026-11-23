@@ -15,6 +15,8 @@ The tools, verdicts and API client are unchanged from 0.1.5.
 - One [reference example](examples/first-run/README.md) with expected results, captured on
   the Orinyx API 0.4.0.
 - A Feedback section in the README.
+- On a terminal, `orinyx -h` opens with a banner. Set `ORINYX_NO_BANNER` or pass
+  `--no-banner` to turn it off.
 
 ### Changed
 

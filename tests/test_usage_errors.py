@@ -130,6 +130,11 @@ LEAKY: dict[str, tuple[list[str], set[str], tuple[str, ...]]] = {
         (),
     ),
     "--he=v": (["--he={v}"], {"orinyx: error: argument -h/--help: ignored explicit argument"}, ()),
+    "--no-banner=v": (
+        ["--no-banner={v}"],
+        {"orinyx: error: argument --no-banner: ignored explicit argument"},
+        (),
+    ),
     "get --help=v": (
         ["get", "--help={v}"],
         {"orinyx get: error: argument -h/--help: ignored explicit argument"},

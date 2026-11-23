@@ -1,0 +1,29 @@
+{
+  "_note": "Generated once with pyfiglet 1.0.4, font ansi_shadow, text ORINYX. Not regenerated at build or run time. To change: re-render outside the repo, paste the art, update both pins (Python and Node tests). Render rule: mono is the art lines, an empty line and the subtitle, joined with \\n and ended with \\n. Colour: in an art line a space is class none, a character in accent_chars is class accent and any other character is class base; in the subtitle a space is class none and any other character is class subtitle_color. A class whose colour is null is class none (the terminal's own text colour). An SGR code is emitted only when the class changes: none emits ESC[0m and a hex colour emits ESC[38;2;R;G;Bm. A line that ends in a coloured class gets ESC[0m before its newline. golden_sha256 holds the sha256 of the two UTF-8 outputs. sha256 is the sha256 of every other field, as json.dumps(sort_keys=True, separators=(',', ':'), ensure_ascii=False).",
+  "format": 1,
+  "text": "ORINYX",
+  "font": "ansi_shadow",
+  "generator": "pyfiglet 1.0.4",
+  "art": [
+    " ██████╗ ██████╗ ██╗███╗   ██╗██╗   ██╗██╗  ██╗",
+    "██╔═══██╗██╔══██╗██║████╗  ██║╚██╗ ██╔╝╚██╗██╔╝",
+    "██║   ██║██████╔╝██║██╔██╗ ██║ ╚████╔╝  ╚███╔╝",
+    "██║   ██║██╔══██╗██║██║╚██╗██║  ╚██╔╝   ██╔██╗",
+    "╚██████╔╝██║  ██║██║██║ ╚████║   ██║   ██╔╝ ██╗",
+    " ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝"
+  ],
+  "subtitle": "          INDEPENDENT AI VERIFICATION",
+  "compact": "ORINYX - INDEPENDENT AI VERIFICATION",
+  "width": 47,
+  "colors": {
+    "base": null,
+    "accent": "#4FC3E8"
+  },
+  "accent_chars": "═║╔╗╚╝",
+  "subtitle_color": "base",
+  "golden_sha256": {
+    "mono": "4684644f517598858d1839f708788ae53082d1ecaf1ffa4e6d608f6d8ef16fbb",
+    "color": "70cbcae1070ae6645b625309cdba07b19636a309ef3852759f87bcc17f2f3a8c"
+  },
+  "sha256": "675bfeff1b688690bbc4f93e2eb1db33d9554ac986ad90f99c265f4f5aa4cf00"
+}

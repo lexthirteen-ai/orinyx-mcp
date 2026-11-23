@@ -197,26 +197,6 @@ def test_generated_metadata_is_not_compared_with_the_source(tmp_path):
     assert release.run() == 0
 
 
-@pytest.mark.parametrize("path", ["orinyx_mcp/banner.py", "orinyx_mcp/assets/banner.json"])
-@pytest.mark.parametrize("archive", ["wheel", "sdist"])
-def test_the_banner_is_refused_even_when_the_manifest_lists_it(tmp_path, capsys, path, archive):
-    release = Release(tmp_path)
-    (release.source / path).parent.mkdir(parents=True, exist_ok=True)
-    (release.source / path).write_bytes(b"art")
-    getattr(release, f"{archive}_files")[path] = b"art"
-    release.manifest[archive] = sorted(getattr(release, f"{archive}_files"))
-    out = failing(release.write(), capsys)
-    assert f"{archive} holds the terminal banner: {path!r}" in out
-
-
-def test_a_banner_cannot_be_excused_by_an_exemption(tmp_path, capsys):
-    release = Release(tmp_path)
-    release.wheel_files["orinyx_mcp/banner.py"] = b"art"
-    release.manifest["wheel"] = sorted(release.wheel_files)
-    release.manifest["deny_exemptions"] = [{"path": "orinyx_mcp/banner.py", "reason": "x"}]
-    assert "terminal banner" in failing(release.write(), capsys, source=False)
-
-
 @pytest.mark.parametrize("archive", ["wheel", "sdist"])
 def test_a_credential_shaped_string_is_refused_and_never_printed(tmp_path, capsys, archive):
     release = Release(tmp_path)
@@ -680,7 +660,6 @@ def test_the_committed_manifests_are_well_formed_and_deny_nothing_by_default():
             assert listed == sorted(listed)
             assert len(set(listed)) == len(listed)
             assert not any("*" in p or p.startswith("/") for p in listed)
-            assert not any(check_dist.banner_present(p) for p in listed)
         assert all(
             p.startswith("orinyx_mcp/") or p.startswith(f"orinyx_mcp-{data['version']}.dist-info/")
             for p in data["wheel"]
