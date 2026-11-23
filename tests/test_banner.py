@@ -156,6 +156,60 @@ def test_the_package_reads_the_same_asset():
     assert banner._read_asset() == ASSET
 
 
+# C0 controls, DEL and C1 controls. A terminal can act on any of them, ESC (0x1B) and the C1
+# CSI (0x9B) above all. The banner writes the asset's text as it stands, and its own hash only
+# proves the file is whole, so the asset itself must hold none.
+CONTROL_CHARACTERS = frozenset(map(chr, [*range(0x20), 0x7F, *range(0x80, 0xA0)]))
+
+
+def _asset_strings(value, path="asset"):
+    """Every string in the asset, keys included, each with where it sits."""
+    if isinstance(value, str):
+        yield path, value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield from _asset_strings(key, f"{path} key {key!r}")
+            yield from _asset_strings(item, f"{path}[{key!r}]")
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            yield from _asset_strings(item, f"{path}[{index}]")
+
+
+def _control_characters_in(asset) -> list[str]:
+    return [
+        f"{where}: U+{ord(char):04X}"
+        for where, text in _asset_strings(asset)
+        for char in text
+        if char in CONTROL_CHARACTERS
+    ]
+
+
+def test_the_asset_holds_no_control_character():
+    assert _control_characters_in(ASSET) == []
+    raw = ASSET_FILE.read_text(encoding="utf-8")
+    # Outside its strings the file is plain JSON layout: newlines and spaces only.
+    assert {char for char in raw if char in CONTROL_CHARACTERS} <= {chr(0x0A)}
+
+
+@pytest.mark.parametrize(
+    ("field", "planted"),
+    [
+        ("art", chr(0x1B) + "]0;title" + chr(0x07)),
+        ("subtitle", chr(0x1B) + "[2J"),
+        ("compact", chr(0x9B) + "2J"),
+        ("_note", chr(0x00)),
+        ("text", chr(0x7F)),
+    ],
+)
+def test_the_control_character_check_finds_a_planted_one(field, planted):
+    asset = json.loads(json.dumps(ASSET))
+    if field == "art":
+        asset["art"][0] += planted
+    else:
+        asset[field] += planted
+    assert _control_characters_in(asset), field
+
+
 def test_the_render_reproduces_both_golden_hashes(monkeypatch):
     monkeypatch.setattr(sys, "platform", "linux")
     mono = banner.render(FakeTTY(), {"NO_COLOR": "1"}, 80)
