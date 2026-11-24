@@ -256,7 +256,7 @@ orinyx --help
 orinyx verify --file claims.json --tool my-agent
 ```
 
-Use [CLI login](#cli-login), or set the API URL and key in the process environment first;
+Use [CLI login](#cli-login), or set the API key in the process environment first;
 see [Get an API key](#get-an-api-key).
 For an isolated run without installing into your current Python environment, use
 [uv](https://docs.astral.sh/uv/):
@@ -282,7 +282,6 @@ git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
 python -m venv .venv && . .venv/bin/activate
 pip install -e .                                   # Python 3.11+
 
-export ORINYX_API_URL=https://<your orinyx api>
 export ORINYX_API_KEY=<an ork_live_ key issued to you>
 orinyx-mcp stdio                                   # speaks MCP on stdin/stdout
 orinyx-mcp --version                               # prints the installed version
@@ -298,7 +297,6 @@ agent host as a stdio server:
       "command": "/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp",
       "args": ["stdio"],
       "env": {
-        "ORINYX_API_URL": "https://<your orinyx api>",
         "ORINYX_API_KEY": "<an ork_live_ key issued to you>"
       }
     }
@@ -316,14 +314,12 @@ the one you installed into.
 
 #### Claude Code (stdio)
 
-Export the two variables first so the key is not typed on the command line. The key is one
-issued to you by Orinyx:
+Export the key first so it is not typed on the command line. The key is one issued to you
+by Orinyx:
 
 ```bash
-export ORINYX_API_URL=https://<your orinyx api>
 export ORINYX_API_KEY=<your ork_live_ key>
 claude mcp add orinyx \
-  -e ORINYX_API_URL="$ORINYX_API_URL" \
   -e ORINYX_API_KEY="$ORINYX_API_KEY" \
   -- /absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp stdio
 ```
@@ -343,7 +339,6 @@ is one issued to you by Orinyx:
       "command": "/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp",
       "args": ["stdio"],
       "env": {
-        "ORINYX_API_URL": "https://<your orinyx api>",
         "ORINYX_API_KEY": "<your ork_live_ key>"
       }
     }
