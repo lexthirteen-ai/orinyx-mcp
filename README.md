@@ -273,8 +273,8 @@ and the same API environment variables.
 ### Local stdio (from source)
 
 The stdio server and CLI support [CLI login](#cli-login). For CI or explicit key-based use,
-provide an Orinyx API URL and a key (`ork_live_...`) issued through the
-[self-serve API](#get-an-api-key) or an operator. To develop
+provide a key (`ork_live_...`) issued through the [self-serve API](#get-an-api-key) or an
+operator. Set `ORINYX_API_URL` as well only for an API other than the default. To develop
 from a checkout instead of using PyPI:
 
 ```bash
