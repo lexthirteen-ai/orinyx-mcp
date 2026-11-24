@@ -1,10 +1,10 @@
 """`python -m orinyx_mcp` (or `orinyx-mcp stdio`): serve Orinyx tools over stdio to a local
 MCP client. `python -m orinyx_mcp serve` (or the `orinyx-mcp` command): the network server.
 
-Configuration uses ORINYX_API_URL and an explicit ORINYX_API_KEY, or the saved OAuth login
-for that API origin. The network server never reads local logins.
-The DOWNSTREAM_MCP_* variables connect another MCP
-server's tools (`orinyx_mcp/gateway.py`)."""
+The stdio server uses an explicit ORINYX_API_KEY, or the saved OAuth login for the API origin;
+ORINYX_API_URL selects that origin and, for stdio only, defaults to the Orinyx API. The network
+server requires ORINYX_API_URL (`orinyx_mcp/config.py`) and never reads local logins. The
+DOWNSTREAM_MCP_* variables connect another MCP server's tools (`orinyx_mcp/gateway.py`)."""
 
 import os
 import sys
@@ -30,11 +30,10 @@ def main(argv: list[str] | None = None) -> int:
         except AuthError as exc:
             print(str(exc), file=sys.stderr)
             return 1
-        if provider:
-            url = url or DEFAULT_API_URL
-    if not url or (not key and provider is None):
+    if not key and provider is None:
         print("Set ORINYX_API_URL and ORINYX_API_KEY in the environment.", file=sys.stderr)
         return 1
+    url = url or DEFAULT_API_URL  # a key or a saved sign-in with no URL: the default API
     try:
         from orinyx_mcp.server import build_server, shared
     except ImportError:

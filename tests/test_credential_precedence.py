@@ -1,7 +1,8 @@
 """Which credential a request carries, and where a saved sign-in may go.
 
 1. `ORINYX_API_KEY` wins. With a key in the environment, the commands that send data and the
-   stdio server use the key and never open the keychain, even when it holds a sign-in.
+   stdio server use the key and never open the keychain, even when it holds a sign-in. With no
+   `ORINYX_API_URL`, the key goes to the default origin.
 2. A saved sign-in belongs to one API origin. With no key, the keychain is asked only about the
    origin in `ORINYX_API_URL` (or the default origin when none is set); a sign-in saved for any
    other origin is never offered.
@@ -142,6 +143,44 @@ def test_with_a_key_the_stdio_server_uses_it_and_never_opens_the_keychain(
     assert (args, kwargs) == ((API, KEY), {})
     assert client._token_provider is None
     assert client._http.headers["Authorization"] == f"Bearer {KEY}"
+    assert keychain.lookups == []
+    assert capsys.readouterr().out == ""
+
+
+@pytest.mark.parametrize("argv", DATA_COMMANDS, ids=[argv[0] for argv in DATA_COMMANDS])
+def test_with_a_key_and_no_url_the_cli_uses_the_default_api(argv, keychain, monkeypatch):
+    keychain.hold(credentials.DEFAULT_API_URL)
+    monkeypatch.setenv("ORINYX_API_KEY", KEY)
+    built = []
+    with pytest.raises(_Built):
+        cli.main(argv, client_factory=_recording_factory(built))
+    assert built == [(credentials.DEFAULT_API_URL, KEY, {})]
+    assert keychain.lookups == []
+
+
+def test_with_a_key_and_no_url_the_stdio_server_uses_the_default_api(keychain, monkeypatch, capsys):
+    from orinyx_mcp import client as client_module
+    from orinyx_mcp import server
+
+    keychain.hold(credentials.DEFAULT_API_URL)
+    monkeypatch.setenv("ORINYX_API_KEY", KEY)
+    built = []
+
+    class Client(OrinyxClient):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            built.append((args, kwargs, self))
+
+    class Server:
+        def run(self):
+            pass
+
+    monkeypatch.setattr(client_module, "OrinyxClient", Client)
+    monkeypatch.setattr(server, "build_server", lambda *args, **kwargs: Server())
+    assert stdio.main([]) == 0
+    [(args, kwargs, client)] = built
+    assert (args, kwargs) == ((credentials.DEFAULT_API_URL, KEY), {})
+    assert client._token_provider is None
     assert keychain.lookups == []
     assert capsys.readouterr().out == ""
 

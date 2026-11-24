@@ -488,11 +488,10 @@ def main(argv: Sequence[str] | None = None, client_factory: ClientFactory | None
         except AuthError as exc:
             print(f"orinyx: {exc}", file=sys.stderr)
             return EXIT_ERROR
-        if provider:
-            url = url or DEFAULT_API_URL
-    if not url or (not key and provider is None):
+    if not key and provider is None:
         print("Set ORINYX_API_URL and ORINYX_API_KEY in the environment.", file=sys.stderr)
         return EXIT_ERROR
+    url = url or DEFAULT_API_URL  # a key or a saved sign-in with no URL: the default API
     factory = client_factory or OrinyxClient
     try:
         if provider is not None:
