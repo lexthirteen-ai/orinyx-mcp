@@ -3,6 +3,39 @@
 All notable changes to this project are recorded here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- With `ORINYX_API_KEY` set and `ORINYX_API_URL` unset, `orinyx-mcp stdio` and the `orinyx`
+  commands now use the default API, `https://orinyx-api.fly.dev`, as a saved login already did.
+  Before, they stopped with `Set ORINYX_API_URL and ORINYX_API_KEY in the environment.`, which
+  did not match the MCP Registry entry's note that the URL can be left unset.
+
+## [0.1.6] - 2026-11-23
+
+The tools, verdicts and API client are unchanged from 0.1.5.
+
+### Added
+
+- The MCP Registry `mcp-name` marker in the README, so this PyPI release can be listed in the
+  MCP Registry with a local stdio install beside the hosted connector.
+- An [evaluation methodology page](docs/METHODOLOGY.md).
+- One [reference example](examples/first-run/README.md) with expected results, captured on
+  the Orinyx API 0.4.0.
+- A Feedback section in the README.
+- On a terminal, `orinyx -h` opens with a banner. Set `ORINYX_NO_BANNER` or pass
+  `--no-banner` to turn it off.
+
+### Changed
+
+- The README's first screen walks through a first verification and names `orinyx login` as a
+  CLI credential.
+- The UTI-001 clinical-suite docs and shipped test fixtures no longer carry private engine
+  detail or internal notes. Each evidence entry now says what its source is cited for and
+  leaves regimens, doses and thresholds to the source. No fixture, check or expected outcome
+  changed.
+
 ## [0.1.5] - 2026-11-15
 
 ### Added

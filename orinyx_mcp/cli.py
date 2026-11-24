@@ -21,6 +21,7 @@ from pathlib import Path
 
 import httpx
 
+from orinyx_mcp import banner
 from orinyx_mcp.client import (
     UNUSABLE_CONFIG,
     InsecureUrlError,
@@ -54,6 +55,19 @@ class _Parser(argparse.ArgumentParser):
         self.print_usage(sys.stderr)
         print(f"{self.prog}: error: {_without_values(message)}", file=sys.stderr)
         sys.exit(EXIT_ERROR)
+
+
+class _TopParser(_Parser):
+    """The top-level parser only. Its help opens with the banner when `banner` is set: on an
+    interactive terminal, unless turned off. Subcommand parsers stay plain `_Parser`s, so
+    subcommand help never carries it."""
+
+    banner = False
+
+    def print_help(self, file=None):  # type: ignore[override]
+        if self.banner and file is None:
+            banner.show(sys.stdout, os.environ)
+        super().print_help(file)
 
 
 # An option name as written: `--tool-version`, `-x`. Lower case only, so a mixed-case key
@@ -125,14 +139,16 @@ _FORMATS = {"csv": "csv", "pdf": "pdf", "report": "report.pdf"}
 ClientFactory = Callable[..., OrinyxClient]
 
 
-def _parser() -> argparse.ArgumentParser:
-    parser = _Parser(
+def _parser() -> _TopParser:
+    parser = _TopParser(
         prog="orinyx",
         description=(
             "Verify medication claims with Orinyx. Exit 0 clean, 2 flagged, "
             "3 not verified (no flag, but at least one claim abstained), 1 error."
         ),
     )
+    # Hidden, so the pinned usage and help bytes stay as they are; the README documents it.
+    parser.add_argument(banner.SWITCH, action="store_true", help=argparse.SUPPRESS)
     sub = parser.add_subparsers(dest="command", required=True, parser_class=_Parser)
 
     login = sub.add_parser("login", help="sign in for verification and Arena")
@@ -444,8 +460,21 @@ def _auth_command(args, url: str, key: str | None) -> int:
         return EXIT_ERROR
 
 
+def _interactive_home(parser: _TopParser) -> int:
+    """Plain `orinyx` on an interactive terminal: the banner (when wanted), then the full
+    help, on stdout. A missing command is still a usage error, so the exit stays 1."""
+    parser.print_help()
+    return EXIT_ERROR
+
+
 def main(argv: Sequence[str] | None = None, client_factory: ClientFactory | None = None) -> int:
-    args = _parser().parse_args(argv)
+    words = sys.argv[1:] if argv is None else list(argv)
+    parser = _parser()
+    # Decided before parsing: argparse prints the help as soon as it reaches -h.
+    parser.banner = banner.wanted(words, sys.stdout, os.environ)
+    if banner.is_terminal(sys.stdout) and all(banner.turns_off(word) for word in words):
+        return _interactive_home(parser)
+    args = parser.parse_args(words)
     url = os.environ.get("ORINYX_API_URL")
     key = os.environ.get("ORINYX_API_KEY")
     from orinyx_mcp.credentials import DEFAULT_API_URL, AuthError, saved_login
@@ -459,11 +488,10 @@ def main(argv: Sequence[str] | None = None, client_factory: ClientFactory | None
         except AuthError as exc:
             print(f"orinyx: {exc}", file=sys.stderr)
             return EXIT_ERROR
-        if provider:
-            url = url or DEFAULT_API_URL
-    if not url or (not key and provider is None):
+    if not key and provider is None:
         print("Set ORINYX_API_URL and ORINYX_API_KEY in the environment.", file=sys.stderr)
         return EXIT_ERROR
+    url = url or DEFAULT_API_URL  # a key or a saved sign-in with no URL: the default API
     factory = client_factory or OrinyxClient
     try:
         if provider is not None:

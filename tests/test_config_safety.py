@@ -321,7 +321,7 @@ def test_cli_output_never_carries_the_key(handler_name, api_env, tmp_path, capsy
 
 def test_cli_local_errors_never_carry_the_key(api_env, tmp_path, capsys):
     """Errors raised before or without a request: a bad run id, a missing file, a refused
-    record, a missing URL."""
+    record. Then a key with no URL, which goes to the default API: its refusal carries no key."""
     bad_json = tmp_path / "bad.jsonl"
     bad_json.write_text("{not json\n")
     for argv in (
@@ -334,9 +334,9 @@ def test_cli_local_errors_never_carry_the_key(api_env, tmp_path, capsys):
         assert code == cli.EXIT_ERROR and err.startswith("orinyx: "), (argv, err)
         assert_no_key(out, err)
     os.environ.pop("ORINYX_API_URL")
-    assert cli.main(["get", RUN_ID]) == cli.EXIT_ERROR
-    captured = capsys.readouterr()
-    assert_no_key(captured.out, captured.err)
+    code, out, err = run_cli(["get", RUN_ID], refusing(404), capsys)
+    assert code == cli.EXIT_ERROR and err.startswith("orinyx: "), err
+    assert_no_key(out, err)
 
 
 async def test_the_network_credential_check_never_logs_the_token(caplog):

@@ -255,7 +255,7 @@ def test_the_command_with_no_argument_matches_python_m_orinyx_mcp_serve(case, co
 @pytest.mark.parametrize("case", list(STDIO_REFUSALS))
 def test_the_stdio_command_refuses_settings_as_python_m_orinyx_mcp_does(case, console_script):
     settings = {"ORINYX_API_KEY": SENTINEL_KEY, **STDIO_REFUSALS[case]}
-    if case == "no key":
+    if case in ("no settings", "no key"):  # a key alone starts the server on the default API
         del settings["ORINYX_API_KEY"]
     command = _run_command(console_script, ["stdio"], settings)
     module = _run_module("orinyx_mcp", [], settings)

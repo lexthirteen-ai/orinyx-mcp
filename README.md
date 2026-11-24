@@ -26,8 +26,7 @@ before sending anything. Sign up at [orinyx.io/developers](https://orinyx.io/dev
 the hosted connector with your Orinyx account, or mint a personal key for stdio, the CLI
 or CI through the [self-serve API](#get-an-api-key).
 
-**Latest release: [0.1.5](https://github.com/lexthirteen-ai/orinyx-mcp/releases/tag/v0.1.5)**, the first
-release on PyPI.
+**Latest release: [0.1.6](https://github.com/lexthirteen-ai/orinyx-mcp/releases/tag/v0.1.6)**, on PyPI.
 
 **Your first verification**
 
@@ -257,7 +256,7 @@ orinyx --help
 orinyx verify --file claims.json --tool my-agent
 ```
 
-Use [CLI login](#cli-login), or set the API URL and key in the process environment first;
+Use [CLI login](#cli-login), or set the API key in the process environment first;
 see [Get an API key](#get-an-api-key).
 For an isolated run without installing into your current Python environment, use
 [uv](https://docs.astral.sh/uv/):
@@ -274,8 +273,8 @@ and the same API environment variables.
 ### Local stdio (from source)
 
 The stdio server and CLI support [CLI login](#cli-login). For CI or explicit key-based use,
-provide an Orinyx API URL and a key (`ork_live_...`) issued through the
-[self-serve API](#get-an-api-key) or an operator. To develop
+provide a key (`ork_live_...`) issued through the [self-serve API](#get-an-api-key) or an
+operator. Set `ORINYX_API_URL` as well only for an API other than the default. To develop
 from a checkout instead of using PyPI:
 
 ```bash
@@ -283,7 +282,6 @@ git clone https://github.com/lexthirteen-ai/orinyx-mcp.git && cd orinyx-mcp
 python -m venv .venv && . .venv/bin/activate
 pip install -e .                                   # Python 3.11+
 
-export ORINYX_API_URL=https://<your orinyx api>
 export ORINYX_API_KEY=<an ork_live_ key issued to you>
 orinyx-mcp stdio                                   # speaks MCP on stdin/stdout
 orinyx-mcp --version                               # prints the installed version
@@ -299,7 +297,6 @@ agent host as a stdio server:
       "command": "/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp",
       "args": ["stdio"],
       "env": {
-        "ORINYX_API_URL": "https://<your orinyx api>",
         "ORINYX_API_KEY": "<an ork_live_ key issued to you>"
       }
     }
@@ -317,14 +314,12 @@ the one you installed into.
 
 #### Claude Code (stdio)
 
-Export the two variables first so the key is not typed on the command line. The key is one
-issued to you by Orinyx:
+Export the key first so it is not typed on the command line. The key is one issued to you
+by Orinyx:
 
 ```bash
-export ORINYX_API_URL=https://<your orinyx api>
 export ORINYX_API_KEY=<your ork_live_ key>
 claude mcp add orinyx \
-  -e ORINYX_API_URL="$ORINYX_API_URL" \
   -e ORINYX_API_KEY="$ORINYX_API_KEY" \
   -- /absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp stdio
 ```
@@ -344,7 +339,6 @@ is one issued to you by Orinyx:
       "command": "/absolute/path/to/orinyx-mcp/.venv/bin/orinyx-mcp",
       "args": ["stdio"],
       "env": {
-        "ORINYX_API_URL": "https://<your orinyx api>",
         "ORINYX_API_KEY": "<your ork_live_ key>"
       }
     }
@@ -1047,6 +1041,16 @@ Exit codes from `verify` and `get`:
 `observe` exits with the worst run's code, and 1 when it finds no orders at all. `accuracy`
 and `export` exit 0 on success and 1 on error. Usage errors exit 1, never 2, so a
 typo cannot read as "flagged".
+
+On an interactive terminal, `orinyx -h` opens with an ORINYX banner on stdout, and plain
+`orinyx` prints the banner and the help and still exits 1. Off a terminal (a pipe, a file, a
+subprocess) the output is unchanged, and the banner never appears in a subcommand's output or
+help, in `--json` output or from the MCP server. To turn it off on a terminal, set
+`ORINYX_NO_BANNER` to any non-empty value (a non-empty `CI` does the same) or pass
+`--no-banner` before the command, as in `orinyx --no-banner -h`; `-h` does not list it. With
+`NO_COLOR` set to any non-empty value, the banner is printed in one colour. The banner art is
+drawn in the ANSI Shadow FIGlet font, from the TheDraw font collection, whose author is not
+recorded. Only the drawn text ships; the font file does not.
 
 A GitHub Actions step that fails the job on a flag (full recipe in
 [docs/QUICKSTART.md](https://github.com/lexthirteen-ai/orinyx-mcp/blob/main/docs/QUICKSTART.md#ci-recipe)):

@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from orinyx_mcp import __version__
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -76,4 +77,4 @@ def test_the_first_verification_is_on_the_first_screen():
     assert "**Your first verification**" in head
     assert "`verify_order_text`" in head
     assert "docs/QUICKSTART.md#first-run" in head
-    assert "releases/tag/v0.1.5" in head
+    assert f"releases/tag/v{__version__}" in head
