@@ -31,7 +31,7 @@ from orinyx_mcp.client import (
 )
 from orinyx_mcp.config import ConfigError
 from orinyx_mcp.screen import SCREEN_PATTERNS, Patterns, patterns_for, screen_orders
-from orinyx_mcp.text import render_accuracy_lines, render_run_text
+from orinyx_mcp.text import _one_line, render_accuracy_lines, render_run_text
 from orinyx_mcp.verdicts import KNOWN_VERDICTS, aggregate_disagreements, count_verdicts
 
 EXIT_CLEAN, EXIT_ERROR, EXIT_FLAGGED, EXIT_NOT_VERIFIED = 0, 1, 2, 3
@@ -290,7 +290,7 @@ def _orders_at(record: object, field: str, source: str) -> list[str]:
         return _lines(value)
     if isinstance(value, list) and all(isinstance(item, str) for item in value):
         return [item.strip() for item in value if item.strip()]
-    raise ValueError(f"{source}: '{field}' is neither a string nor a list of strings")
+    raise ValueError(f"{_one_line(source)}: '{field}' is neither a string nor a list of strings")
 
 
 def _load_observed(paths: Sequence[Path], field: str) -> list[_Record]:
@@ -309,12 +309,14 @@ def _load_observed(paths: Sequence[Path], field: str) -> list[_Record]:
                 try:
                     data.append(json.loads(line))
                 except json.JSONDecodeError as exc:
-                    raise ValueError(f"{path.name}#{index}: not JSON ({exc.msg})") from None
+                    raise ValueError(
+                        f"{_one_line(path.name)}#{index}: not JSON ({exc.msg})"
+                    ) from None
         else:
             try:
                 data = json.loads(text)
             except json.JSONDecodeError as exc:
-                raise ValueError(f"{path.name}: not JSON ({exc.msg})") from None
+                raise ValueError(f"{_one_line(path.name)}: not JSON ({exc.msg})") from None
             data = data if isinstance(data, list) else [data]
         for index, record in enumerate(data):
             source = f"{path.name}#{index}"
@@ -327,21 +329,21 @@ def _preflight(records: Sequence[_Record], patterns: Patterns = SCREEN_PATTERNS)
     for record in records:
         if len(record.orders) > MAX_ORDERS_PER_RUN:
             raise ValueError(
-                f"{record.source}: {len(record.orders)} orders; one run takes at most "
+                f"{_one_line(record.source)}: {len(record.orders)} orders; one run takes at most "
                 f"{MAX_ORDERS_PER_RUN}. Nothing was sent."
             )
         for number, order in enumerate(record.orders, start=1):
             if len(order) > MAX_ORDER_CHARS:
                 raise ValueError(
-                    f"{record.source}: order {number} is {len(order)} characters; the API "
-                    f"takes at most {MAX_ORDER_CHARS} characters. Nothing was sent."
+                    f"{_one_line(record.source)}: order {number} is {len(order)} characters; "
+                    f"the API takes at most {MAX_ORDER_CHARS} characters. Nothing was sent."
                 )
         hit = screen_orders(record.orders, patterns)
         if hit:
             # The pattern's name only, never the text it matched.
             raise ValueError(
-                f"{record.source}: looks like it holds a patient identifier ({hit}). Nothing "
-                "was sent. Observe synthetic test data only."
+                f"{_one_line(record.source)}: looks like it holds a patient identifier ({hit}). "
+                "Nothing was sent. Observe synthetic test data only."
             )
 
 
@@ -364,8 +366,9 @@ def _print_observed(runs: list[tuple[str, VerificationResult]], skipped: list[st
         }
         totals = {key: totals[key] + counts[key] for key in totals}
         print(
-            f"{source}  run {result.run_id}  {counts['claims']} claims: {counts['flagged']} "
-            f"flagged, {counts['supported']} supported, {counts['abstain']} abstained"
+            f"{_one_line(source)}  run {result.run_id}  {counts['claims']} claims: "
+            f"{counts['flagged']} flagged, {counts['supported']} supported, "
+            f"{counts['abstain']} abstained"
         )
         for row in result.verdicts:
             if row.verdict not in KNOWN_VERDICTS:
@@ -378,7 +381,8 @@ def _print_observed(runs: list[tuple[str, VerificationResult]], skipped: list[st
         )
     if skipped:
         plural = "s" if len(skipped) != 1 else ""
-        print(f"Skipped {len(skipped)} record{plural} without '{args.field}': {', '.join(skipped)}")
+        sources = ", ".join(_one_line(source) for source in skipped)
+        print(f"Skipped {len(skipped)} record{plural} without '{args.field}': {sources}")
 
 
 def _observe(client: OrinyxClient, args) -> int:
@@ -402,7 +406,7 @@ def _observe(client: OrinyxClient, args) -> int:
             )
         except OrinyxApiError as exc:
             _print_observed(runs, skipped, args)  # what was already recorded stays visible
-            print(f"orinyx: {record.source}: {exc.message or exc.code}", file=sys.stderr)
+            print(f"orinyx: {_one_line(record.source)}: {exc.message or exc.code}", file=sys.stderr)
             return EXIT_ERROR
         runs.append((record.source, result))
     _print_observed(runs, skipped, args)
