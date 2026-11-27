@@ -361,6 +361,7 @@ def test_troubleshooting_exists_and_is_linked_from_installation():
             "401 `Invalid or revoked API key.`",
             "403 `... does not cover this surface`",
             "429 `quota_exceeded`",
+            "429 `arena_quota_exceeded`",
             "The hosted sign-in loops or is refused",
             "ENOENT",
             "A run is refused before sending",

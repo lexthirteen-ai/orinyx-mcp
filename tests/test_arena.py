@@ -353,3 +353,43 @@ def test_existing_tool_list_is_unchanged_by_default_and_flag_registers_arena(mon
     no_dashboard = build_server(lambda: None)
     no_dashboard_names = {tool.name for tool in no_dashboard._tool_manager.list_tools()}
     assert no_dashboard_names - plain_names == arena_names
+
+
+async def test_arena_write_tools_surface_the_account_quota_and_reset(monkeypatch):
+    pytest.importorskip("mcp")
+    from mcp import Client
+    from orinyx_mcp.server import build_server, shared
+
+    monkeypatch.setenv("ORINYX_ARENA_ENABLED", "true")
+    reset = "Try again after 2026-11-21 00:00 UTC."
+    calls = {
+        "start_arena_challenge": {"challenge_id": "EGH-001", "context": "source"},
+        "start_arena_rematch": {"battle_id": BATTLE},
+        "submit_arena_answer": {
+            "battle_id": BATTLE,
+            "attempt_id": ATTEMPT,
+            "answer": "synthetic answer",
+        },
+    }
+
+    def refused(request):
+        action = "answer submissions" if request.url.path.endswith("/answer") else "battle starts"
+        return httpx.Response(
+            429,
+            json={
+                "error": {
+                    "code": "arena_quota_exceeded",
+                    "message": f"This account has used its daily Arena limit for {action}. {reset}",
+                    "details": [],
+                }
+            },
+            headers={"Retry-After": "60"},
+        )
+
+    with _client(refused) as client:
+        async with Client(build_server(shared(client)), mode="legacy") as mcp_client:
+            for tool, arguments in calls.items():
+                result = await mcp_client.call_tool(tool, {**arguments, "request_id": REQUEST})
+                assert result.is_error, tool
+                error = result.content[0].text
+                assert "arena_quota_exceeded (429)" in error and reset in error, error
