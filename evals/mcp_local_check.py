@@ -8,8 +8,9 @@ Without `--url` it launches `python -m orinyx_mcp` the way a local agent host do
 `--url` it connects to a hosted endpoint as a remote agent does, sending the key as a bearer
 header (only ORINYX_API_KEY is needed). Either way it lists the tools, verifies three
 SYNTHETIC warfarin claims, reads the saved run back, exports it and confirms an unknown run id
-is a readable 404. Nothing here imports the engine. Run it against a disposable `*_workload`
-database or a sandbox host only: verification events can never be deleted.
+is a readable 404. It also checks the MCP App resource and the verification tool bindings.
+Nothing here imports the engine. Run it against a disposable `*_workload` database or a sandbox
+host only: verification events can never be deleted.
 
 Exit 0 when every step answered as expected, 1 otherwise. The key is read from the
 environment and is never printed.
@@ -43,6 +44,7 @@ CLAIMS = [
     },
 ]
 _RUN_ID = re.compile(r"Run id: ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
+_SOURCES_URI = "ui://orinyx/sources-card"
 
 
 def _failed(result) -> bool:
@@ -86,14 +88,23 @@ ORDERS = [
 
 async def check(url: str | None = None) -> int:
     from mcp import ClientSession
+    from mcp.server.apps import APP_MIME_TYPE
 
     failures: list[str] = []
     async with _streams(url) as (read, write), ClientSession(read, write) as session:
         await session.initialize()
-        tools = sorted(tool.name for tool in (await session.list_tools()).tools)
-        print("tools:", ", ".join(tools))
-        if "verify_medications" not in tools:
-            failures.append("verify_medications is not offered")
+        tools = {tool.name: tool for tool in (await session.list_tools()).tools}
+        print("tools:", ", ".join(sorted(tools)))
+        for name in ("verify_medications", "get_verification"):
+            tool = tools.get(name)
+            if tool is None:
+                failures.append(f"{name} is not offered")
+            elif (tool.meta or {}).get("ui", {}).get("resourceUri") != _SOURCES_URI:
+                failures.append(f"{name} does not link the sources card")
+        if not failures:
+            resource = await session.read_resource(_SOURCES_URI)
+            if not any(part.mime_type == APP_MIME_TYPE for part in resource.contents):
+                failures.append("sources card resource is not served as an MCP App")
 
         result = await session.call_tool(
             "verify_medications",
@@ -103,6 +114,8 @@ async def check(url: str | None = None) -> int:
         print("\n--- verify_medications ---\n" + text)
         if _failed(result):
             failures.append("verify_medications returned an error")
+        elif (result.meta or {}).get("ui", {}).get("resourceUri") != _SOURCES_URI:
+            failures.append("verify_medications result does not link the sources card")
         run_id = _RUN_ID.search(text)
         if run_id is None:
             failures.append("no run id in the verification text")
@@ -111,6 +124,8 @@ async def check(url: str | None = None) -> int:
             print("\n--- get_verification ---\n" + _text(saved)[:400])
             if _failed(saved):
                 failures.append("get_verification returned an error")
+            elif (saved.meta or {}).get("ui", {}).get("resourceUri") != _SOURCES_URI:
+                failures.append("get_verification result does not link the sources card")
             export = await session.call_tool(
                 "export_verification", {"run_id": run_id.group(1), "fmt": "csv"}
             )

@@ -4,7 +4,7 @@ exports."""
 import base64
 from typing import Any
 
-from orinyx_mcp.client import OrinyxApiError, OrinyxClient
+from orinyx_mcp.client import OrinyxApiError, OrinyxClient, VerificationResult
 from orinyx_mcp.text import render_accuracy_lines, render_run_table
 
 _FORMATS = {"csv": "csv", "pdf": "pdf", "report": "report.pdf", "report.pdf": "report.pdf"}
@@ -24,13 +24,31 @@ def verify_medications(
     check_interactions: bool = False,
 ) -> str:
     """Verify medication claims against the cited drug labels; one table row per claim."""
+    text, _ = verify_medications_report(
+        client,
+        claims=claims,
+        tool_name=tool_name,
+        tool_version=tool_version,
+        check_interactions=check_interactions,
+    )
+    return text
+
+
+def verify_medications_report(
+    client: OrinyxClient,
+    *,
+    claims: list[dict[str, Any]],
+    tool_name: str | None = None,
+    tool_version: str | None = None,
+    check_interactions: bool = False,
+) -> tuple[str, VerificationResult]:
     result = client.verify(
         claims,
         tool_name=tool_name,
         tool_version=tool_version,
         check_interactions=check_interactions,
     )
-    return _with_run_id(render_run_table(result.raw), result.raw)
+    return _with_run_id(render_run_table(result.raw), result.raw), result
 
 
 def verify_order_text(
@@ -63,8 +81,14 @@ def _accuracy_or_none(client: OrinyxClient, run_id: str) -> dict | None:
 
 def get_verification(client: OrinyxClient, *, run_id: str) -> str:
     """A saved run as a table, with its accuracy block when a physician review exists."""
+    text, _ = get_verification_report(client, run_id=run_id)
+    return text
+
+
+def get_verification_report(client: OrinyxClient, *, run_id: str) -> tuple[str, VerificationResult]:
     result = client.get_run(run_id)
-    return _with_run_id(render_run_table(result.raw, _accuracy_or_none(client, run_id)), result.raw)
+    text = render_run_table(result.raw, _accuracy_or_none(client, run_id))
+    return _with_run_id(text, result.raw), result
 
 
 def get_accuracy(client: OrinyxClient, *, run_id: str) -> str:
