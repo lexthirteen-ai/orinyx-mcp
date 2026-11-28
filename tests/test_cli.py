@@ -293,6 +293,18 @@ def test_observe_names_records_without_the_field(env, tmp_path, capsys):
     assert "Skipped 1 record without 'orders': t.jsonl#0" in out
 
 
+def test_observe_displays_file_names_on_one_line(env, tmp_path, capsys):
+    path = _jsonl(tmp_path / "turn\n\tdata\x1b.jsonl", [{"orders": ["x 1 mg"]}, {}])
+    assert _observe([str(path)], Recorder(CLEAN)) == cli.EXIT_CLEAN
+    assert capsys.readouterr().out == (
+        f"turn data\\x1b.jsonl#0  run {RUN['runId']}  "
+        "1 claims: 0 flagged, 1 supported, 0 abstained\n"
+        "Observed 1 record, 1 claims: 0 flagged, 1 supported, 0 abstained. "
+        "Read one in full: orinyx get <run id>\n"
+        "Skipped 1 record without 'orders': turn data\\x1b.jsonl#1\n"
+    )
+
+
 def test_observe_screen_hit_refuses_everything_and_never_repeats_the_text(env, tmp_path, capsys):
     _jsonl(tmp_path / "a.jsonl", [{"orders": ["warfarin 5 mg daily"]}])
     _jsonl(tmp_path / "b.jsonl", [{"orders": ["aspirin 81 mg daily", "call 555-123-4567"]}])
